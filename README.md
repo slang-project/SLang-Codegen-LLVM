@@ -35,6 +35,3 @@ Use tests
 ```bash
 ./executable/slang_jtll ./tests/in.json
 ```
-
-## How to run?
-working directory is root of project, i.e. SLang-LLVM
