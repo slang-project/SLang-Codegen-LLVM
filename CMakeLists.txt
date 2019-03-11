@@ -1,5 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
+# #** Set compiler **
+# set(CMAKE_C_COMPILER "/usr/bin/clang")
+# set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+
 project(SLangLLVM)
 
 #** Version Setup **
@@ -15,7 +19,7 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../executable)
 #** Compilation Setup **
 SET(CMAKE_CXX_FLAGS "-g3 -Wall -O3")
 include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/dependencies/include)
-file(GLOB project_sources "src/*.cpp" "include/*.hpp")
+file(GLOB project_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 #** Compiler Output **
 add_executable(slang_jtll ${project_sources})
