@@ -1,2 +1,5 @@
 build/debug/*
 build/release/*
+
+!build/debug/.gitkeep
+!build/release/.gitkeep
