@@ -31,6 +31,6 @@ int main(int argc, char **argv)
 
     json input = json::parse(input_file);
 
-    std::cout << input.size() << std::endl;
+    std::cout << "This json contains #fields: " << input.size() << std::endl;
     return 0;
 }

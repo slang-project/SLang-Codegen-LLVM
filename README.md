@@ -4,16 +4,37 @@
 Convert JSON IR of SLang program to LLVM IR which can be compiled into binary with LLVM Backend.
 
 ## How to build and run?
-Either with 
-```shell
-make compile
+>assuming current working directory is root of project, i.e. SLang-LLVM
+
+### Linux (Ubuntu)
+#### Prerequisites
+`G++`
+```bash
+sudo apt install g++
 ```
-```shell
-make run
+`CMake`
+```bash
+sudo apt install cmake
 ```
-or just
+`Ninja build system`
+```bash
+sudo apt install ninja-build
 ```
-make
+#### Compile
+```bash
+mkdir build && cd build
+cmake ../
+ninja
 ```
-which will do both of first.
-Executable will consume first argument as input file path and will try to read it. (`make run` assumes input file as `in.json` from project root)
+#### Run
+If in `build` directory:
+```bash
+cd ..
+```
+Use tests
+```bash
+./executable/slang_jtll ./tests/in.json
+```
+
+## How to run?
+working directory is root of project, i.e. SLang-LLVM
