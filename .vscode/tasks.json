@@ -1,0 +1,33 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label" : "clear_terminal",
+            "type": "shell",
+            "command" : "clear"
+        },
+        {
+            "label": "cmake",
+            "type": "shell",
+            "command": "cmake -B${workspaceFolder}/build -H${workspaceFolder}",
+            "dependsOn": "clear_terminal"
+        },
+        {
+            "label": "ninja",
+            "type": "shell",
+            "command": "ninja -C ${workspaceFolder}/build",
+            "dependsOn": "cmake",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "clean_build_executable",
+            "type": "shell",
+            "command": "rm -rf ${workspaceFolder}/build && rm -rf ${workspaceFolder}/executable"
+        }
+    ]
+}

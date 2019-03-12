@@ -8,9 +8,13 @@ Convert JSON IR of SLang program to LLVM IR which can be compiled into binary wi
 
 ### Linux (Ubuntu)
 #### Prerequisites
-`G++`
+`Clang and LLVM Tools`
+>refer to instructions on [llvm repository](https://apt.llvm.org/)
+
+`G++ (optional, i.e. if you don't use clang)`
 ```bash
 sudo apt install g++
+# also change compiler in CMakeFiles.txt
 ```
 `CMake`
 ```bash
@@ -21,16 +25,20 @@ sudo apt install cmake
 sudo apt install ninja-build
 ```
 #### Compile
+
+`Manual:`
 ```bash
 mkdir build && cd build
 cmake ../
 ninja
 ```
+`VS Code:`
+>Use **(gdb) Launch** configuration for starting with default input\
+>Use Build task **ninja** (Ctrl+Shift+B) for building only\
+>Use Clean task **clean_build_executable** for deleting "build" and "executable" directories 
 #### Run
-If in `build` directory:
-```bash
-cd ..
-```
+Go to project root.
+
 Use tests
 ```bash
 ./executable/slang_jtll ./tests/in.json
