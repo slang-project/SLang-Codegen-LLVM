@@ -14,14 +14,17 @@
 
 using json = nlohmann::json;
 using namespace llvm;
+using Identifier = std::string; //TODO: create custom type
 
 class ObjectAST
 {};
 
 class TypeAST : public ObjectAST
-{};
+{
+    Identifier name;
+};
 
-class ExpressionAST : public TypeAST
+class ExpressionAST : public ObjectAST
 {
 public:
     virtual ~ExpressionAST() {}
@@ -37,19 +40,43 @@ public:
     virtual Value *codegen();
 };
 
-class BlockMemberAST
+class BlockAST : public ObjectAST
 {};
 
-class DefinitionAST
+class ModuleAST : public BlockAST
+{};
+
+class BlockMemberAST : public ObjectAST
+{};
+
+class DefinitionAST : public ObjectAST
+{};
+
+class UnitDefinitionAST : public DefinitionAST
 {};
 
 class RoutineDefinitionAST : public DefinitionAST
 {};
 
-class Statement
+class VariableDefinitionAST : public DefinitionAST
 {};
 
-class StatementAST : Statement
+class StatementAST : public ObjectAST
+{};
+
+class IfStatementAST : public StatementAST
+{};
+
+class LoopStatementAST : public StatementAST
+{};
+
+class ReturnStatementAST : public StatementAST
+{};
+
+class CallStatementAST : public StatementAST
+{};
+
+class AssignmentStatementAST : public StatementAST
 {};
 
 

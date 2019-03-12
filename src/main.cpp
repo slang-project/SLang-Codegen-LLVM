@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     // TODO: Consider using Boost.Program_options for cli
     // Get filepath from command line args
     std::string input_filepath{get_filepath(argc, argv)};
-
+    
     // Check file existance
     if(!input_filepath.length())
     {

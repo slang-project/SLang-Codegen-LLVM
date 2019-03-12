@@ -35,7 +35,7 @@ endif ()
 
 
 #** Discover LLVM Build Flags in Current System **
-SET(LLVM_FLAGS_CALL "llvm-config")
+SET(LLVM_FLAGS_CALL "llvm-config-7")
 SET(LLVM_CXXFLAGS_CALL_FLAGS "--cxxflags")
 SET(LLVM_LIBSFLAGS_CALL_FLAGS "--libs")
 SET(LLVM_lDFLAGS_CALL_FLAGS "--ldflags")
@@ -51,7 +51,7 @@ elseif(WIN32)
 endif()
 
 #** Compilation Setup **
-SET(CMAKE_CXX_FLAGS "-g3 -Wall ${LLVM_CXX_FLAGS} ${LLVM_LIB_FLAGS} ${LLVM_LD_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g3 ${LLVM_CXX_FLAGS} ${LLVM_LIB_FLAGS} ${LLVM_LD_FLAGS}")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/dependencies/include)
 file(GLOB project_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
