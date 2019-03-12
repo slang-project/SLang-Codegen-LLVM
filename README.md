@@ -8,13 +8,13 @@ Convert JSON IR of SLang program to LLVM IR which can be compiled into binary wi
 
 ### Linux (Ubuntu)
 #### Prerequisites
-`Clang and LLVM Tools`
+`LLVM Tools`
 >refer to instructions on [llvm repository](https://apt.llvm.org/)
 
-`G++ (optional, i.e. if you don't use clang)`
+`G++ (optionally disabled, i.e. if you use clang++)`
 ```bash
 sudo apt install g++
-# also change compiler in CMakeFiles.txt
+# change compiler config in CMakeFiles.txt to use clang
 ```
 `CMake`
 ```bash
