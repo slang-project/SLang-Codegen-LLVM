@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3)
 
 
 #** Set compiler **
@@ -34,35 +34,33 @@ if (${FORCE_COLORED_OUTPUT})
 endif ()
 
 
-#** Discover LLVM Build Flags in Current System **
-SET(LLVM_FLAGS_CALL "llvm-config-7")
-SET(LLVM_CXXFLAGS_CALL_FLAGS "--cxxflags")
-SET(LLVM_LIBSFLAGS_CALL_FLAGS "--libs")
-SET(LLVM_lDFLAGS_CALL_FLAGS "--ldflags")
+#** Discover LLVM **
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
 
-if(UNIX)
-   execute_process(COMMAND ${LLVM_FLAGS_CALL} ${LLVM_CXXFLAGS_CALL_FLAGS} OUTPUT_VARIABLE LLVM_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-   execute_process(COMMAND ${LLVM_FLAGS_CALL} ${LLVM_LIBSFLAGS_CALL_FLAGS} OUTPUT_VARIABLE LLVM_LIB_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-   execute_process(COMMAND ${LLVM_FLAGS_CALL} ${LLVM_lDFLAGS_CALL_FLAGS} OUTPUT_VARIABLE LLVM_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-elseif(WIN32)
-   execute_process(COMMAND CMD /c ${LLVM_FLAGS_CALL} ${LLVM_CXXFLAGS_CALL_FLAGS} OUTPUT_VARIABLE LLVM_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-   execute_process(COMMAND CMD /c ${LLVM_FLAGS_CALL} ${LLVM_LIBSFLAGS_CALL_FLAGS} OUTPUT_VARIABLE LLVM_LIB_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-   execute_process(COMMAND CMD /c ${LLVM_FLAGS_CALL} ${LLVM_lDFLAGS_CALL_FLAGS} OUTPUT_VARIABLE LLVM_LD_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
 
 #** Compilation Setup **
-SET(CMAKE_CXX_FLAGS "-g3 ${LLVM_CXX_FLAGS} ${LLVM_LIB_FLAGS} ${LLVM_LD_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g3 -Wall")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/dependencies/include)
 file(GLOB project_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 
 #** Compiler Output **
-add_executable(slang_jtll ${project_sources})
+set(EXECUTABLE_NAME slang_jtll)
+add_executable(${EXECUTABLE_NAME} ${project_sources})
 
+
+#** Link LLVM **
+llvm_map_components_to_libnames(llvm_libs support core irreader)
+target_link_libraries(${EXECUTABLE_NAME} ${llvm_libs})
 
 # #** Info Tab **
 # message("Binary Tree Path ${PROJECT_BINARY_DIR}")
 # message("Source Tree Path ${PROJECT_SOURCE_DIR}")
 # message("Executables Location ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 # message("Project Version " ${VERSION})
+

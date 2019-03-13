@@ -24,6 +24,7 @@ sudo apt install cmake
 ```bash
 sudo apt install ninja-build
 ```
+
 #### Compile
 
 `Manual:`
@@ -42,4 +43,10 @@ Go to project root.
 Use tests
 ```bash
 ./executable/slang_jtll ./tests/in.json
+```
+#### Troubleshooting
+`-lz linking error`
+```bash
+sudo apt install zlib1g-dev #for 64-bit should be sufficient
+sudo apt install lib32z1-dev #if first not sufficient 
 ```
