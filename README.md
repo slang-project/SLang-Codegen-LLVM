@@ -1,6 +1,6 @@
 # SLang LLVM
 
-## SLang Programming Language 'middle-end' implementation with LLVM Framework.
+**SLang Programming Language 'middle-end' implementation with LLVM Framework.**
 Convert JSON IR of SLang program to LLVM IR which can be compiled into binary with LLVM Backend.
 
 ## How to build and run?

@@ -4,7 +4,7 @@
 std::unique_ptr<ObjectAST> fromJson (const json& input)
 {
     std::cout << input["type"] << std::endl;
-    return std::unique_ptr<ObjectAST>(new NumberExpressionAST(7.0));
+    return std::unique_ptr<ObjectAST>(new IntegerExpressionAST(7.0));
 }
 
 static LLVMContext TheContext;
@@ -23,7 +23,28 @@ Value *LogErrorV(const char *Str) {
   return nullptr;
 }
 
-Value *NumberExpressionAST::codegen()
+Value *IntegerExpressionAST::codegen()
 {
-    return ConstantFP::get(TheContext, APFloat(Val));
+  return ConstantInt::get(TheContext, APInt(32, Val, true));
+}
+
+Value *BinaryExpressionAST::codegen()
+{
+  Value *L = LHS->codegen();
+  Value *R = RHS->codegen();
+  if (!L || !R)
+    return nullptr;
+
+  switch (Op) {
+  case '+':
+    return Builder.CreateAdd(L, R, "addtmp");
+  case '-':
+    return Builder.CreateSub(L, R, "subtmp");
+  case '*':
+    return Builder.CreateMul(L, R, "multmp");
+  case '<':
+    return Builder.CreateICmpULT(L, R, "cmptmp");
+  default:
+    return LogErrorV("invalid binary operator");
+  }
 }
