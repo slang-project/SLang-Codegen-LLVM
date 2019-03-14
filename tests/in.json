@@ -1,23 +1,17 @@
 {
-    "type": "RoutineDeclaration",
-    "value": "name",
-    "num_children": 3,
+    "type": "binaryExpression",
+    "value": "+",
+    "num_children": 2,
     "children": [
         {
-            "type": "RoutineArgs",
-            "value": null,
+            "type": "integerExpression",
+            "value": "2",
             "num_children": 0,
             "children": []
         },
         {
-            "type": "Type",
-            "value": null,
-            "num_children": 0,
-            "children": []
-        },
-        {
-            "type": "Block",
-            "value": null,
+            "type": "integerExpression",
+            "value": "4",
             "num_children": 0,
             "children": []
         }

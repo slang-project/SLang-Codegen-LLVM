@@ -1,4 +1,4 @@
-#include "entity_hierarchy.hpp"
+#include "deserialiser.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
@@ -43,7 +43,14 @@ int main(int argc, char **argv)
     // Parse json file
     json input = json::parse(input_file);
 
+    initialize();
 
-    std::cout << "This json contains #fields: " << input.size() << std::endl;
+    ExpressionAST* root = parseExpressionAST(input);
+    Value* r = root->codegen();
+    r->print(errs());
+    
+
+    print_generated_code();
+
     return 0;
 }

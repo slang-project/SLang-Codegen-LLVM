@@ -1,4 +1,4 @@
-#include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/APInt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -9,15 +9,35 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
+
+#include "utility.hpp"
+
 #include <nlohmann/json.hpp>
 #include <iostream>
+#include <string>
 
 using json = nlohmann::json;
 using namespace llvm;
 using Identifier = std::string; //TODO: create custom type
 
+
+Value *LogErrorV(const char *Str);
+
+void initialize();
+void print_generated_code();
+
+//--------Entities---------------
+
 class ObjectAST
-{};
+{
+  std::vector<ObjectAST*> children;
+public:
+  ObjectAST() : children() {}
+  void addChild(ObjectAST* objectPtr)
+  {
+    children.push_back(objectPtr);
+  }
+};
 
 class TypeAST : public ObjectAST
 {
@@ -28,7 +48,7 @@ class ExpressionAST : public ObjectAST
 {
 public:
     virtual ~ExpressionAST() {}
-    virtual Value *codegen() = 0;
+    virtual Value *codegen() { return LogErrorV("Use of abstract ExpressionAST."); }
 };
 
 class IntegerExpressionAST : public ExpressionAST
@@ -36,7 +56,6 @@ class IntegerExpressionAST : public ExpressionAST
     int Val;
 public:
     IntegerExpressionAST(int val) : Val(val) {}
-    virtual ~IntegerExpressionAST(){}
     Value *codegen() override;
 };
 
@@ -48,29 +67,35 @@ public:
     Value *codegen() override;
 };
 
+enum class BinaryOp
+{
+  add, subtract, multiply, less_than
+};
+
 class BinaryExpressionAST : public ExpressionAST {
-  char Op;
-  std::unique_ptr<ExpressionAST> LHS, RHS;
+  BinaryOp Op;
+  ExpressionAST *LHS, *RHS; // TODO: make unique_ptr
 
 public:
-  BinaryExpressionAST(char Op, std::unique_ptr<ExpressionAST> LHS,
-                std::unique_ptr<ExpressionAST> RHS)
-      : Op(Op), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
-
+  BinaryExpressionAST(BinaryOp Op, ExpressionAST* LHS,
+                ExpressionAST* RHS)
+      : Op(Op), LHS(LHS), RHS(RHS) {}
   Value *codegen() override;
 };
 
-class CallExpressionAST : public ExpressionAST {
-  Identifier Callee;
-  std::vector<std::unique_ptr<ExpressionAST>> Args;
+// class CallExpressionAST : public ExpressionAST {
+//   Identifier Callee;
+//   std::vector<std::unique_ptr<ExpressionAST>> Args;
 
-public:
-  CallExpressionAST(const std::string &Callee,
-              std::vector<std::unique_ptr<ExpressionAST>> Args)
-      : Callee(Callee), Args(std::move(Args)) {}
-
-  Value *codegen() override;
-};
+// public:
+//   explicit CallExpressionAST(const std::string &Callee,
+//               std::vector<std::unique_ptr<ExpressionAST>> Args)
+//       : Callee(Callee), Args(std::move(Args)) {}
+//   CallExpressionAST(const CallExpressionAST&) = delete;
+//   CallExpressionAST& operator=(const CallExpressionAST&) = delete;
+//   ~CallExpressionAST() = default;
+//   Value *codegen() override;
+// };
 
 class BlockAST : public ObjectAST
 {};
