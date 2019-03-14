@@ -1,18 +1,26 @@
 {
     "type": "binaryExpression",
     "value": "+",
-    "num_children": 2,
     "children": [
         {
-            "type": "integerExpression",
-            "value": "2",
-            "num_children": 0,
-            "children": []
+            "type": "binaryExpression",
+            "value": "*",
+            "children": [
+                {
+                    "type": "integerExpression",
+                    "value": "3",
+                    "children": []
+                },
+                {
+                    "type": "integerExpression",
+                    "value": "3",
+                    "children": []
+                }
+            ]
         },
         {
             "type": "integerExpression",
-            "value": "4",
-            "num_children": 0,
+            "value": "1",
             "children": []
         }
     ]

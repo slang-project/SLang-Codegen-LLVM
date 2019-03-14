@@ -17,17 +17,17 @@ BinaryOp getBinaryOp(const std::string &op)
 ExpressionAST* parseExpressionAST(const json &input)
 {
     ExpressionAST* parsed = nullptr;
-    std::string type{input["type"]};
+    std::string type{input["type"].get<std::string>()};
 
     if (type == "integerExpression")
     {
-        int value = std::stoi(std::string(input["value"]));
+        int value = std::stoi(std::string(input["value"].get<std::string>()));
         parsed = new IntegerExpressionAST(value);
     }
     else if (type == "variableExpression")
     {
         // TODO: parse identifier correctly
-        Identifier name = std::string(input["value"]);
+        Identifier name = std::string(input["value"].get<std::string>());
         parsed = new VariableExpressionAST(name);
     }
     else if (type == "binaryExpression")
@@ -35,7 +35,8 @@ ExpressionAST* parseExpressionAST(const json &input)
         //TODO: handle array index exceptions
         ExpressionAST* LHS = parseExpressionAST(input["children"][0]);
         ExpressionAST* RHS = parseExpressionAST(input["children"][1]);
-        parsed = new BinaryExpressionAST(getBinaryOp("+"), LHS, RHS);
+        std::string op = input["value"].get<std::string>();
+        parsed = new BinaryExpressionAST(getBinaryOp(op), LHS, RHS);
     }
     else if (type == "callExpression")
     {
@@ -47,7 +48,7 @@ ExpressionAST* parseExpressionAST(const json &input)
 //std::unique_ptr<ObjectAST> parseObjectAST(const json &input)
 //{
 //    std::unique_ptr<ObjectAST> parsed;
-//    std::string type{input["type"]};
+//    std::string type{input["type"].dump()};
 
 //    return parsed;
 //}
