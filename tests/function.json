@@ -1,0 +1,63 @@
+{
+  "type" : "routineDefinition" ,
+  "value" : "init" ,
+  "num_children" : "3" ,
+  "children" : [
+      {
+        "type" : "routineArgs" ,
+        "value" : null ,
+        "num_children" : "1" ,
+        "children" :
+        [
+          {
+            "type": "variableDefinition",
+            "value": "a",
+            "num_children": 1,
+            "children": 
+            [
+              {
+                "type": "type",
+                "value": "Integer",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+         "type": "type",
+         "value": "Integer",
+         "num_children": 0,
+         "children": []
+      },
+      {
+        "type": "binaryExpression",
+        "value": "+",
+        "children": 
+        [
+          {
+            "type": "binaryExpression",
+            "value": "*",
+            "children":
+            [
+              {
+                "type": "integerExpression",
+                "value": "3",
+                "children": []
+              },
+              {
+                "type": "integerExpression",
+                "value": "3",
+                "children": []
+              }
+            ]
+          },
+          {
+            "type": "integerExpression",
+            "value": "1",
+            "children": []
+          }
+        ]
+      }
+  ]
+}

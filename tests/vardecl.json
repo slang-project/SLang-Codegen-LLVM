@@ -1,0 +1,43 @@
+{
+  "type" : "variableDefinition",
+  "value": "a",
+  "num_children": 2,
+  "children" :
+  [
+    {
+      "type": "type",
+      "value": "Integer",
+      "num_children": 0,
+      "children": []
+    },
+    {
+      "type": "binaryExpression",
+      "value": "+",
+      "children":
+      [
+        {
+          "type": "binaryExpression",
+          "value": "*",
+          "children":
+          [
+            {
+              "type": "integerExpression",
+              "value": "3",
+              "children": []
+            },
+            {
+              "type": "integerExpression",
+              "value": "3",
+              "children": []
+            }
+          ]
+        },
+        {
+          "type": "integerExpression",
+          "value": "1",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

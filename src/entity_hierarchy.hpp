@@ -42,6 +42,9 @@ public:
 class TypeAST : public ObjectAST
 {
     Identifier name;
+public:
+    TypeAST(const Identifier& name) : name(name) {}
+    Type *codegen();
 };
 
 class ExpressionAST : public ObjectAST
@@ -107,16 +110,48 @@ class BlockMemberAST : public ObjectAST
 {};
 
 class DefinitionAST : public ObjectAST
-{};
+{
+public:
+    virtual ~DefinitionAST() {}
+    virtual Value *codegen() { return LogErrorV("Use of abstract DefinitionAST."); }
+};
 
 class UnitDefinitionAST : public DefinitionAST
 {};
 
-class RoutineDefinitionAST : public DefinitionAST
-{};
-
 class VariableDefinitionAST : public DefinitionAST
-{};
+{
+  Identifier Name;
+  TypeAST* type;
+  ExpressionAST* Body;
+
+public:
+  VariableDefinitionAST(const Identifier& Name, TypeAST* type,
+                        ExpressionAST* Body)
+    : Name(Name), type(type), Body(Body) {}
+  
+  Value *codegen() override;
+  const Identifier &getName() const { return Name; }
+  TypeAST* getType() {return type; }
+};
+
+class RoutineDefinitionAST : public DefinitionAST
+{
+  Identifier Name;
+  std::vector<VariableDefinitionAST*> Args;
+  TypeAST* type;
+
+  // TODO: for simplifying purposes, later should be turned into BlockAST
+  ExpressionAST* Body;
+public:
+  RoutineDefinitionAST(const Identifier& Name, std::vector<VariableDefinitionAST*> Args,
+                      TypeAST* type, ExpressionAST* Body)
+       : Name(Name), Args(Args), type(type), Body(Body) {}
+
+  Function *codegen();
+  const Identifier &getName() const { return Name; }
+  TypeAST* getType() {return type; }
+};
 
 class StatementAST : public ObjectAST
 {};

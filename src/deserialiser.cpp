@@ -42,8 +42,69 @@ ExpressionAST* parseExpressionAST(const json &input)
     {
         throw new std::runtime_error("callExpression not implemented yet");
     }
+ 
     return parsed;
 }
+
+TypeAST* parseTypeAST(const json &input)
+{
+  TypeAST* parsed = nullptr;
+  std::string type{input["type"].get<std::string>()};
+
+  if (type == "type")
+  {
+    Identifier name = std::string(input["value"].get<std::string>());
+
+    parsed = new TypeAST(name);
+  }
+
+  return parsed;
+}
+
+DefinitionAST* parseDefinitionAST(const json &input)
+{
+  DefinitionAST* parsed = nullptr; 
+  std::string type{input["type"].get<std::string>()};
+
+  if (type == "variableDefinition")
+  {
+    Identifier name = std::string(input["value"].get<std::string>());
+    
+    int num_children = int(input["num_children"].get<int>());
+
+    //TODO: handle array index exceptions
+    TypeAST* type = parseTypeAST(input["children"][0]);
+    ExpressionAST* Body = nullptr;
+    if (num_children == 2)
+    {
+      Body = parseExpressionAST(input["children"][1]);
+    }
+      
+    parsed = new VariableDefinitionAST(name, type, Body);
+  }
+  else if (type == "routineDefinition")
+  {
+    Identifier name = std::string(input["value"].get<std::string>());
+
+    json rout_args = input["children"][0];
+    int num_args = std::stoi(std::string(rout_args["num_children"].get<std::string>()));
+    std::vector<VariableDefinitionAST*> args(num_args);
+    
+    for (int i = 0; i < num_args; i++)
+    {
+      std::cout << "Create Vars\n";
+      args[i] = (VariableDefinitionAST*) parseDefinitionAST(rout_args["children"][i]);
+    }
+   
+    TypeAST* type = parseTypeAST(input["children"][1]);
+    ExpressionAST* expr = parseExpressionAST(input["children"][2]);
+
+    parsed = new RoutineDefinitionAST(name, args, type, expr);
+  }
+
+  return parsed;
+}
+
 
 //std::unique_ptr<ObjectAST> parseObjectAST(const json &input)
 //{
