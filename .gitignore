@@ -1,2 +1,4 @@
 build/
 executable/
+*.swp
+.DS_Store
