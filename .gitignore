@@ -3,3 +3,8 @@ executable/
 *.swp
 .DS_Store
 .vscode/ipch/
+src/*old.cpp
+src/*old.hpp
+*.out
+*.ll
+*.o

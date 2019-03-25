@@ -1,3 +1,4 @@
+// LLVM INCLUDES
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/BasicBlock.h"
@@ -10,280 +11,720 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
 
-#include "utility.hpp"
 
+// ADDITIONAL INCLUDES
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
 
+
+// NAMESPACES SETUP
 using json = nlohmann::json;
+using IdentifierAST = std::string;
+using BodyAST = std::vector<EntityAST>;
 using namespace llvm;
-using Identifier = std::string; //TODO: create custom type
 
 
+// LOGGING
 Value *LogErrorV(const char *Str);
 Type *LogErrorT(const char *Str);
 
-void initialize();
-void print_generated_code();
 
-//--------ENTITIES---------------
+// EXTERNAL INTERFACE
+void initLLVMGlobal();
+void printGeneratedCode(std::string outFilePath);
 
-class EntityAST
+
+// HIERARCHY
+class EntityAST  // abstract
 {
-  std::vector<EntityAST*> children;
 public:
-  EntityAST() : children() {}
-  void addChild(EntityAST* objectPtr)
-  {
-    children.push_back(objectPtr);
-  }
+    virtual ~EntityAST() = default;
 };
 
-class ExpressionAST : public EntityAST
+class CompilationAST : public EntityAST
 {
+    // USE_LIST         uses
+    // DECLARATION_LIST units_and_standalones
+    // ROUTINE          anonymous
 public:
-    virtual ~ExpressionAST() {}
-    virtual Value *codegen() { return LogErrorV("Use of abstract ExpressionAST."); }
+    virtual ~CompilationAST() = default;
+    virtual Function *codegen();
 };
 
-////-----------TYPE--------------
-
-class TypeAST : public EntityAST
+class ExpressionAST : public EntityAST  // abstract
 {
+    // TYPE type
 public:
-  virtual ~TypeAST() {}
-  virtual Type *codegen() { return LogErrorT("Use of abstract TypeAST");}
+    virtual ~ExpressionAST() = default;
+    virtual Value *codegen();
 };
 
-class UnitRefTypeAST : public TypeAST
+class PrimaryAST : public ExpressionAST  // abstract
 {
-  Identifier name;
 public:
-  UnitRefTypeAST(const Identifier& name) : name(name) {}
-  Type *codegen() override; 
+    virtual ~PrimaryAST() = default;
+};
+
+class ConditionalIfThenPartAST : public ExpressionAST
+{
+    ExpressionAST condition;
+    ExpressionAST thenPart;
+public:
+    ConditionalIfThenPartAST
+    (
+        ExpressionAST condition,
+        ExpressionAST thenPart
+    )
+      : condition(condition),
+        thenPart(thenPart)
+    {}
+    virtual ~ConditionalIfThenPartAST() = default;
+    virtual Value *codegen() override;
+};
+
+class ConditionalAST : public PrimaryAST
+{
+    std::vector<ConditionalIfThenPartAST> ifThenParts;
+    ExpressionAST elsePart;
+public:
+    ConditionalAST
+    (
+        std::vector<ConditionalIfThenPartAST> ifThenParts,
+        ExpressionAST elsePart
+    )
+      : ifThenParts(ifThenParts),
+        elsePart(elsePart)
+    {}
+    virtual ~ConditionalAST() = default;
+    virtual Value *codegen() override;
+};
+
+class ThisAST : public PrimaryAST
+{
+    // UNIT unit
+public:
+    virtual ~ThisAST() = default;
+    virtual Value *codegen() override;
+};
+
+class ReturnExprAST : public PrimaryAST
+{
+    // ROUTINE routine
+public:
+    virtual ~ReturnExprAST() = default;
+    virtual Value *codegen() override;
+};
+
+class OldAST : public PrimaryAST
+{
+    ExpressionAST old;
+public:
+    OldAST
+    (
+        ExpressionAST old
+    )
+      : old(old)
+    {}
+    virtual ~OldAST() = default;
+    virtual Value *codegen() override;
+};
+
+class ReferenceAST : public PrimaryAST
+{
+    // DECLARATION declaration !! changed to:
+    IdentifierAST declarationName;  // NOTE: not like in original parser
+public:
+    ReferenceAST
+    (
+        IdentifierAST declarationName
+    )
+      : declarationName(declarationName)
+    {}
+    virtual ~ReferenceAST() = default;
+    virtual Value *codegen() override;
+};
+
+// NOTE: SHOULD NOT APPEAR IN FINAL AST! (remove??)
+class UnresolvedAST : public PrimaryAST
+{
+    IdentifierAST name;
+public:
+    UnresolvedAST
+    (
+        IdentifierAST name
+    )
+      : name(name)
+    {}
+    virtual ~UnresolvedAST() = default;
+    virtual Value *codegen() override;
+};
+
+// NOTE: abstract here, but not in original parser
+class LiteralAST : public PrimaryAST
+{
+    std::string value;  // value
+public:
+    LiteralAST
+    (
+        std::string value
+    )
+      : value(value)
+    {}
+    virtual ~LiteralAST() = default;
+    virtual Value *codegen() override;
+};
+
+// NOTE: absent in original parser
+class IntegerAST : public LiteralAST
+{
+public:
+    IntegerAST
+    (
+        std::string value
+    )
+      : LiteralAST(value)
+    {}
+    virtual ~IntegerAST() = default;
+    virtual Value *codegen() override;
+};
+
+// NOTE: absent in original parser
+class RealAST : public LiteralAST
+{
+public:
+    RealAST
+    (
+        std::string value
+    )
+      : LiteralAST(value)
+    {}
+    virtual ~RealAST() = default;
+    virtual Value *codegen() override;
+};
+
+// NOTE: absent in original parser
+class CharacterAST : public LiteralAST
+{
+public:
+    CharacterAST
+    (
+        std::string value
+    )
+      : LiteralAST(value)
+    {}
+    virtual ~CharacterAST() = default;
+    virtual Value *codegen() override;
+};
+
+// NOTE: absent in original parser
+class StringAST : public LiteralAST
+{
+public:
+    StringAST
+    (
+        std::string value
+    )
+      : LiteralAST(value)
+    {}
+    virtual ~StringAST() = default;
+    virtual Value *codegen() override;
+};
+
+class TupleAST : public PrimaryAST
+{
+    std::vector<ExpressionAST> expressions;
+public:
+    TupleAST
+    (
+        std::vector<ExpressionAST> expressions
+    )
+      : expressions(expressions)
+    {}
+    virtual ~TupleAST() = default;
+    virtual Value *codegen() override;
+};
+
+class SecondaryAST : public ExpressionAST  // indirectly abstract
+{
+public:
+    virtual ~SecondaryAST() = default;
+};
+
+// TODO: think about code generation semantics
+class MemberAST : public SecondaryAST
+{
+    ExpressionAST secondary;
+    IdentifierAST member;
+public:
+    MemberAST
+    (
+        ExpressionAST secondary,
+        IdentifierAST member
+    )
+      : secondary(secondary),
+        member(member)
+    {}
+    virtual ~MemberAST() = default;
+    virtual Value *codegen() override;
+};
+
+class CallAST : public SecondaryAST
+{
+    ExpressionAST secondary;
+    std::vector<ExpressionAST> actuals;
+public:
+    CallAST
+    (
+        ExpressionAST secondary,
+        std::vector<ExpressionAST> actuals
+    )
+      : secondary(secondary),
+        actuals(actuals)
+    {}
+    virtual ~CallAST() = default;
+    virtual Value *codegen() override;
+};
+
+class UnaryAST : public ExpressionAST
+{
+    std::string unaryOp;  // value
+    ExpressionAST primary;
+public:
+    UnaryAST
+    (
+        std::string unaryOp,
+        ExpressionAST primary
+    )
+      : unaryOp(unaryOp),
+        primary(primary)
+    {}
+    virtual ~UnaryAST() = default;
+    virtual Value *codegen() override;
+};
+
+/* TODO:
+class InExprAST : public UnaryAST
+{
+    // unaryOp, primary -- from parent!
+    RangeTypeAST range;
+public:
+    InExprAST
+    (
+        std::string unaryOp,
+        ExpressionAST primary,
+        RangeTypeAST range
+    )
+      : UnaryAST(unaryOp, primary),
+        range(range)
+    {}
+    virtual ~InExprAST() = default;
+    virtual Value *codegen() override;
+};
+*/
+
+class BinaryAST : public ExpressionAST
+{
+    std::string binaryOp;  // value, NOTE: not like in original parser
+    ExpressionAST left;
+    ExpressionAST right;
+public:
+    BinaryAST
+    (
+        std::string binaryOp,
+        ExpressionAST left,
+        ExpressionAST right
+    )
+      : binaryOp(binaryOp),
+        left(left),
+        right(right)
+    {}
+    virtual ~BinaryAST() = default;
+    virtual Value *codegen() override;
+};
+
+class TypeAST : public EntityAST  // abstract
+{
+public:
+    virtual ~TypeAST() = default;
+    virtual Type *codegen();
+};
+
+class UnitRefAST : public TypeAST
+{
+    std::string name;  // value
+    // bool opt
+    // bool as_sign
+    // DECLARATION unit_ref
+    // ENTITY_LIST generic_actuals
+public:
+    UnitRefAST
+    (
+        std::string name
+    )
+      : name(name)
+    {}
+    virtual ~UnitRefAST() = default;
+    virtual Type *codegen() override;
 };
 
 class MultiTypeAST : public TypeAST
-{};
+{
+    std::vector<UnitRefAST> types;
+public:
+    MultiTypeAST
+    (
+        std::vector<UnitRefAST> types
+    )
+      : types(types)
+    {}
+    virtual ~MultiTypeAST() = default;
+    virtual Type *codegen() override;
+};
 
 class RangeTypeAST : public TypeAST
-{};
+{
+    ExpressionAST left;
+    ExpressionAST right;
+public:
+    RangeTypeAST
+    (
+        ExpressionAST left,
+        ExpressionAST right
+    )
+      : left(left),
+        right(right)
+    {}
+    virtual ~RangeTypeAST() = default;
+    virtual Type *codegen() override;
+};
 
-class TupleTypeAST : public TypeAST
-{};
+/* TODO:
+class TupleTypeAST : TypeAST {};
+class RoutineTypeAST : TypeAST {};
+*/
 
-class RoutineTypeAST : public TypeAST
-{};
+class DeclarationAST : public EntityAST  // abstract
+{
+    // bool isHidden
+    // bool isFinal
+    IdentifierAST name;
+public:
+    DeclarationAST
+    (
+        IdentifierAST name
+    )
+      : name(name)
+    {}
+    virtual ~DeclarationAST() = default;
+};
 
-////------------DECLARATION------------
+class VariableAST : public DeclarationAST
+{
+    // name (isHidden, isFinal) -- from parent!
+    // bool isConst
+    bool isRef;
+    // bool isOverride
+    // bool isAbstract
+    bool isConcurrent;
+    bool isForeign;
+    TypeAST type;
+    ExpressionAST initializer;
+public:
+    VariableAST
+    (
+        IdentifierAST name, 
+        bool isRef, 
+        bool isConcurrent,
+        bool isForeign,
+        TypeAST type,
+        ExpressionAST initializer
+    )
+      : DeclarationAST(name),
+        isRef(isRef),
+        isConcurrent(isConcurrent),
+        isForeign(isForeign),
+        type(type),
+        initializer(initializer)
+    {}
+    virtual ~VariableAST() = default;
+    virtual Value *codegen();
+};
 
-class DeclarationAST : public EntityAST
+class UnitAST : public DeclarationAST
+{
+    // name (isHidden, isFinal) -- from parent!
+    // IDENTIFIER alias
+    bool isRef;
+    // bool isAbstract
+    bool isConcurrent;
+    // FORMAL_GENERIC_LIST generics
+    // PARENT_LIST inherits
+    // USE_LIST uses
+    bool isForeign;
+    std::vector<DeclarationAST> declarations;
+    std::vector<ExpressionAST> invariants;
+public:
+    UnitAST
+    (
+        IdentifierAST name,
+        bool isRef, 
+        bool isConcurrent, 
+        bool isForeign, 
+        std::vector<DeclarationAST> declarations, 
+        std::vector<ExpressionAST> invariants
+    )
+      : DeclarationAST(name),
+        isRef(isRef),
+        isConcurrent(isConcurrent),
+        isForeign(isForeign),
+        declarations(declarations),
+        invariants(invariants)
+    {}
+    virtual ~UnitAST() = default;
+    // virtual ? *codegen();  // TODO
+};
+
+class RoutineAST : public DeclarationAST
+{
+    // name (isHidden, isFinal) -- from parent!
+    // IDENTIFIER alias
+    // PURE_SAFE_SPEC pureSafe
+    // bool isAbstract
+    bool isForeign;
+    // bool isOverride
+    // FORMAL_GENERIC_LIST genericParameters
+    std::vector<EntityAST> parameters;
+    TypeAST type;
+    std::vector<ExpressionAST> preconditions;
+    bool requireElse;
+    BodyAST routineBody;
+    std::vector<ExpressionAST> postconditions;
+    bool ensureThen;
+public:
+    RoutineAST
+    (
+        IdentifierAST name,
+        bool isForeign,
+        std::vector<EntityAST> parameters,
+        TypeAST type,
+        std::vector<ExpressionAST> preconditions,
+        bool requireElse,
+        BodyAST routineBody,
+        std::vector<ExpressionAST> postconditions,
+        bool ensureThen
+    )
+      : DeclarationAST(name),
+        isForeign(isForeign),
+        parameters(parameters),
+        type(type),
+        preconditions(preconditions),
+        requireElse(requireElse),
+        routineBody(routineBody),
+        postconditions(postconditions),
+        ensureThen(ensureThen)
+    {}
+    virtual ~RoutineAST() = default;
+    virtual Function *codegen();
+};
+
+class ConstantAST : public DeclarationAST
+{
+    std::vector<ExpressionAST> constants;
+public:
+    ConstantAST
+    (
+        std::vector<ExpressionAST> constants
+    )
+      : DeclarationAST(""),
+        constants(constants)
+    {}
+    virtual ~ConstantAST() = default;
+    // virtual ? *codegen();  // TODO
+};
+
+class StatementAST : public EntityAST  // abstract
 {
 public:
-    virtual ~DeclarationAST() {}
-    virtual Value *codegen() { return LogErrorV("Use of abstract DeclarationAST."); }
+    virtual ~StatementAST() = default;
+    virtual void codegen(BasicBlock *block);
 };
 
-class VariableDeclarationAST : public DeclarationAST
+class IfThenPartAST : public StatementAST
 {
-  Identifier Name;
-  TypeAST* type;
-  ExpressionAST* Body;
-
+    ExpressionAST condition;
+    BodyAST thenPart;
 public:
-  VariableDeclarationAST(const Identifier& Name, TypeAST* type,
-                        ExpressionAST* Body)
-    : Name(Name), type(type), Body(Body) {}
-  
-  Value *codegen() override;
-  const Identifier &getName() const { return Name; }
-  TypeAST* getType() {return type; }
+    IfThenPartAST
+    (
+        ExpressionAST condition,
+        BodyAST thenPart
+    )
+      : condition(condition),
+        thenPart(thenPart)
+    {}
+    virtual ~IfThenPartAST() = default;
+    virtual void codegen(BasicBlock *block) override;
 };
 
-class ConstantDeclarationAST : public DeclarationAST
-{};
-
-//////-------------UNIT-------------------
-
-class UnitDeclarationAST : public DeclarationAST
-{};
-
-class PackageDeclarationAST : public UnitDeclarationAST
-{};
-
-//////-------------ROUTINE----------------
-
-class RoutineDeclarationAST : public DeclarationAST
+class IfAST : public StatementAST
 {
-  Identifier Name;
-  std::vector<VariableDeclarationAST*> Args;
-  TypeAST* type;
-
-  // TODO: for simplifying purposes, later should be turned into BlockAST
-  ExpressionAST* Body;
+    std::vector<IfThenPartAST> ifThenParts;
+    BodyAST elsePart;
 public:
-  RoutineDeclarationAST(const Identifier& Name, std::vector<VariableDeclarationAST*> Args,
-                      TypeAST* type, ExpressionAST* Body)
-       : Name(Name), Args(Args), type(type), Body(Body) {}
-
-  Function *codegen();
-  const Identifier &getName() const { return Name; }
-  TypeAST* getType() {return type; }
+    IfAST
+    (
+        std::vector<IfThenPartAST> ifThenParts,
+        BodyAST elsePart
+    )
+      : ifThenParts(ifThenParts),
+        elsePart(elsePart)
+    {}
+    virtual ~IfAST() = default;
+    virtual void codegen(BasicBlock *block) override;
 };
 
-class InitializerDeclarationAST : public RoutineDeclarationAST
-{};
-
-////--------------STATEMENT--------------
-
-class StatementAST : public EntityAST
-{};
-
-class IfStatementAST : public StatementAST
-{};
-
-class IfThenStatementAST : public StatementAST
-{};
-
-class CheckStatementAST : public StatementAST
-{};
-
-class RaiseStatementAST : public StatementAST
-{};
-
-class ReturnStatementAST : public StatementAST
-{};
-
-class BreakStatementAST : public StatementAST
-{};
-
-class AssignmentStatementAST : public StatementAST
-{};
-
-class LoopStatementAST : public StatementAST
-{};
-
-class TryStatementAST : public StatementAST
-{};
-
-class CatchStatementAST : public StatementAST
-{};
-
-////----------------EXPRESSION---------------
-
-class ConditionIfThenExpressionAST : public ExpressionAST
-{};
-
-//////--------------PRIMARY------------------
-
-class PrimaryExpressionAST : public ExpressionAST
-{};
-
-class ConditionalPrimaryAST : public PrimaryExpressionAST
-{};
-
-class ThisPrimaryAST : public PrimaryExpressionAST
-{};
-
-class ReturnPrimaryAST : public PrimaryExpressionAST
-{};
-
-class OldPrimaryAST : public PrimaryExpressionAST
-{};
-
-class ReferencePrimaryAST : public PrimaryExpressionAST
+class CheckAST : public StatementAST
 {
-  Identifier Name;
+    std::vector<ExpressionAST> predicates;
 public:
-  ReferencePrimaryAST(const Identifier& Name) : Name(Name) {}
-  Value *codegen() override;
+    CheckAST
+    (
+        std::vector<ExpressionAST> predicates
+    )
+      : predicates(predicates)
+    {}
+    virtual ~CheckAST() = default;
+    virtual void codegen(BasicBlock *block) override;
 };
 
-class UnresolvedPrimaryAST : public PrimaryExpressionAST
+class RaiseAST : public StatementAST
 {
-  Identifier Name;
+    ExpressionAST expression;
 public:
-  UnresolvedPrimaryAST(const Identifier& Name) : Name(Name) {}
-  Value *codegen() override;
+    RaiseAST
+    (
+        ExpressionAST expression
+    )
+      : expression(expression)
+    {}
+    virtual ~RaiseAST() = default;
+    virtual void codegen(BasicBlock *block) override;
 };
 
-class LiteralPrimaryAST : public PrimaryExpressionAST
+class ReturnAST : public StatementAST
 {
-  int Val;  // for now mapped intExpression to LiteralPrimary
+    ExpressionAST expression;
 public:
-  LiteralPrimaryAST(int val) : Val(val) {}
-  Value *codegen() override;
+    ReturnAST
+    (
+        ExpressionAST expression
+    )
+      : expression(expression)
+    {}
+    virtual ~ReturnAST() = default;
+    virtual void codegen(BasicBlock *block) override;
 };
 
-class TuplePrimaryAST : public PrimaryExpressionAST
-{};
-
-//////--------------SECONDARY------------------
-
-class SecondaryExpressionAST : public ExpressionAST
-{};
-
-class MemberSecondaryAST : public SecondaryExpressionAST
-{};
-
-class CallSecondaryAST : public SecondaryExpressionAST
+class BreakAST : public StatementAST
 {
-//  Identifier Callee;
-//   std::vector<std::unique_ptr<ExpressionAST>> Args;
-
-// public:
-//   explicit CallExpressionAST(const std::string &Callee,
-//               std::vector<std::unique_ptr<ExpressionAST>> Args)
-//       : Callee(Callee), Args(std::move(Args)) {}
-//   CallExpressionAST(const CallExpressionAST&) = delete;
-//   CallExpressionAST& operator=(const CallExpressionAST&) = delete;
-//   ~CallExpressionAST() = default;
-//   Value *codegen() override;
-
-};
-
-//////----------------UNARY--------------------
-
-class UnaryExpressionAST : public ExpressionAST
-{};
-
-class NewUnaryAST : public UnaryExpressionAST
-{};
-
-class InUnaryAST : public UnaryExpressionAST
-{};
-
-//////----------------BINARY-----------------
-
-enum class BinaryOp
-{
-  add, subtract, multiply, less_than
-};
-
-class BinaryExpressionAST : public ExpressionAST {
-  BinaryOp Op;
-  ExpressionAST *LHS, *RHS; // TODO: make unique_ptr
-
+    std::string label;  // value
+    // STATEMENT labeled
 public:
-  BinaryExpressionAST(BinaryOp Op, ExpressionAST* LHS,
-                ExpressionAST* RHS)
-      : Op(Op), LHS(LHS), RHS(RHS) {}
-  Value *codegen() override;
+    BreakAST
+    (
+        std::string label
+    )
+      : label(label)
+    {}
+    virtual ~BreakAST() = default;
+    virtual void codegen(BasicBlock *block) override;
+    
 };
 
-class PowerBinaryAST : public BinaryExpressionAST
-{};
+class AssignmentAST : public StatementAST
+{
+    ExpressionAST left;
+    ExpressionAST right;
+public:
+    AssignmentAST
+    (
+        ExpressionAST left,
+        ExpressionAST right
+    )
+      : left(left),
+        right(right)
+    {}
+    virtual ~AssignmentAST() = default;
+    virtual void codegen(BasicBlock *block) override;
+};
 
-class MultiplicativeBinaryAST : public BinaryExpressionAST
-{};
+class LoopAST : public StatementAST
+{
+    bool prefix;  // value
+    VariableAST loopCounter;
+    ExpressionAST whileClause;
+    std::vector<ExpressionAST> invariants;
+    BodyAST body;
+    std::vector<ExpressionAST> variants;
+public:
+    LoopAST
+    (
+        bool prefix,
+        VariableAST loopCounter,
+        ExpressionAST whileClause,
+        std::vector<ExpressionAST> invariants,
+        BodyAST body,
+        std::vector<ExpressionAST> variants   
+    )
+      : prefix(prefix),
+        loopCounter(loopCounter),
+        whileClause(whileClause),
+        invariants(invariants),
+        body(body),
+        variants(variants)
+    {}
+    virtual ~LoopAST() = default;
+    virtual void codegen(BasicBlock *block) override;
+};
 
-class AdditiveBinaryAST : public BinaryExpressionAST
-{};
+class CatchAST : public StatementAST
+{
+    VariableAST catchVar;
+    UnitRefAST unitRef;
+    BodyAST body;
+public:
+    CatchAST
+    (
+        VariableAST catchVar,
+        UnitRefAST unitRef,
+        BodyAST body
+    )
+      : catchVar(catchVar),
+        unitRef(unitRef),
+        body(body)
+    {}
+    virtual ~CatchAST() = default;
+    virtual void codegen(BasicBlock *block) override;
+};
 
-class RelationalBinaryAST : public BinaryExpressionAST
-{};
-
-class LogicalBinaryAST : public BinaryExpressionAST
-{};
+class TryAST : public StatementAST
+{
+    BodyAST body;  // NOTE: in original parser it is ENTITY_LIST
+    std::vector<CatchAST> handlers;
+    BodyAST elsePart;  // NOTE: in original parser it is ENTITY_LIST
+public:
+    TryAST
+    (
+        BodyAST body,
+        std::vector<CatchAST> handlers,
+        BodyAST elsePart
+    )
+      : body(body),
+        handlers(handlers),
+        elsePart(elsePart)
+    {}
+    virtual ~TryAST() = default;
+    virtual void codegen(BasicBlock *block) override;
+};
 

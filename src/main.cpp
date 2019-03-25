@@ -44,14 +44,9 @@ int main(int argc, char **argv)
     json input = json::parse(input_file);
 
     initialize();
-/*
-    ExpressionAST* root = parseExpressionAST(input);
-    Value* r = root->codegen();
-    r->print(errs());
-*/
+
     DeclarationAST* root = parseDeclarationAST(input);
-    Value* r = root->codegen();
-    r->print(errs());    
+    Value* r = root->codegen();    
 
     print_generated_code();
 

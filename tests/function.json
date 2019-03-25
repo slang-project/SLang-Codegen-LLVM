@@ -1,6 +1,6 @@
 {
   "type" : "routineDefinition" ,
-  "value" : "init" ,
+  "value" : "main" ,
   "num_children" : "3" ,
   "children" : [
       {

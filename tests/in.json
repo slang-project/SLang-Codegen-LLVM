@@ -1,27 +1,96 @@
 {
-    "type": "binaryExpression",
-    "value": "+",
-    "children": [
+    "type":"ROUTINE",
+    "value":null,
+    "num_children":7,
+    "children":[
         {
-            "type": "binaryExpression",
-            "value": "*",
-            "children": [
+            "type":"IDENTIFIER",
+            "value":"name",
+            "num_children":0,
+            "children":[]
+        },
+        {
+            "type":"FOREIGN_SPEC",
+            "value":null,
+            "num_children":0,
+            "children":[]
+        },
+        {
+            "type":"ENTITY_LIST",
+            "value":null,
+            "num_children":0,
+            "children":[
+                
+            ]
+        },
+        {
+            "type":"UNIT_REF",
+            "value":null,
+            "num_children":0,
+            "children":[
+            ]
+        },
+        {
+            "type":"PRECONDITION",
+            "value":null,
+            "num_children":1,
+            "children":[
                 {
-                    "type": "integerExpression",
-                    "value": "3",
-                    "children": []
-                },
-                {
-                    "type": "integerExpression",
-                    "value": "3",
-                    "children": []
+                    "type":"EXPRESSION_LIST",
+                    "value":null,
+                    "num_children":0,
+                    "children":[]
                 }
             ]
         },
         {
-            "type": "integerExpression",
-            "value": "1",
-            "children": []
+            "type":"ENTITY_LIST",
+            "value":null,
+            "num_children":0,
+            "children":[
+                {
+                    "type": "BINARY",
+                    "value": "+",
+                    "children": 
+                    [
+                      {
+                        "type": "BINARY",
+                        "value": "*",
+                        "children":
+                        [
+                          {
+                            "type": "LITERAL_Integer",
+                            "value": "3",
+                            "children": []
+                          },
+                          {
+                            "type": "LITERAL_Integer",
+                            "value": "3",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "type": "integerExpression",
+                        "value": "1",
+                        "children": []
+                      }
+                    ]
+                }
+            ]
+        },
+        {
+            "type":"POSTCONDITION",
+            "value":null,
+            "num_children":1,
+            "children":[
+                {
+                    "type":"EXPRESSION_LIST",
+                    "value":null,
+                    "num_children":0,
+                    "children":[]
+                }
+            ]
         }
     ]
 }

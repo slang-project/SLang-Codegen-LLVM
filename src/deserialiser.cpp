@@ -19,18 +19,18 @@ ExpressionAST* parseExpressionAST(const json &input)
     ExpressionAST* parsed = nullptr;
     std::string type{input["type"].get<std::string>()};
 
-    if (type == "integerExpression")
+    if (type == "LITERAL_Integer")
     {
         int value = std::stoi(std::string(input["value"].get<std::string>()));
         parsed = new LiteralPrimaryAST(value);
     }
-    else if (type == "variableExpression")
+    else if (type == "REFERENCE")
     {
         // TODO: parse identifier correctly
         Identifier name = std::string(input["value"].get<std::string>());
         parsed = new ReferencePrimaryAST(name);
     }
-    else if (type == "binaryExpression")
+    else if (type == "BINARY")
     {
         //TODO: handle array index exceptions
         ExpressionAST* LHS = parseExpressionAST(input["children"][0]);
@@ -38,7 +38,7 @@ ExpressionAST* parseExpressionAST(const json &input)
         std::string op = input["value"].get<std::string>();
         parsed = new BinaryExpressionAST(getBinaryOp(op), LHS, RHS);
     }
-    else if (type == "callExpression")
+    else if (type == "CALL")
     {
         throw new std::runtime_error("callExpression not implemented yet");
     }
