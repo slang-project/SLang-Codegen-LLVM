@@ -28,12 +28,12 @@ Type *LogErrorT(const char *Str)
   return nullptr;
 }
 
-Value *IntegerExpressionAST::codegen()
+Value *LiteralPrimaryAST::codegen()
 {
   return ConstantInt::get(TheContext, APInt(32, Val, true));
 }
 
-Value *VariableExpressionAST::codegen() {}
+Value *ReferencePrimaryAST::codegen() {}
 
 Value *BinaryExpressionAST::codegen()
 {
@@ -57,7 +57,7 @@ Value *BinaryExpressionAST::codegen()
   }
 }
 
-Value *VariableDefinitionAST::codegen()
+Value *VariableDeclarationAST::codegen()
 {
   std::cout << "Parsing Variable Deifinition\n";
 
@@ -84,7 +84,7 @@ Value *VariableDefinitionAST::codegen()
   return v;
 }
 
-Type *TypeAST::codegen()
+Type *UnitRefTypeAST::codegen()
 {
   if (name == "Integer")
     return Type::getInt32Ty(TheContext);
@@ -95,7 +95,7 @@ Type *TypeAST::codegen()
   return LogErrorT("invalid type");
 }
 
-Function *RoutineDefinitionAST::codegen()
+Function *RoutineDeclarationAST::codegen()
 {
   std::cout << "Parsing Routine Arguments\n";
 
@@ -137,7 +137,7 @@ Function *RoutineDefinitionAST::codegen()
   std::cout << "Generate Arguments\n";
 
   for (int i = 0; i < Args.size(); i++) {
-    VariableDefinitionAST *var = Args[i];
+    VariableDeclarationAST *var = Args[i];
 
     AllocaInst *v = Builder.CreateAlloca(args_type[i], 0, var->getName()); 
   }

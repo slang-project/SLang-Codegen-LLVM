@@ -5,6 +5,6 @@ BinaryOp getBinaryOp(const std::string& op);
 
 ExpressionAST* parseExpressionAST(const json &input);
 
-ObjectAST* parseObjectAST(const json &input);
+EntityAST* parseEntityAST(const json &input);
 
-DefinitionAST* parseDefinitionAST(const json &input);
+DeclarationAST* parseDeclarationAST(const json &input);

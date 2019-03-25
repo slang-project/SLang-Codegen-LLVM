@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     Value* r = root->codegen();
     r->print(errs());
 */
-    DefinitionAST* root = parseDefinitionAST(input);
+    DeclarationAST* root = parseDeclarationAST(input);
     Value* r = root->codegen();
     r->print(errs());    
 

@@ -22,13 +22,13 @@ ExpressionAST* parseExpressionAST(const json &input)
     if (type == "integerExpression")
     {
         int value = std::stoi(std::string(input["value"].get<std::string>()));
-        parsed = new IntegerExpressionAST(value);
+        parsed = new LiteralPrimaryAST(value);
     }
     else if (type == "variableExpression")
     {
         // TODO: parse identifier correctly
         Identifier name = std::string(input["value"].get<std::string>());
-        parsed = new VariableExpressionAST(name);
+        parsed = new ReferencePrimaryAST(name);
     }
     else if (type == "binaryExpression")
     {
@@ -55,15 +55,15 @@ TypeAST* parseTypeAST(const json &input)
   {
     Identifier name = std::string(input["value"].get<std::string>());
 
-    parsed = new TypeAST(name);
+    parsed = new UnitRefTypeAST(name);
   }
 
   return parsed;
 }
 
-DefinitionAST* parseDefinitionAST(const json &input)
+DeclarationAST* parseDeclarationAST(const json &input)
 {
-  DefinitionAST* parsed = nullptr; 
+  DeclarationAST* parsed = nullptr; 
   std::string type{input["type"].get<std::string>()};
 
   if (type == "variableDefinition")
@@ -80,7 +80,7 @@ DefinitionAST* parseDefinitionAST(const json &input)
       Body = parseExpressionAST(input["children"][1]);
     }
       
-    parsed = new VariableDefinitionAST(name, type, Body);
+    parsed = new VariableDeclarationAST(name, type, Body);
   }
   else if (type == "routineDefinition")
   {
@@ -88,18 +88,18 @@ DefinitionAST* parseDefinitionAST(const json &input)
 
     json rout_args = input["children"][0];
     int num_args = std::stoi(std::string(rout_args["num_children"].get<std::string>()));
-    std::vector<VariableDefinitionAST*> args(num_args);
+    std::vector<VariableDeclarationAST*> args(num_args);
     
     for (int i = 0; i < num_args; i++)
     {
       std::cout << "Create Vars\n";
-      args[i] = (VariableDefinitionAST*) parseDefinitionAST(rout_args["children"][i]);
+      args[i] = (VariableDeclarationAST*) parseDeclarationAST(rout_args["children"][i]);
     }
    
     TypeAST* type = parseTypeAST(input["children"][1]);
     ExpressionAST* expr = parseExpressionAST(input["children"][2]);
 
-    parsed = new RoutineDefinitionAST(name, args, type, expr);
+    parsed = new RoutineDeclarationAST(name, args, type, expr);
   }
 
   return parsed;

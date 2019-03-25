@@ -22,53 +22,239 @@ using Identifier = std::string; //TODO: create custom type
 
 
 Value *LogErrorV(const char *Str);
+Type *LogErrorT(const char *Str);
 
 void initialize();
 void print_generated_code();
 
-//--------Entities---------------
+//--------ENTITIES---------------
 
-class ObjectAST
+class EntityAST
 {
-  std::vector<ObjectAST*> children;
+  std::vector<EntityAST*> children;
 public:
-  ObjectAST() : children() {}
-  void addChild(ObjectAST* objectPtr)
+  EntityAST() : children() {}
+  void addChild(EntityAST* objectPtr)
   {
     children.push_back(objectPtr);
   }
 };
 
-class TypeAST : public ObjectAST
-{
-    Identifier name;
-public:
-    TypeAST(const Identifier& name) : name(name) {}
-    Type *codegen();
-};
-
-class ExpressionAST : public ObjectAST
+class ExpressionAST : public EntityAST
 {
 public:
     virtual ~ExpressionAST() {}
     virtual Value *codegen() { return LogErrorV("Use of abstract ExpressionAST."); }
 };
 
-class IntegerExpressionAST : public ExpressionAST
+////-----------TYPE--------------
+
+class TypeAST : public EntityAST
 {
-    int Val;
 public:
-    IntegerExpressionAST(int val) : Val(val) {}
-    Value *codegen() override;
+  virtual ~TypeAST() {}
+  virtual Type *codegen() { return LogErrorT("Use of abstract TypeAST");}
 };
 
-class VariableExpressionAST : public ExpressionAST
+class UnitRefTypeAST : public TypeAST
 {
-    Identifier Name;
+  Identifier name;
 public:
-    VariableExpressionAST(const Identifier& Name) : Name(Name) {}
-    Value *codegen() override;
+  UnitRefTypeAST(const Identifier& name) : name(name) {}
+  Type *codegen() override; 
 };
+
+class MultiTypeAST : public TypeAST
+{};
+
+class RangeTypeAST : public TypeAST
+{};
+
+class TupleTypeAST : public TypeAST
+{};
+
+class RoutineTypeAST : public TypeAST
+{};
+
+////------------DECLARATION------------
+
+class DeclarationAST : public EntityAST
+{
+public:
+    virtual ~DeclarationAST() {}
+    virtual Value *codegen() { return LogErrorV("Use of abstract DeclarationAST."); }
+};
+
+class VariableDeclarationAST : public DeclarationAST
+{
+  Identifier Name;
+  TypeAST* type;
+  ExpressionAST* Body;
+
+public:
+  VariableDeclarationAST(const Identifier& Name, TypeAST* type,
+                        ExpressionAST* Body)
+    : Name(Name), type(type), Body(Body) {}
+  
+  Value *codegen() override;
+  const Identifier &getName() const { return Name; }
+  TypeAST* getType() {return type; }
+};
+
+class ConstantDeclarationAST : public DeclarationAST
+{};
+
+//////-------------UNIT-------------------
+
+class UnitDeclarationAST : public DeclarationAST
+{};
+
+class PackageDeclarationAST : public UnitDeclarationAST
+{};
+
+//////-------------ROUTINE----------------
+
+class RoutineDeclarationAST : public DeclarationAST
+{
+  Identifier Name;
+  std::vector<VariableDeclarationAST*> Args;
+  TypeAST* type;
+
+  // TODO: for simplifying purposes, later should be turned into BlockAST
+  ExpressionAST* Body;
+public:
+  RoutineDeclarationAST(const Identifier& Name, std::vector<VariableDeclarationAST*> Args,
+                      TypeAST* type, ExpressionAST* Body)
+       : Name(Name), Args(Args), type(type), Body(Body) {}
+
+  Function *codegen();
+  const Identifier &getName() const { return Name; }
+  TypeAST* getType() {return type; }
+};
+
+class InitializerDeclarationAST : public RoutineDeclarationAST
+{};
+
+////--------------STATEMENT--------------
+
+class StatementAST : public EntityAST
+{};
+
+class IfStatementAST : public StatementAST
+{};
+
+class IfThenStatementAST : public StatementAST
+{};
+
+class CheckStatementAST : public StatementAST
+{};
+
+class RaiseStatementAST : public StatementAST
+{};
+
+class ReturnStatementAST : public StatementAST
+{};
+
+class BreakStatementAST : public StatementAST
+{};
+
+class AssignmentStatementAST : public StatementAST
+{};
+
+class LoopStatementAST : public StatementAST
+{};
+
+class TryStatementAST : public StatementAST
+{};
+
+class CatchStatementAST : public StatementAST
+{};
+
+////----------------EXPRESSION---------------
+
+class ConditionIfThenExpressionAST : public ExpressionAST
+{};
+
+//////--------------PRIMARY------------------
+
+class PrimaryExpressionAST : public ExpressionAST
+{};
+
+class ConditionalPrimaryAST : public PrimaryExpressionAST
+{};
+
+class ThisPrimaryAST : public PrimaryExpressionAST
+{};
+
+class ReturnPrimaryAST : public PrimaryExpressionAST
+{};
+
+class OldPrimaryAST : public PrimaryExpressionAST
+{};
+
+class ReferencePrimaryAST : public PrimaryExpressionAST
+{
+  Identifier Name;
+public:
+  ReferencePrimaryAST(const Identifier& Name) : Name(Name) {}
+  Value *codegen() override;
+};
+
+class UnresolvedPrimaryAST : public PrimaryExpressionAST
+{
+  Identifier Name;
+public:
+  UnresolvedPrimaryAST(const Identifier& Name) : Name(Name) {}
+  Value *codegen() override;
+};
+
+class LiteralPrimaryAST : public PrimaryExpressionAST
+{
+  int Val;  // for now mapped intExpression to LiteralPrimary
+public:
+  LiteralPrimaryAST(int val) : Val(val) {}
+  Value *codegen() override;
+};
+
+class TuplePrimaryAST : public PrimaryExpressionAST
+{};
+
+//////--------------SECONDARY------------------
+
+class SecondaryExpressionAST : public ExpressionAST
+{};
+
+class MemberSecondaryAST : public SecondaryExpressionAST
+{};
+
+class CallSecondaryAST : public SecondaryExpressionAST
+{
+//  Identifier Callee;
+//   std::vector<std::unique_ptr<ExpressionAST>> Args;
+
+// public:
+//   explicit CallExpressionAST(const std::string &Callee,
+//               std::vector<std::unique_ptr<ExpressionAST>> Args)
+//       : Callee(Callee), Args(std::move(Args)) {}
+//   CallExpressionAST(const CallExpressionAST&) = delete;
+//   CallExpressionAST& operator=(const CallExpressionAST&) = delete;
+//   ~CallExpressionAST() = default;
+//   Value *codegen() override;
+
+};
+
+//////----------------UNARY--------------------
+
+class UnaryExpressionAST : public ExpressionAST
+{};
+
+class NewUnaryAST : public UnaryExpressionAST
+{};
+
+class InUnaryAST : public UnaryExpressionAST
+{};
+
+//////----------------BINARY-----------------
 
 enum class BinaryOp
 {
@@ -86,90 +272,18 @@ public:
   Value *codegen() override;
 };
 
-// class CallExpressionAST : public ExpressionAST {
-//   Identifier Callee;
-//   std::vector<std::unique_ptr<ExpressionAST>> Args;
-
-// public:
-//   explicit CallExpressionAST(const std::string &Callee,
-//               std::vector<std::unique_ptr<ExpressionAST>> Args)
-//       : Callee(Callee), Args(std::move(Args)) {}
-//   CallExpressionAST(const CallExpressionAST&) = delete;
-//   CallExpressionAST& operator=(const CallExpressionAST&) = delete;
-//   ~CallExpressionAST() = default;
-//   Value *codegen() override;
-// };
-
-class BlockAST : public ObjectAST
+class PowerBinaryAST : public BinaryExpressionAST
 {};
 
-class ModuleAST : public BlockAST
+class MultiplicativeBinaryAST : public BinaryExpressionAST
 {};
 
-class BlockMemberAST : public ObjectAST
+class AdditiveBinaryAST : public BinaryExpressionAST
 {};
 
-class DefinitionAST : public ObjectAST
-{
-public:
-    virtual ~DefinitionAST() {}
-    virtual Value *codegen() { return LogErrorV("Use of abstract DefinitionAST."); }
-};
-
-class UnitDefinitionAST : public DefinitionAST
+class RelationalBinaryAST : public BinaryExpressionAST
 {};
 
-class VariableDefinitionAST : public DefinitionAST
-{
-  Identifier Name;
-  TypeAST* type;
-  ExpressionAST* Body;
-
-public:
-  VariableDefinitionAST(const Identifier& Name, TypeAST* type,
-                        ExpressionAST* Body)
-    : Name(Name), type(type), Body(Body) {}
-  
-  Value *codegen() override;
-  const Identifier &getName() const { return Name; }
-  TypeAST* getType() {return type; }
-};
-
-class RoutineDefinitionAST : public DefinitionAST
-{
-  Identifier Name;
-  std::vector<VariableDefinitionAST*> Args;
-  TypeAST* type;
-
-  // TODO: for simplifying purposes, later should be turned into BlockAST
-  ExpressionAST* Body;
-public:
-  RoutineDefinitionAST(const Identifier& Name, std::vector<VariableDefinitionAST*> Args,
-                      TypeAST* type, ExpressionAST* Body)
-       : Name(Name), Args(Args), type(type), Body(Body) {}
-
-  Function *codegen();
-  const Identifier &getName() const { return Name; }
-  TypeAST* getType() {return type; }
-};
-
-class StatementAST : public ObjectAST
+class LogicalBinaryAST : public BinaryExpressionAST
 {};
-
-class IfStatementAST : public StatementAST
-{};
-
-class LoopStatementAST : public StatementAST
-{};
-
-class ReturnStatementAST : public StatementAST
-{};
-
-class CallStatementAST : public StatementAST
-{};
-
-class AssignmentStatementAST : public StatementAST
-{};
-
-
 
