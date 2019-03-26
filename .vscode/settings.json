@@ -50,6 +50,8 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "valarray": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "cstdarg": "cpp",
+        "*.data": "cpp"
     }
 }

@@ -1,4 +1,4 @@
-#include "deserialiser.hpp"
+#include "deserializer.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
@@ -43,12 +43,9 @@ int main(int argc, char **argv)
     // Parse json file
     json input = json::parse(input_file);
 
-    initialize();
+    CompilationAST* root = deserializeCompilationAST(input);
+    root->codegen();
 
-    DeclarationAST* root = parseDeclarationAST(input);
-    Value* r = root->codegen();    
-
-    print_generated_code();
-
+    printGeneratedCode("out.ll");
     return 0;
 }

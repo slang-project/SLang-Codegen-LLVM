@@ -11,21 +11,18 @@ static std::map<std::string, Value *> NamedValues;
 // EXTERNAL INTERFACE
 void initLLVMGlobal(std::string moduleName)
 {
-    TheModule = std::make_unique<Module>(moduleName, TheContext);
+    TheModule = llvm::make_unique<Module>(moduleName, TheContext);
 }
 
 void printGeneratedCode(std::string outFilePath)
 {
-    // TODO
+    std::error_code EC;
+    raw_fd_ostream dest(outFilePath.c_str(), EC);
+    TheModule->print(dest, nullptr);
 }
 
 
 // HIERARCHY ------------------------------------------------
-
-Function *CompilationAST::codegen()
-{
-    return LogError<Function>(std::string(__func__) + " not implemented yet");
-}
 
 Value *ConditionalIfThenPartAST::codegen()
 {
@@ -65,7 +62,7 @@ Value *UnresolvedAST::codegen()
 
 Value *IntegerAST::codegen()
 {
-    return ConstantInt::get(TheContext, APInt(32, value, true));
+    return ConstantInt::get(TheContext, APInt(32, std::stoi(value), true));
 }
 
 Value *RealAST::codegen()
@@ -96,7 +93,26 @@ Value *MemberAST::codegen()
 
 Value *CallAST::codegen()
 {
-    return LogError<Value>(std::string(__func__) + " not implemented yet");
+    ReferenceAST *callee = dynamic_cast<ReferenceAST*>(secondary);
+    if(!callee)
+        return LogError<Value>("Callee not identified.");
+
+    Function *CalleeF = TheModule->getFunction(callee->getName());
+    if (!CalleeF)
+        return LogError<Value>("Unknown function referenced");
+
+    //TODO: add additional type checks maybe
+    if (CalleeF->arg_size() != actuals.size())
+        return LogError<Value>("Incorrect number of arguments passed");
+
+    std::vector<Value *> ArgsV;
+    for (auto &a : actuals)
+    {
+        ArgsV.push_back(a->codegen());
+        if (!ArgsV.back())
+            return nullptr;
+    }
+    return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
 Value *UnaryAST::codegen()
@@ -199,6 +215,8 @@ Value *VariableAST::codegen()
 //     return LogError<?>(std::string(__func__) + " not implemented yet");
 // }
 
+
+
 Function *RoutineAST::codegen()
 {
     // vector for routine arguments
@@ -246,17 +264,34 @@ Function *RoutineAST::codegen()
         NamedValues[arg.getName()] = &arg;
 
     for (int i = 0; i < argsAsVars.size(); ++i) {
-        AllocaInst *v = Builder.CreateAlloca(argTypes[i], 0, argsAsVars[i]->getName()); 
+        AllocaInst *v = Builder.CreateAlloca(argTypes[i], 0, argsAsVars[i]->getName());
+        if (!v)
+            return nullptr;
     }
 
-    // TODO: CreateAlloca per each local variable
+    //TODO: rewrite to general case
+    for(auto &arg : *routineBody)
+    {
+        if (ReturnAST *retstmt = dynamic_cast<ReturnAST*>(arg))
+        {
+            ExpressionAST* expr = retstmt->getExpression();
+            if (expr)
+            {
+                Value *retval = expr->codegen();
+                Builder.CreateRet(retval);
+                verifyFunction(*F);
+                return F;
+            }
+        }
+    }
 
     // TODO: handle function body
-    bodyCodegen(routineBody, &this);
+    //bodyCodegen(routineBody, &this);
 
-    // B ? Builder.CreateRet(B) : Builder.CreateRetVoid();
-    verifyFunction(*F);
-    return F;
+    // Error reading body, remove function.
+    F->eraseFromParent();
+    return nullptr;
+
 }
 
 // ? *ConstantAST::codegen()
@@ -286,7 +321,8 @@ void RaiseAST::codegen(BasicBlock *block)
 
 void ReturnAST::codegen(BasicBlock *block)
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    // B ? Builder.CreateRet(B) : Builder.CreateRetVoid();
+    LogError<void>(std::string(__func__) + " not implemented yet");  // TODO
 }
 
 void BreakAST::codegen(BasicBlock *block)
@@ -312,4 +348,9 @@ void CatchAST::codegen(BasicBlock *block)
 void TryAST::codegen(BasicBlock *block)
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
+}
+
+Function *CompilationAST::codegen()
+{
+    return anonymous->codegen();  // TODO
 }

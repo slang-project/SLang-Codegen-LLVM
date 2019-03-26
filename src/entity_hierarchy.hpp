@@ -16,13 +16,16 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 // NAMESPACES SETUP
 using json = nlohmann::json;
-using IdentifierAST = std::string;
-using BodyAST = std::vector<EntityAST *>;
 using namespace llvm;
+
+
+// FORWARD DECLARATION NEEDS
+class ExpressionAST;
 
 
 // EXTERNAL INTERFACE
@@ -41,8 +44,7 @@ T *LogError(const char *str)
 template<typename T>
 T *LogError(std::string str)
 {
-    fprintf(stderr, "Error: %s\n", str.c_str());
-    return nullptr;
+    return LogError<T>(str.c_str());
 }
 
 // HIERARCHY ------------------------------------------------
@@ -53,16 +55,74 @@ public:
     virtual ~EntityAST() = default;
 };
 
-class CompilationAST : public EntityAST
+using IdentifierAST = std::string;
+
+using BodyAST = std::vector<EntityAST*>;
+
+class TypeAST : public EntityAST  // abstract
 {
 protected:
-    // USE_LIST         uses
-    // DECLARATION_LIST units_and_standalones
-    // ROUTINE          anonymous
 public:
-    virtual ~CompilationAST() = default;
-    virtual Function *codegen();
+    virtual ~TypeAST() = default;
+    virtual Type *codegen() { return LogError<Type>(std::string(__func__) + ": use of abstract class"); }
 };
+
+class UnitRefAST : public TypeAST
+{
+protected:
+    std::string name;  // value
+    // bool opt
+    // bool as_sign
+    // DECLARATION unit_ref
+    // ENTITY_LIST generic_actuals
+public:
+    UnitRefAST
+    (
+        std::string name
+    )
+      : name(name)
+    {}
+    virtual ~UnitRefAST() = default;
+    virtual Type *codegen() override;
+};
+
+class MultiTypeAST : public TypeAST
+{
+protected:
+    std::vector<UnitRefAST*> types;
+public:
+    MultiTypeAST
+    (
+        std::vector<UnitRefAST*> types
+    )
+      : types(types)
+    {}
+    virtual ~MultiTypeAST() = default;
+    virtual Type *codegen() override;
+};
+
+class RangeTypeAST : public TypeAST
+{
+protected:
+    ExpressionAST *left;
+    ExpressionAST *right;
+public:
+    RangeTypeAST
+    (
+        ExpressionAST *left,
+        ExpressionAST *right
+    )
+      : left(left),
+        right(right)
+    {}
+    virtual ~RangeTypeAST() = default;
+    virtual Type *codegen() override;
+};
+
+/* TODO:
+class TupleTypeAST : public TypeAST {};
+class RoutineTypeAST : public TypeAST {};
+*/
 
 class ExpressionAST : public EntityAST  // abstract
 {
@@ -71,7 +131,7 @@ protected:
     UnitRefAST *type = nullptr;  // NOTE: not like in original parser, but own computed
 public:
     virtual ~ExpressionAST() = default;
-    virtual Value *codegen();
+    virtual Value *codegen() { return LogError<Value>(std::string(__func__) + ": use of abstract class"); }
 };
 
 class PrimaryAST : public ExpressionAST  // abstract
@@ -164,6 +224,7 @@ public:
     {}
     virtual ~ReferenceAST() = default;
     virtual Value *codegen() override;
+    IdentifierAST getName() { return declarationName; }
 };
 
 // NOTE: SHOULD NOT APPEAR IN FINAL AST! (remove??)
@@ -384,71 +445,6 @@ public:
     virtual Value *codegen() override;
 };
 
-class TypeAST : public EntityAST  // abstract
-{
-protected:
-public:
-    virtual ~TypeAST() = default;
-    virtual Type *codegen();
-};
-
-class UnitRefAST : public TypeAST
-{
-protected:
-    std::string name;  // value
-    // bool opt
-    // bool as_sign
-    // DECLARATION unit_ref
-    // ENTITY_LIST generic_actuals
-public:
-    UnitRefAST
-    (
-        std::string name
-    )
-      : name(name)
-    {}
-    virtual ~UnitRefAST() = default;
-    virtual Type *codegen() override;
-};
-
-class MultiTypeAST : public TypeAST
-{
-protected:
-    std::vector<UnitRefAST*> types;
-public:
-    MultiTypeAST
-    (
-        std::vector<UnitRefAST*> types
-    )
-      : types(types)
-    {}
-    virtual ~MultiTypeAST() = default;
-    virtual Type *codegen() override;
-};
-
-class RangeTypeAST : public TypeAST
-{
-protected:
-    ExpressionAST *left;
-    ExpressionAST *right;
-public:
-    RangeTypeAST
-    (
-        ExpressionAST *left,
-        ExpressionAST *right
-    )
-      : left(left),
-        right(right)
-    {}
-    virtual ~RangeTypeAST() = default;
-    virtual Type *codegen() override;
-};
-
-/* TODO:
-class TupleTypeAST : public TypeAST {};
-class RoutineTypeAST : public TypeAST {};
-*/
-
 class DeclarationAST : public EntityAST  // abstract
 {
 protected:
@@ -496,8 +492,8 @@ public:
     {}
     virtual ~VariableAST() = default;
     virtual Value *codegen();
-    TypeAST *getType() {return type;}
-    IdentifierAST getName() {return name;}
+    TypeAST *getType() { return type; }
+    IdentifierAST getName() { return name; }
 };
 
 class UnitAST : public DeclarationAST
@@ -537,6 +533,7 @@ public:
 
 class RoutineAST : public DeclarationAST
 {
+    friend class CompilationAST;  // for anonymous function
 protected:
     // name (isHidden, isFinal) -- from parent!
     // IDENTIFIER alias
@@ -549,7 +546,7 @@ protected:
     TypeAST* type;
     std::vector<ExpressionAST*> preconditions;
     bool requireElse;
-    BodyAST routineBody;
+    BodyAST *routineBody;
     std::vector<ExpressionAST*> postconditions;
     bool ensureThen;
 public:
@@ -561,7 +558,7 @@ public:
         TypeAST* type,
         std::vector<ExpressionAST*> preconditions,
         bool requireElse,
-        BodyAST routineBody,
+        BodyAST *routineBody,
         std::vector<ExpressionAST*> postconditions,
         bool ensureThen
     )
@@ -600,7 +597,7 @@ class StatementAST : public EntityAST  // abstract
 protected:
 public:
     virtual ~StatementAST() = default;
-    virtual void codegen(BasicBlock *block);
+    virtual void codegen(BasicBlock *block) { LogError<void>(std::string(__func__) + ": use of abstract class"); }
 };
 
 class IfThenPartAST : public StatementAST
@@ -682,6 +679,7 @@ public:
     {}
     virtual ~ReturnAST() = default;
     virtual void codegen(BasicBlock *block) override;
+    ExpressionAST *getExpression() { return expression; }
 };
 
 class BreakAST : public StatementAST
@@ -789,4 +787,25 @@ public:
     {}
     virtual ~TryAST() = default;
     virtual void codegen(BasicBlock *block) override;
+};
+
+class CompilationAST : public EntityAST
+{
+protected:
+    // USE_LIST         uses
+    // DECLARATION_LIST units_and_standalones
+    RoutineAST *anonymous;
+public:
+    CompilationAST
+    (
+        RoutineAST *anonymous
+    )
+      : anonymous(anonymous)
+    {
+        // NOTE: temporary changes for compatibility with linker of GCC
+        anonymous->name = "main";
+        anonymous->type = new UnitRefAST("Integer");
+    }
+    virtual ~CompilationAST() = default;
+    virtual Function *codegen();
 };

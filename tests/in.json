@@ -5,31 +5,18 @@
     "children":[
         {
             "type":"IDENTIFIER",
-            "value":"name",
+            "value":"$anonymous",
             "num_children":0,
             "children":[]
         },
-        {
-            "type":"FOREIGN_SPEC",
-            "value":null,
-            "num_children":0,
-            "children":[]
-        },
+        null,
         {
             "type":"ENTITY_LIST",
             "value":null,
             "num_children":0,
-            "children":[
-                
-            ]
+            "children":[]
         },
-        {
-            "type":"UNIT_REF",
-            "value":null,
-            "num_children":0,
-            "children":[
-            ]
-        },
+        null,
         {
             "type":"PRECONDITION",
             "value":null,
@@ -46,35 +33,71 @@
         {
             "type":"ENTITY_LIST",
             "value":null,
-            "num_children":0,
+            "num_children":1,
             "children":[
                 {
-                    "type": "BINARY",
-                    "value": "+",
-                    "children": 
-                    [
-                      {
-                        "type": "BINARY",
-                        "value": "*",
-                        "children":
-                        [
-                          {
-                            "type": "LITERAL_Integer",
-                            "value": "3",
-                            "children": []
-                          },
-                          {
-                            "type": "LITERAL_Integer",
-                            "value": "3",
-                            "children": []
-                          }
-                        ]
-                      },
-                      {
-                        "type": "integerExpression",
-                        "value": "1",
-                        "children": []
-                      }
+                    "type":"RETURN",
+                    "value":null,
+                    "num_children":1,
+                    "children":[
+                        {
+                            "type":"ADDITIVE",
+                            "value":"+",
+                            "num_children":2,
+                            "children":[
+                                {
+                                    "type":"ADDITIVE",
+                                    "value":"-",
+                                    "num_children":2,
+                                    "children":[
+                                        {
+                                            "type":"LITERAL_Integer",
+                                            "value":"18",
+                                            "num_children":0,
+                                            "children":[]
+                                        },
+                                        {
+                                            "type":"LITERAL_Integer",
+                                            "value":"3",
+                                            "num_children":0,
+                                            "children":[]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type":"MULTIPLICATIVE",
+                                    "value":"*",
+                                    "num_children":2,
+                                    "children":[
+                                        {
+                                            "type":"MULTIPLICATIVE",
+                                            "value":"/",
+                                            "num_children":2,
+                                            "children":[
+                                                {
+                                                    "type":"LITERAL_Integer",
+                                                    "value":"6",
+                                                    "num_children":0,
+                                                    "children":[]
+                                                },
+                                                {
+                                                    "type":"LITERAL_Integer",
+                                                    "value":"2",
+                                                    "num_children":0,
+                                                    "children":[]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type":"LITERAL_Integer",
+                                            "value":"11",
+                                            "num_children":0,
+                                            "children":[]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 }
             ]
