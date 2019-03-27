@@ -16,9 +16,7 @@ void initLLVMGlobal(std::string moduleName)
 
 void printGeneratedCode(std::string outFilePath)
 {
-    std::error_code EC;
-    raw_fd_ostream dest(outFilePath.c_str(), EC);
-    TheModule->print(dest, nullptr);
+    TheModule->print(errs(), nullptr);
 }
 
 
@@ -127,30 +125,30 @@ Value *InExprAST::codegen()
 
 Value *BinaryAST::codegen()
 {
-    //TODO create binary operations versions for all type pairs:
+    // TODO: create binary operations versions for all type pairs:
     // e.g. this is special version for (int)a ? (int)b
     Value *L = left->codegen();
     Value *R = right->codegen();
     if (!L || !R)
         return nullptr;
 
-    if(binaryOp == "+")
+    if (binaryOp == "+")
     {
         return Builder.CreateAdd(L, R, "addtmp");
     }
-    else if(binaryOp == "-")
+    else if (binaryOp == "-")
     {
         return Builder.CreateSub(L, R, "subtmp");
     }
-    else if(binaryOp == "*")
+    else if (binaryOp == "*")
     {
         return Builder.CreateMul(L, R, "multmp");
     }
-    else if(binaryOp == "/")
+    else if (binaryOp == "/")
     {
         return Builder.CreateUDiv(L, R, "divtmp");
     }
-    else if(binaryOp == "<")
+    else if (binaryOp == "<")
     {
         return Builder.CreateICmpULT(L, R, "cmptmp");
     }
@@ -219,6 +217,9 @@ Value *VariableAST::codegen()
 
 Function *RoutineAST::codegen()
 {
+/*  if (!F->empty())
+        return LogError<Function>("Function cannot be redefined.");
+*/
     // vector for routine arguments
     std::vector<Type*> argTypes{};
     std::vector<VariableAST*> argsAsVars{};
@@ -250,12 +251,6 @@ Function *RoutineAST::codegen()
     for (auto &arg : F->args())
         arg.setName(argsAsVars[Idx++]->getName());
 
-    if (!F)
-        return nullptr;
-
-    if (!F->empty())
-        return LogError<Function>("Function cannot be redefined.");
-
     BasicBlock *BB = BasicBlock::Create(TheContext, "entry", F);
     Builder.SetInsertPoint(BB);
     
@@ -263,14 +258,8 @@ Function *RoutineAST::codegen()
     for (auto &arg : F->args())
         NamedValues[arg.getName()] = &arg;
 
-    for (int i = 0; i < argsAsVars.size(); ++i) {
-        AllocaInst *v = Builder.CreateAlloca(argTypes[i], 0, argsAsVars[i]->getName());
-        if (!v)
-            return nullptr;
-    }
-
-    //TODO: rewrite to general case
-    for(auto &arg : *routineBody)
+    // TODO: rewrite to general case
+    for (auto &arg : *routineBody)
     {
         if (ReturnAST *retstmt = dynamic_cast<ReturnAST*>(arg))
         {
@@ -278,10 +267,12 @@ Function *RoutineAST::codegen()
             if (expr)
             {
                 Value *retval = expr->codegen();
-                Builder.CreateRet(retval);
-                // if(F)
-                //     verifyFunction(*F, &errs());
-                return F;
+                if (retval)
+                {
+                    Builder.CreateRet(retval);
+                    verifyFunction(*F);  // FIXME: SEGFAULT!
+                    return F;
+                }
             }
         }
     }
@@ -292,7 +283,6 @@ Function *RoutineAST::codegen()
     // Error reading body, remove function.
     F->eraseFromParent();
     return nullptr;
-
 }
 
 // ? *ConstantAST::codegen()

@@ -115,7 +115,6 @@ UnaryAST *deserializeUnaryAST(const json &in)
 BinaryAST *deserializeBinaryAST(const json &in)
 {
     auto &inc = in[CHILDREN];
-    std::cout<<inc<<std::endl;
     return new BinaryAST
     (
         in[VALUE],
