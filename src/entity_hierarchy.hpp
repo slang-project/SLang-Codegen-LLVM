@@ -29,7 +29,7 @@ class ExpressionAST;
 
 
 // EXTERNAL INTERFACE
-void initLLVMGlobal();
+void initLLVMGlobal(std::string moduleName);
 void printGeneratedCode(std::string outFilePath);
 
 

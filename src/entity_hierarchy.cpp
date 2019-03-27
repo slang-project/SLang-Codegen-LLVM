@@ -16,7 +16,9 @@ void initLLVMGlobal(std::string moduleName)
 
 void printGeneratedCode(std::string outFilePath)
 {
-    TheModule->print(errs(), nullptr);
+    std::error_code EC;
+    raw_fd_ostream file(outFilePath.c_str(), EC);
+    TheModule->print(file, nullptr);
 }
 
 
@@ -270,7 +272,7 @@ Function *RoutineAST::codegen()
                 if (retval)
                 {
                     Builder.CreateRet(retval);
-                    verifyFunction(*F);  // FIXME: SEGFAULT!
+                    verifyFunction(*F, errs());
                     return F;
                 }
             }
