@@ -6,51 +6,7 @@
 
 static std::map<std::string, std::function<EntityAST*(const json&)>> deserializeMapping =
 {
-    // {"IDENTIFIER",        deserializeIdentifierAST},
-    {"UNIT_REF",          deserializeUnitRefAST},
-    {"MULTI_TYPE",        deserializeMultiTypeAST},
-    {"RANGE_TYPE",        deserializeRangeTypeAST},
-    {"TUPLE_TYPE",        nullptr}, // NOT IMPLEMENTED
-    {"ROUTINE_TYPE",      nullptr}, // NOT IMPLEMENTED
-    {"VARIABLE",          deserializeVariableAST},
-    {"ROUTINE",           deserializeRoutineAST},
-    {"INITIALIZER",       deserializeRoutineAST},
-    {"UNIT",              deserializeUnitAST},
-    {"PACKAGE",           deserializeUnitAST},
-    {"CONSTANT",          deserializeConstantAST},
-    {"IF",                deserializeIfAST},
-    {"STMT_IF_THEN",      deserializeIfThenPartAST},
-    {"CHECK",             deserializeCheckAST},
-    {"RAISE",             deserializeRaiseAST},
-    {"RETURN",            deserializeReturnAST},
-    {"BREAK",             deserializeBreakAST},
-    {"ASSIGNMENT",        deserializeAssignmentAST},
-    {"LOOP",              deserializeLoopAST},
-    {"TRY",               deserializeTryAST},
-    {"CATCH",             deserializeCatchAST},
-    {"CONDITIONAL",       deserializeConditionalAST},
-    {"THIS",              deserializeThisAST},
-    {"RETURN_EXPR",       deserializeReturnExprAST},
-    {"OLD",               deserializeOldAST},
-    {"REFERENCE",         deserializeReferenceAST},
-    {"UNRESOLVED",        deserializeUnresolvedAST},
-    {"LITERAL_Integer",   deserializeIntegerAST},
-    {"LITERAL_Real",      deserializeRealAST},
-    {"LITERAL_Character", deserializeCharacterAST},
-    {"LITERAL_String",    deserializeStringAST},
-    {"TUPLE_EXPR",        deserializeTupleAST},
-    {"COND_IF_THEN",      deserializeConditionalIfThenPartAST},
-    {"MEMBER",            deserializeMemberAST},
-    {"CALL",              deserializeCallAST},
-    {"UNARY",             deserializeUnaryAST},
-    {"NEW",               deserializeUnaryAST},
-    {"IN_EXPRESSION",     deserializeUnaryAST}, 
-    {"POWER",             deserializeBinaryAST},
-    {"MULTIPLICATIVE",    deserializeBinaryAST},
-    {"ADDITIVE",          deserializeBinaryAST},
-    {"RELATIONAL",        deserializeBinaryAST},
-    {"LOGICAL",           deserializeBinaryAST},
-    {"COMPILATION",       deserializeCompilationAST}
+    #include "deserializeMapping.data"
 };
 
 
@@ -58,8 +14,8 @@ template<typename T>
 std::vector<T> deserializeVector(const json &in)
 {
     std::vector<T> container{};
-    for (auto &elem : in)
-        container.push_back(dynamic_cast<T>(deserializeMapping[in[TYPE].get<std::string>()](elem)));
+    for (auto &elem : in[CHILDREN])
+        container.push_back(dynamic_cast<T>(deserializeMapping[elem[TYPE].get<std::string>()](elem)));
     return container;
 }
 
@@ -159,11 +115,12 @@ UnaryAST *deserializeUnaryAST(const json &in)
 BinaryAST *deserializeBinaryAST(const json &in)
 {
     auto &inc = in[CHILDREN];
+    std::cout<<inc<<std::endl;
     return new BinaryAST
     (
         in[VALUE],
-        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0].get<std::string>()](inc[0])),
-        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1].get<std::string>()](inc[1]))
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1]))
     );
 }
 
@@ -197,7 +154,6 @@ UnitAST *deserializeUnitAST(const json &in)
 
 RoutineAST *deserializeRoutineAST(const json &in)
 {
-    std::string a = in.dump();
     auto &inc = in[CHILDREN];
     return new RoutineAST
     (

@@ -1,9 +1,9 @@
-{"IDENTIFIER",        deserializeIdentifierAST},
+// {"IDENTIFIER",        deserializeIdentifierAST},
 {"UNIT_REF",          deserializeUnitRefAST},
 {"MULTI_TYPE",        deserializeMultiTypeAST},
 {"RANGE_TYPE",        deserializeRangeTypeAST},
-{"TUPLE_TYPE",        nullptr}, // NOT IMPLEMENTED
-{"ROUTINE_TYPE",      nullptr}, // NOT IMPLEMENTED
+// {"TUPLE_TYPE",        nullptr}, // NOT IMPLEMENTED
+// {"ROUTINE_TYPE",      nullptr}, // NOT IMPLEMENTED
 {"VARIABLE",          deserializeVariableAST},
 {"ROUTINE",           deserializeRoutineAST},
 {"INITIALIZER",       deserializeRoutineAST},

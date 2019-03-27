@@ -259,7 +259,7 @@ Function *RoutineAST::codegen()
     BasicBlock *BB = BasicBlock::Create(TheContext, "entry", F);
     Builder.SetInsertPoint(BB);
     
-    NamedValues.clear();
+    // NamedValues.clear();
     for (auto &arg : F->args())
         NamedValues[arg.getName()] = &arg;
 
@@ -279,7 +279,8 @@ Function *RoutineAST::codegen()
             {
                 Value *retval = expr->codegen();
                 Builder.CreateRet(retval);
-                verifyFunction(*F);
+                // if(F)
+                //     verifyFunction(*F, &errs());
                 return F;
             }
         }
