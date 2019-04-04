@@ -2,11 +2,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.4.3)
 
 
 #** Set compiler **
-# SET(CMAKE_C_COMPILER "/usr/bin/clang")
-# SET(CMAKE_CXX_COMPILER "/usr/bin/clang++")
+SET(CMAKE_C_COMPILER "/usr/bin/clang")
+SET(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
-SET(CMAKE_C_COMPILER "/usr/bin/gcc")
-SET(CMAKE_CXX_COMPILER "/usr/bin/g++")
+# SET(CMAKE_C_COMPILER "/usr/bin/gcc")
+# SET(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 # ^ COMMENT BOTH FOR SYSTEM TO FIND APPROPRIATE COMPILER, E.G. ON WINDOWS
 
@@ -15,7 +15,7 @@ project(SLangLLVM)
 #** Version Setup **
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "1")
-SET(VERSION_PATCH "1")
+SET(VERSION_PATCH "2")
 
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
@@ -43,7 +43,7 @@ add_definitions(${LLVM_DEFINITIONS})
 
 
 #** Compilation Setup **
-SET(CMAKE_CXX_FLAGS "-g3 -Wall")
+SET(CMAKE_CXX_FLAGS "-g3 -Wall -std=c++11")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/dependencies/include)
 file(GLOB project_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")

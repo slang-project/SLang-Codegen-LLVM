@@ -1,25 +1,119 @@
 {
-    "type": "RoutineDeclaration",
-    "value": "name",
-    "num_children": 3,
-    "children": [
+    "type":"ROUTINE",
+    "value":null,
+    "num_children":7,
+    "children":[
         {
-            "type": "RoutineArgs",
-            "value": null,
-            "num_children": 0,
-            "children": []
+            "type":"IDENTIFIER",
+            "value":"$anonymous",
+            "num_children":0,
+            "children":[]
+        },
+        null,
+        {
+            "type":"ENTITY_LIST",
+            "value":null,
+            "num_children":0,
+            "children":[]
+        },
+        null,
+        {
+            "type":"PRECONDITION",
+            "value":null,
+            "num_children":1,
+            "children":[
+                {
+                    "type":"EXPRESSION_LIST",
+                    "value":null,
+                    "num_children":0,
+                    "children":[]
+                }
+            ]
         },
         {
-            "type": "Type",
-            "value": null,
-            "num_children": 0,
-            "children": []
+            "type":"ENTITY_LIST",
+            "value":null,
+            "num_children":1,
+            "children":[
+                {
+                    "type":"RETURN",
+                    "value":null,
+                    "num_children":1,
+                    "children":[
+                        {
+                            "type":"ADDITIVE",
+                            "value":"+",
+                            "num_children":2,
+                            "children":[
+                                {
+                                    "type":"ADDITIVE",
+                                    "value":"-",
+                                    "num_children":2,
+                                    "children":[
+                                        {
+                                            "type":"LITERAL_Integer",
+                                            "value":"18",
+                                            "num_children":0,
+                                            "children":[]
+                                        },
+                                        {
+                                            "type":"LITERAL_Integer",
+                                            "value":"3",
+                                            "num_children":0,
+                                            "children":[]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type":"MULTIPLICATIVE",
+                                    "value":"*",
+                                    "num_children":2,
+                                    "children":[
+                                        {
+                                            "type":"MULTIPLICATIVE",
+                                            "value":"/",
+                                            "num_children":2,
+                                            "children":[
+                                                {
+                                                    "type":"LITERAL_Integer",
+                                                    "value":"6",
+                                                    "num_children":0,
+                                                    "children":[]
+                                                },
+                                                {
+                                                    "type":"LITERAL_Integer",
+                                                    "value":"2",
+                                                    "num_children":0,
+                                                    "children":[]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type":"LITERAL_Integer",
+                                            "value":"11",
+                                            "num_children":0,
+                                            "children":[]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         {
-            "type": "Block",
-            "value": null,
-            "num_children": 0,
-            "children": []
+            "type":"POSTCONDITION",
+            "value":null,
+            "num_children":1,
+            "children":[
+                {
+                    "type":"EXPRESSION_LIST",
+                    "value":null,
+                    "num_children":0,
+                    "children":[]
+                }
+            ]
         }
     ]
 }

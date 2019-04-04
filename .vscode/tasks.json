@@ -28,6 +28,32 @@
             "label": "clean_build_executable",
             "type": "shell",
             "command": "rm -rf ${workspaceFolder}/build && rm -rf ${workspaceFolder}/executable"
+        },
+        {
+            "label" : "win_clear_terminal",
+            "type": "shell",
+            "command" : "cls"
+        },
+        {
+            "label": "win_cmake",
+            "type": "shell",
+            "command": "wsl cmake -B'./build' -H'.'",
+            "dependsOn": "win_clear_terminal"
+        },
+        {
+            "label": "win_ninja",
+            "type": "shell",
+            "command": "wsl ninja -C './build'",
+            "dependsOn": "win_cmake",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "win_clean_build_executable",
+            "type": "shell",
+            "command": "wsl rm -rf './build' && rm -rf './executable'"
         }
     ]
 }

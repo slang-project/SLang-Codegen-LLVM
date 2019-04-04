@@ -1,4 +1,4 @@
-#include "entity_hierarchy.hpp"
+#include "deserializer.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
@@ -43,7 +43,12 @@ int main(int argc, char **argv)
     // Parse json file
     json input = json::parse(input_file);
 
+    initLLVMGlobal("core");
 
-    std::cout << "This json contains #fields: " << input.size() << std::endl;
+    CompilationAST* root = deserializeCompilationAST(input);
+    root->codegen();
+    
+
+    printGeneratedCode("out.ll");
     return 0;
 }
