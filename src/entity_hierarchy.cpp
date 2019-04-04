@@ -272,7 +272,7 @@ Function *RoutineAST::codegen()
                 if (retval)
                 {
                     Builder.CreateRet(retval);
-                    verifyFunction(*F, errs());
+                    verifyFunction(*F, &errs());
                     return F;
                 }
             }
