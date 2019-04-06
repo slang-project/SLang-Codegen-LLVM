@@ -151,13 +151,12 @@ VariableAST *deserializeVariableAST(const json &in)
     return new VariableAST
     (
         deserializeIdentifierAST(inc[0]),
-        inc[1][VALUE].get<std::string>() == "val" ? false : true,
+        inc[1][VALUE].get<std::string>() == "ref",
         !inc[2].is_null(),
         !inc[3].is_null(),
         inc[4].is_null() ? nullptr : dynamic_cast<TypeAST*>(deserializeMapping[inc[4][TYPE].get<std::string>()](inc[4])),
-        inc[5].is_null()? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[5][TYPE].get<std::string>()](inc[5]))
+        inc[5].is_null() ? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[5][TYPE].get<std::string>()](inc[5]))
     );
-    //return LogError<VariableAST>(std::string(__func__) + " not implemented yet");
 }
 
 UnitAST *deserializeUnitAST(const json &in)
@@ -189,7 +188,10 @@ ConstantAST *deserializeConstantAST(const json &in)
 
 BodyAST *deserializeBodyAST(const json &in)
 {
-    return new std::vector<EntityAST*>(deserializeVector<EntityAST*>(in));
+    return new BodyAST
+    (
+        deserializeVector<EntityAST*>(in)  // for now BODY type is skipped in JSON IR
+    );
 }
 
 IfThenPartAST *deserializeIfThenPartAST(const json &in)
@@ -255,6 +257,6 @@ CompilationAST *deserializeCompilationAST(const json &in)
 {
     return new CompilationAST
     (
-        deserializeRoutineAST(in)
+        deserializeRoutineAST(in)  // for now COMPILATION type is skipped in JSON IR
     );
 }

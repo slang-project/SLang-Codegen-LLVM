@@ -25,6 +25,7 @@ using namespace llvm;
 
 
 // FORWARD DECLARATION NEEDS
+class BodyAST;
 class ExpressionAST;
 
 
@@ -55,9 +56,8 @@ public:
     virtual ~EntityAST() = default;
 };
 
+// NOTE: there is no need in separate container for the IdentifierAST
 using IdentifierAST = std::string;
-
-using BodyAST = std::vector<EntityAST*>;
 
 class TypeAST : public EntityAST  // abstract
 {
@@ -168,7 +168,7 @@ class ConditionalAST : public PrimaryAST
 {
 protected:
     std::vector<ConditionalIfThenPartAST*> ifThenParts;
-    ExpressionAST * elsePart;
+    ExpressionAST *elsePart;
 public:
     ConditionalAST
     (
@@ -548,7 +548,7 @@ protected:
     // bool isOverride
     // FORMAL_GENERIC_LIST genericParameters
     std::vector<EntityAST*> parameters;
-    TypeAST* type;
+    TypeAST *type;
     std::vector<ExpressionAST*> preconditions;
     bool requireElse;
     BodyAST *routineBody;
@@ -560,7 +560,7 @@ public:
         IdentifierAST name,
         bool isForeign,
         std::vector<EntityAST*> parameters,
-        TypeAST* type,
+        TypeAST *type,
         std::vector<ExpressionAST*> preconditions,
         bool requireElse,
         BodyAST *routineBody,
@@ -602,43 +602,58 @@ class StatementAST : public EntityAST  // abstract
 protected:
 public:
     virtual ~StatementAST() = default;
-    virtual void codegen(BasicBlock *block) { LogError<void>(std::string(__func__) + ": use of abstract class"); }
+    virtual void codegen() { LogError<void>(std::string(__func__) + ": use of abstract class"); }
+};
+
+class BodyAST : public StatementAST
+{
+protected:
+    std::vector<EntityAST*> body;
+public:
+    BodyAST
+    (
+        std::vector<EntityAST*> body
+    )
+      : body(body)
+    {}
+    virtual ~BodyAST() = default;
+    virtual void codegen() override;
 };
 
 class IfThenPartAST : public StatementAST
 {
 protected:
     ExpressionAST *condition;
-    BodyAST thenPart;
+    BodyAST *thenPart;
 public:
     IfThenPartAST
     (
         ExpressionAST *condition,
-        BodyAST thenPart
+        BodyAST *thenPart
     )
       : condition(condition),
         thenPart(thenPart)
     {}
     virtual ~IfThenPartAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class IfAST : public StatementAST
 {
 protected:
     std::vector<IfThenPartAST*> ifThenParts;
-    BodyAST elsePart;
+    BodyAST *elsePart;
 public:
     IfAST
     (
         std::vector<IfThenPartAST*> ifThenParts,
-        BodyAST elsePart
+        BodyAST *elsePart
     )
       : ifThenParts(ifThenParts),
         elsePart(elsePart)
     {}
     virtual ~IfAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class CheckAST : public StatementAST
@@ -653,7 +668,7 @@ public:
       : predicates(predicates)
     {}
     virtual ~CheckAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class RaiseAST : public StatementAST
@@ -668,7 +683,7 @@ public:
       : expression(expression)
     {}
     virtual ~RaiseAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class ReturnAST : public StatementAST
@@ -683,7 +698,7 @@ public:
       : expression(expression)
     {}
     virtual ~ReturnAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
     ExpressionAST *getExpression() { return expression; }
 };
 
@@ -700,7 +715,7 @@ public:
       : label(label)
     {}
     virtual ~BreakAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
     
 };
 
@@ -719,7 +734,7 @@ public:
         right(right)
     {}
     virtual ~AssignmentAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class LoopAST : public StatementAST
@@ -729,7 +744,7 @@ protected:
     VariableAST* loopCounter;
     ExpressionAST* whileClause;
     std::vector<ExpressionAST*> invariants;
-    BodyAST body;
+    BodyAST *body;
     std::vector<ExpressionAST*> variants;
 public:
     LoopAST
@@ -738,7 +753,7 @@ public:
         VariableAST* loopCounter,
         ExpressionAST* whileClause,
         std::vector<ExpressionAST*> invariants,
-        BodyAST body,
+        BodyAST *body,
         std::vector<ExpressionAST*> variants   
     )
       : prefix(prefix),
@@ -749,7 +764,7 @@ public:
         variants(variants)
     {}
     virtual ~LoopAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class CatchAST : public StatementAST
@@ -757,41 +772,41 @@ class CatchAST : public StatementAST
 protected:
     VariableAST* catchVar;
     UnitRefAST* unitRef;
-    BodyAST body;
+    BodyAST *body;
 public:
     CatchAST
     (
         VariableAST* catchVar,
         UnitRefAST* unitRef,
-        BodyAST body
+        BodyAST *body
     )
       : catchVar(catchVar),
         unitRef(unitRef),
         body(body)
     {}
     virtual ~CatchAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class TryAST : public StatementAST
 {
 protected:
-    BodyAST body;  // NOTE: in original parser it is ENTITY_LIST
+    BodyAST *body;  // NOTE: in original parser it is ENTITY_LIST
     std::vector<CatchAST*> handlers;
-    BodyAST elsePart;  // NOTE: in original parser it is ENTITY_LIST
+    BodyAST *elsePart;  // NOTE: in original parser it is ENTITY_LIST
 public:
     TryAST
     (
-        BodyAST body,
+        BodyAST *body,
         std::vector<CatchAST*> handlers,
-        BodyAST elsePart
+        BodyAST *elsePart
     )
       : body(body),
         handlers(handlers),
         elsePart(elsePart)
     {}
     virtual ~TryAST() = default;
-    virtual void codegen(BasicBlock *block) override;
+    virtual void codegen() override;
 };
 
 class CompilationAST : public EntityAST
@@ -812,5 +827,5 @@ public:
         anonymous->type = new UnitRefAST("Integer");
     }
     virtual ~CompilationAST() = default;
-    virtual Function *codegen();
+    virtual void codegen();
 };

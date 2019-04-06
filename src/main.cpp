@@ -47,7 +47,6 @@ int main(int argc, char **argv)
 
     CompilationAST* root = deserializeCompilationAST(input);
     root->codegen();
-    
 
     printGeneratedCode("out.ll");
     return 0;

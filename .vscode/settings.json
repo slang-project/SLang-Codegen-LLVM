@@ -52,6 +52,22 @@
         "valarray": "cpp",
         "algorithm": "cpp",
         "cstdarg": "cpp",
-        "*.data": "cpp"
+        "*.data": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "ios": "cpp",
+        "iterator": "cpp",
+        "map": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xlocinfo": "cpp",
+        "xlocnum": "cpp",
+        "xmemory": "cpp",
+        "xmemory0": "cpp",
+        "xstddef": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     }
 }

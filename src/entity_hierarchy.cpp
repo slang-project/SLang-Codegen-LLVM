@@ -25,9 +25,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function* TheFunction,
                                           Type* type,
                                           const std::string &VarName)
 {
-  IRBuilder<> TmpB(&TheFunction->getEntryBlock(),
-                 TheFunction->getEntryBlock().begin());
-  return TmpB.CreateAlloca(type, 0, VarName.c_str());
+    IRBuilder<> TmpB(&TheFunction->getEntryBlock(),
+                     TheFunction->getEntryBlock().begin());
+    return TmpB.CreateAlloca(type, 0, VarName.c_str());
 }
 
 // HIERARCHY ------------------------------------------------
@@ -107,14 +107,14 @@ Value *MemberAST::codegen()
 Value *CallAST::codegen()
 {
     ReferenceAST *callee = dynamic_cast<ReferenceAST*>(secondary);
-    if(!callee)
+    if (!callee)
         return LogError<Value>("Callee not identified.");
 
     Function *CalleeF = TheModule->getFunction(callee->getName());
     if (!CalleeF)
         return LogError<Value>("Unknown function referenced");
 
-    //TODO: add additional type checks maybe
+    // TODO: add additional type checks maybe
     if (CalleeF->arg_size() != actuals.size())
         return LogError<Value>("Incorrect number of arguments passed");
 
@@ -207,7 +207,7 @@ Type *MultiTypeAST::codegen()
 
 Value *MultiTypeAST::getDefault()
 {
-     return LogError<Value>(std::string(__func__) + " not implemented yet");
+    return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
 Type *RangeTypeAST::codegen()
@@ -217,7 +217,7 @@ Type *RangeTypeAST::codegen()
 
 Value *RangeTypeAST::getDefault()
 {
-     return LogError<Value>(std::string(__func__) + " not implemented yet");
+    return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
 
@@ -237,15 +237,17 @@ Value *VariableAST::codegen()
     Value *init;
     if (type)
     {
-      T = type->codegen();
-      if (!T)
-          return nullptr;
-      init = type->getDefault();
-      if (!init)
-          return nullptr;
+        T = type->codegen();
+        if (!T)
+            return nullptr;
+        init = type->getDefault();
+        if (!init)
+            return nullptr;
     }
     else
-      return LogError<Value>("type inference not implemented yet");
+    {
+        return LogError<Value>("type inference not implemented yet");
+    }
 
     AllocaInst *Alloca = CreateEntryBlockAlloca(F, T, name);
     NamedValues[name] = Alloca;
@@ -307,42 +309,17 @@ Function *RoutineAST::codegen()
     
     NamedValues.clear();
     Idx = 0;
-    for (auto &arg : F->args()) {
+    for (auto &arg : F->args())
+    {
         AllocaInst *Alloca = CreateEntryBlockAlloca(F, argTypes[Idx++], arg.getName());
         NamedValues[arg.getName()] = Alloca;
-    } 
-              
-    // TODO: rewrite to general case
-    for (auto &arg : *routineBody)
-    {
-        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
-        {  
-            var->codegen(); 
-        }
-
-        if (AssignmentAST *ass = dynamic_cast<AssignmentAST*>(arg))
-        {
-            ass->codegen(BB);
-        }
-
-        if (ReturnAST *retstmt = dynamic_cast<ReturnAST*>(arg))
-        {
-            ExpressionAST* expr = retstmt->getExpression();
-            if (expr)
-            {
-                Value *retval = expr->codegen();
-                if (retval)
-                {
-                    Builder.CreateRet(retval);
-                    verifyFunction(*F, &errs());
-                    return F;
-                }
-            }
-        }
     }
 
-    // TODO: handle function body
-    //bodyCodegen(routineBody, &this);
+    routineBody->codegen();
+
+    // TODO: check for logical correctness
+    verifyFunction(*F, &errs());
+    return F;
 
     // Error reading body, remove function.
     F->eraseFromParent();
@@ -354,70 +331,111 @@ Function *RoutineAST::codegen()
 //     return LogError<?>(std::string(__func__) + " not implemented yet");
 // }
 
-void IfThenPartAST::codegen(BasicBlock *block)
+void BodyAST::codegen()
+{
+    LogError<void>(std::string(__func__) + " not implemented yet");
+    return;
+    for (auto &arg : body)
+    {
+        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
+        {  
+            var->codegen(); 
+        }
+
+        if (AssignmentAST *ass = dynamic_cast<AssignmentAST*>(arg))
+        {
+            ass->codegen();
+        }
+
+        if (ReturnAST *retstmt = dynamic_cast<ReturnAST*>(arg))
+        {
+            ExpressionAST* expr = retstmt->getExpression();
+            if (expr)
+            {
+                Value *retval = expr->codegen();
+                if (retval)
+                {
+                    Builder.CreateRet(retval);
+                }
+            }
+        }
+    }
+}
+
+void IfThenPartAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void IfAST::codegen(BasicBlock *block)
+void IfAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void CheckAST::codegen(BasicBlock *block)
+void CheckAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void RaiseAST::codegen(BasicBlock *block)
+void RaiseAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void ReturnAST::codegen(BasicBlock *block)
+void ReturnAST::codegen()
 {
     // B ? Builder.CreateRet(B) : Builder.CreateRetVoid();
     LogError<void>(std::string(__func__) + " not implemented yet");  // TODO
 }
 
-void BreakAST::codegen(BasicBlock *block)
+void BreakAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void AssignmentAST::codegen(BasicBlock *block)
+void AssignmentAST::codegen()
 {
     if (ReferenceAST *var = dynamic_cast<ReferenceAST*>(left))
     {
         AllocaInst *Alloca = NamedValues[var->getName()];
         if (!Alloca)
-            LogError<Value>("Unknown variable referenced");
-        
+        {
+            LogError<void>("Assignemt to the undefined variable");
+            return;
+        }
+
         Value *R = right->codegen();
-        if(!R)
-            LogError<Value>("No expression");
-    
+        if (!R)
+        {
+            LogError<void>("No expression given to assign");
+            return;
+        }
+
         Builder.CreateStore(R, Alloca);
-    } else
-        LogError<Value>("Variable identifier not identified.");
+    }
+    else
+    {
+        LogError<void>("LHS of the assignment is not a REFERENCE.");
+        return;
+    }
 }
 
-void LoopAST::codegen(BasicBlock *block)
+void LoopAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void CatchAST::codegen(BasicBlock *block)
+void CatchAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-void TryAST::codegen(BasicBlock *block)
+void TryAST::codegen()
 {
     LogError<void>(std::string(__func__) + " not implemented yet");
 }
 
-Function *CompilationAST::codegen()
+void CompilationAST::codegen()
 {
-    return anonymous->codegen();  // TODO
+    anonymous->codegen();
 }
