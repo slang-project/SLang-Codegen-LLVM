@@ -333,8 +333,6 @@ Function *RoutineAST::codegen()
 
 void BodyAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
-    return;
     for (auto &arg : body)
     {
         if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
@@ -356,6 +354,7 @@ void BodyAST::codegen()
                 if (retval)
                 {
                     Builder.CreateRet(retval);
+                    return;
                 }
             }
         }
