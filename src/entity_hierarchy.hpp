@@ -65,6 +65,7 @@ protected:
 public:
     virtual ~TypeAST() = default;
     virtual Type *codegen() { return LogError<Type>(std::string(__func__) + ": use of abstract class"); }
+    virtual Value *getDefault() { return LogError<Value>(std::string(__func__) + ": use of abstract class"); }
 };
 
 class UnitRefAST : public TypeAST
@@ -84,6 +85,8 @@ public:
     {}
     virtual ~UnitRefAST() = default;
     virtual Type *codegen() override;
+    virtual Value *getDefault() override;
+    IdentifierAST getName() { return name; }  
 };
 
 class MultiTypeAST : public TypeAST
@@ -99,6 +102,7 @@ public:
     {}
     virtual ~MultiTypeAST() = default;
     virtual Type *codegen() override;
+    virtual Value *getDefault() override;
 };
 
 class RangeTypeAST : public TypeAST
@@ -117,6 +121,7 @@ public:
     {}
     virtual ~RangeTypeAST() = default;
     virtual Type *codegen() override;
+    virtual Value *getDefault() override;
 };
 
 /* TODO:

@@ -52,7 +52,11 @@ OldAST *deserializeOldAST(const json &in)
 
 ReferenceAST *deserializeReferenceAST(const json &in)
 {
-    return LogError<ReferenceAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new ReferenceAST
+    (
+        deserializeIdentifierAST(inc[0])
+    ); 
 }
 
 UnresolvedAST *deserializeUnresolvedAST(const json &in)
@@ -143,7 +147,17 @@ RangeTypeAST *deserializeRangeTypeAST(const json &in)
 
 VariableAST *deserializeVariableAST(const json &in)
 {
-    return LogError<VariableAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN]; 
+    return new VariableAST
+    (
+        deserializeIdentifierAST(inc[0]),
+        inc[1][VALUE].get<std::string>() == "val" ? false : true,
+        !inc[2].is_null(),
+        !inc[3].is_null(),
+        inc[4].is_null() ? nullptr : dynamic_cast<TypeAST*>(deserializeMapping[inc[4][TYPE].get<std::string>()](inc[4])),
+        inc[5].is_null()? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[5][TYPE].get<std::string>()](inc[5]))
+    );
+    //return LogError<VariableAST>(std::string(__func__) + " not implemented yet");
 }
 
 UnitAST *deserializeUnitAST(const json &in)
@@ -214,7 +228,12 @@ BreakAST *deserializeBreakAST(const json &in)
 
 AssignmentAST *deserializeAssignmentAST(const json &in)
 {
-    return LogError<AssignmentAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new AssignmentAST
+    (
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1]))
+    ); 
 }
 
 LoopAST *deserializeLoopAST(const json &in)
