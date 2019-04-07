@@ -48,6 +48,13 @@ T *LogError(std::string str)
     return LogError<T>(str.c_str());
 }
 
+template<bool>
+bool LogError(std::string str)
+{
+    LogError<void>(str.c_str());
+    return false;
+}
+
 // HIERARCHY ------------------------------------------------
 
 class EntityAST  // abstract
@@ -496,7 +503,7 @@ public:
         initializer(initializer)
     {}
     virtual ~VariableAST() = default;
-    virtual Value *codegen();
+    virtual bool codegen();  // TODO: think about case of unit member
     TypeAST *getType() { return type; }
     IdentifierAST getName() { return name; }
 };
@@ -533,7 +540,7 @@ public:
         invariants(invariants)
     {}
     virtual ~UnitAST() = default;
-    // virtual ? *codegen();  // TODO
+    virtual Type *codegen();
 };
 
 class RoutineAST : public DeclarationAST
@@ -602,7 +609,7 @@ class StatementAST : public EntityAST  // abstract
 protected:
 public:
     virtual ~StatementAST() = default;
-    virtual void codegen() { LogError<void>(std::string(__func__) + ": use of abstract class"); }
+    virtual bool codegen() { return LogError<bool>(std::string(__func__) + ": use of abstract class"); }
 };
 
 class BodyAST : public StatementAST
@@ -617,7 +624,7 @@ public:
       : body(body)
     {}
     virtual ~BodyAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class IfThenPartAST : public StatementAST
@@ -635,7 +642,7 @@ public:
         thenPart(thenPart)
     {}
     virtual ~IfThenPartAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class IfAST : public StatementAST
@@ -653,7 +660,7 @@ public:
         elsePart(elsePart)
     {}
     virtual ~IfAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class CheckAST : public StatementAST
@@ -668,7 +675,7 @@ public:
       : predicates(predicates)
     {}
     virtual ~CheckAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class RaiseAST : public StatementAST
@@ -683,7 +690,7 @@ public:
       : expression(expression)
     {}
     virtual ~RaiseAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class ReturnAST : public StatementAST
@@ -698,7 +705,7 @@ public:
       : expression(expression)
     {}
     virtual ~ReturnAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
     ExpressionAST *getExpression() { return expression; }
 };
 
@@ -715,7 +722,7 @@ public:
       : label(label)
     {}
     virtual ~BreakAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
     
 };
 
@@ -734,7 +741,7 @@ public:
         right(right)
     {}
     virtual ~AssignmentAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class LoopAST : public StatementAST
@@ -764,7 +771,7 @@ public:
         variants(variants)
     {}
     virtual ~LoopAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class CatchAST : public StatementAST
@@ -785,7 +792,7 @@ public:
         body(body)
     {}
     virtual ~CatchAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class TryAST : public StatementAST
@@ -806,7 +813,7 @@ public:
         elsePart(elsePart)
     {}
     virtual ~TryAST() = default;
-    virtual void codegen() override;
+    virtual bool codegen() override;
 };
 
 class CompilationAST : public EntityAST
@@ -827,5 +834,5 @@ public:
         anonymous->type = new UnitRefAST("Integer");
     }
     virtual ~CompilationAST() = default;
-    virtual void codegen();
+    virtual bool codegen();
 };
