@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     // Parse json file
     json input = json::parse(input_file);
 
-    initLLVMGlobal("core");
+    initLLVMGlobal(input_filepath);
 
     CompilationAST* root = deserializeCompilationAST(input);
     root->codegen();
