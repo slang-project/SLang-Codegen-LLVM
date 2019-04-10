@@ -61,10 +61,11 @@ Value *ReferenceAST::codegen()
 {
     AllocaInst *Alloca = NamedValues[declarationName];
     if (!Alloca)
+    {
         return LogError<Value>("Unknown variable referenced");
-    
-    Value *value = Builder.CreateLoad(Alloca);
-    return value;
+    }
+
+    return Builder.CreateLoad(Alloca);
 }
 
 // NOTE: SHOULD NOT APPEAR IN FINAL AST! (remove??)
@@ -108,23 +109,32 @@ Value *CallAST::codegen()
 {
     ReferenceAST *callee = dynamic_cast<ReferenceAST*>(secondary);
     if (!callee)
+    {
         return LogError<Value>("Callee not identified.");
+    }
 
     Function *CalleeF = TheModule->getFunction(callee->getName());
     if (!CalleeF)
+    {
         return LogError<Value>("Unknown function referenced");
+    }
 
     // TODO: add additional type checks maybe
     if (CalleeF->arg_size() != actuals.size())
+    {
         return LogError<Value>("Incorrect number of arguments passed");
+    }
 
     std::vector<Value *> ArgsV;
     for (auto &a : actuals)
     {
         ArgsV.push_back(a->codegen());
         if (!ArgsV.back())
+        {
             return nullptr;
+        }
     }
+
     return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
@@ -199,7 +209,6 @@ Value *UnitRefAST::getDefault()
     return LogError<Value>("Invaid type.");
 }
 
-
 Type *MultiTypeAST::codegen()
 {
     return LogError<Type>(std::string(__func__) + " not implemented yet");
@@ -220,7 +229,6 @@ Value *RangeTypeAST::getDefault()
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-
 /* TODO:
 Type *TupleTypeAST::codegen
 {};
@@ -239,10 +247,15 @@ bool VariableAST::codegen()
     {
         T = type->codegen();
         if (!T)
+        {
             return false;
+        }
+
         init = type->getDefault();
         if (!init)
+        {
             return false;
+        }
     }
     else
     {
@@ -256,11 +269,12 @@ bool VariableAST::codegen()
     {
         init = initializer->codegen();
         if (!init)
+        {
             return false;
+        }
     }
 
-    Builder.CreateStore(init, Alloca);
-    return true;
+    return /*(bool)*/ Builder.CreateStore(init, Alloca);
 }
 
 Type *UnitAST::codegen()
@@ -270,30 +284,32 @@ Type *UnitAST::codegen()
 
 Function *RoutineAST::codegen()
 {
-/*  if (!F->empty())
-        return LogError<Function>("Function cannot be redefined.");
+/*  if (!F->empty())  // find routine with this name
+        return LogError<Function>("Routine cannot be redefined.");
 */
-    // vector for routine arguments
+    // Vector for routine arguments
     std::vector<Type*> argTypes{};
     std::vector<VariableAST*> argsAsVars{};
 
     for (auto &arg : parameters)
     {
         VariableAST *curParam = dynamic_cast<VariableAST*>(arg);
-
         if (!curParam)
+        {
             return LogError<Function>("Parameter is not variable declaration.");
+        }
 
         Type *argType = curParam->getType()->codegen();
-
         if (!argType)
-            return nullptr;
+        {
+            return nullptr;  // TODO: log?
+        }
 
         argTypes.push_back(argType);
         argsAsVars.push_back(curParam);
     }
 
-    // function type
+    // Routine type
     Type *functionType = type->codegen();
     FunctionType *FT =
         FunctionType::get(functionType, argTypes, false);
@@ -317,12 +333,16 @@ Function *RoutineAST::codegen()
 
     if (!routineBody->codegen())
     {
-        // Error reading body, remove function.
         F->eraseFromParent();
-        return nullptr;
+        return LogError<Function>("Failed to generate routine body");
     }
 
-    verifyFunction(*F, &errs());
+    if (verifyFunction(*F, &errs()))
+    {
+        F->eraseFromParent();
+        return LogError<Function>("Failed to verify routine body");
+    }
+
     return F;
 }
 
@@ -335,33 +355,37 @@ bool BodyAST::codegen()
 {
     for (auto &arg : body)
     {
-        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
-        {  
-            var->codegen();
-            continue;
-        }
-
-        if (AssignmentAST *ass = dynamic_cast<AssignmentAST*>(arg))
+        if (StatementAST *statement = dynamic_cast<StatementAST*>(arg))
         {
-            ass->codegen();
-            continue;
-        }
-
-        if (ReturnAST *retstmt = dynamic_cast<ReturnAST*>(arg))
-        {
-            ExpressionAST* expr = retstmt->getExpression();
-            if (expr)
+            if (!statement->codegen())
             {
-                Value *retval = expr->codegen();
-                if (retval)
-                {
-                    Builder.CreateRet(retval);
-                    return true;
-                }
+                return false;
             }
+            continue;
         }
+
+        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
+        {
+            if (!var->codegen())
+            {
+                return false;
+            }
+            continue;
+        }
+
+        if (CallAST *call = dynamic_cast<CallAST*>(arg))
+        {
+            // TODO: check (return value of codegen?)
+            if (!call->codegen())
+            {
+                return false;
+            }
+            continue;
+        }
+
+        return LogError<bool>("Unsupported body element");
     }
-    return LogError<bool>("No return statement found");
+    return true;
 }
 
 bool IfThenPartAST::codegen()
@@ -386,8 +410,18 @@ bool RaiseAST::codegen()
 
 bool ReturnAST::codegen()
 {
-    // B ? Builder.CreateRet(B) : Builder.CreateRetVoid();
-    return LogError<bool>(std::string(__func__) + " not implemented yet");  // TODO
+    if (!expression)
+    {
+        return /*(bool)*/ Builder.CreateRetVoid();
+    }
+
+    Value *ret = expression->codegen();
+    if (!ret)
+    {
+        return LogError<bool>("Failed to codegen return expression");
+    }
+
+    return /*(bool)*/ Builder.CreateRet(ret);
 }
 
 bool BreakAST::codegen()
@@ -415,8 +449,7 @@ bool AssignmentAST::codegen()
         return LogError<bool>("No expression given to assign");
     }
 
-    Builder.CreateStore(R, Alloca);
-    return true;
+    return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }
 
 bool LoopAST::codegen()

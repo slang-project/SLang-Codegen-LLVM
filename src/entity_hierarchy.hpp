@@ -706,7 +706,6 @@ public:
     {}
     virtual ~ReturnAST() = default;
     virtual bool codegen() override;
-    ExpressionAST *getExpression() { return expression; }
 };
 
 class BreakAST : public StatementAST
