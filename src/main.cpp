@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     std::string input_filepath{get_filepath(argc, argv)};
     
     // Check file existance
-    if(!input_filepath.length())
+    if (!input_filepath.length())
     {
         std::cerr << "No input file provided.\nUSAGE: " << "slang_jtll" << " <filepath>" << '\n';
         return 1;

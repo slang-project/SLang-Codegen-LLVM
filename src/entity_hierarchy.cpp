@@ -61,9 +61,7 @@ Value *ReferenceAST::codegen()
 {
     AllocaInst *Alloca = NamedValues[declarationName];
     if (!Alloca)
-    {
         return LogError<Value>("Unknown variable referenced");
-    }
 
     return Builder.CreateLoad(Alloca);
 }
@@ -109,30 +107,22 @@ Value *CallAST::codegen()
 {
     ReferenceAST *callee = dynamic_cast<ReferenceAST*>(secondary);
     if (!callee)
-    {
         return LogError<Value>("Callee not identified.");
-    }
 
     Function *CalleeF = TheModule->getFunction(callee->getName());
     if (!CalleeF)
-    {
         return LogError<Value>("Unknown function referenced");
-    }
 
     // TODO: add additional type checks maybe
     if (CalleeF->arg_size() != actuals.size())
-    {
         return LogError<Value>("Incorrect number of arguments passed");
-    }
 
     std::vector<Value *> ArgsV;
     for (auto &a : actuals)
     {
         ArgsV.push_back(a->codegen());
         if (!ArgsV.back())
-        {
             return nullptr;
-        }
     }
 
     return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
@@ -153,34 +143,25 @@ Value *BinaryAST::codegen()
     // TODO: create binary operations versions for all type pairs:
     // e.g. this is special version for (int)a ? (int)b
     Value *L = left->codegen();
+    if (!L)
+        return nullptr;
+
     Value *R = right->codegen();
-    if (!L || !R)
+    if (!R)
         return nullptr;
 
     if (binaryOp == "+")
-    {
         return Builder.CreateAdd(L, R, "addtmp");
-    }
-    else if (binaryOp == "-")
-    {
+    if (binaryOp == "-")
         return Builder.CreateSub(L, R, "subtmp");
-    }
-    else if (binaryOp == "*")
-    {
+    if (binaryOp == "*")
         return Builder.CreateMul(L, R, "multmp");
-    }
-    else if (binaryOp == "/")
-    {
+    if (binaryOp == "/")
         return Builder.CreateUDiv(L, R, "divtmp");
-    }
-    else if (binaryOp == "<")
-    {
+    if (binaryOp == "<")
         return Builder.CreateICmpULT(L, R, "cmptmp");
-    }
-    else
-    {
-        return LogError<Value>("Unsupported binary operator.");
-    }
+
+    return LogError<Value>("Unsupported binary operator.");
 }
 
 Type *UnitRefAST::codegen()
@@ -193,6 +174,7 @@ Type *UnitRefAST::codegen()
         return LogError<Type>("Charater not implemented yet.");
     if (name == "String")
         return LogError<Type>("String not implemented yet.");
+
     return LogError<Type>("Invaid type.");
 }
 
@@ -200,12 +182,13 @@ Value *UnitRefAST::getDefault()
 {
     if (name == "Integer")
         return ConstantInt::get(TheContext, APInt(32, 0, true));
-    else if (name == "Real")
+    if (name == "Real")
         return ConstantFP::get(TheContext, APFloat(0.0));
     if (name == "Character")
         return LogError<Value>("Charater not implemented yet.");
     if (name == "String")
         return LogError<Value>("String not implemented yet.");
+
     return LogError<Value>("Invaid type.");
 }
 
@@ -239,28 +222,20 @@ Type *RoutineTypeAST::codegen
 
 bool VariableAST::codegen()
 { 
-    Function *F = Builder.GetInsertBlock()->getParent();
-    
     Type *T;
     Value *init;
-    if (type)
-    {
-        T = type->codegen();
-        if (!T)
-        {
-            return false;
-        }
+    Function *F = Builder.GetInsertBlock()->getParent();
 
-        init = type->getDefault();
-        if (!init)
-        {
-            return false;
-        }
-    }
-    else
-    {
+    if (!type)
         return LogError<bool>("Type inference not implemented yet");
-    }
+    
+    T = type->codegen();
+    if (!T)
+        return false;
+
+    init = type->getDefault();
+    if (!init)
+        return false;
 
     AllocaInst *Alloca = CreateEntryBlockAlloca(F, T, name);
     NamedValues[name] = Alloca;
@@ -269,9 +244,7 @@ bool VariableAST::codegen()
     {
         init = initializer->codegen();
         if (!init)
-        {
             return false;
-        }
     }
 
     return /*(bool)*/ Builder.CreateStore(init, Alloca);
@@ -295,15 +268,11 @@ Function *RoutineAST::codegen()
     {
         VariableAST *curParam = dynamic_cast<VariableAST*>(arg);
         if (!curParam)
-        {
             return LogError<Function>("Parameter is not variable declaration.");
-        }
 
         Type *argType = curParam->getType()->codegen();
         if (!argType)
-        {
             return nullptr;  // TODO: log?
-        }
 
         argTypes.push_back(argType);
         argsAsVars.push_back(curParam);
@@ -358,18 +327,14 @@ bool BodyAST::codegen()
         if (StatementAST *statement = dynamic_cast<StatementAST*>(arg))
         {
             if (!statement->codegen())
-            {
                 return false;
-            }
             continue;
         }
 
         if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
         {
             if (!var->codegen())
-            {
                 return false;
-            }
             continue;
         }
 
@@ -377,9 +342,7 @@ bool BodyAST::codegen()
         {
             // TODO: check (return value of codegen?)
             if (!call->codegen())
-            {
                 return false;
-            }
             continue;
         }
 
@@ -411,15 +374,11 @@ bool RaiseAST::codegen()
 bool ReturnAST::codegen()
 {
     if (!expression)
-    {
         return /*(bool)*/ Builder.CreateRetVoid();
-    }
 
     Value *ret = expression->codegen();
     if (!ret)
-    {
         return LogError<bool>("Failed to codegen return expression");
-    }
 
     return /*(bool)*/ Builder.CreateRet(ret);
 }
@@ -433,21 +392,15 @@ bool AssignmentAST::codegen()
 {
     ReferenceAST *var = dynamic_cast<ReferenceAST*>(left);
     if (!var)
-    {
         return LogError<bool>("LHS of the assignment is not a REFERENCE.");
-    }
 
     AllocaInst *Alloca = NamedValues[var->getName()];
     if (!Alloca)
-    {
         return LogError<bool>("Assignemt to the undefined variable");
-    }
 
     Value *R = right->codegen();
     if (!R)
-    {
         return LogError<bool>("No expression given to assign");
-    }
 
     return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }
