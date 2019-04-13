@@ -61,7 +61,8 @@ ReferenceAST *deserializeReferenceAST(const json &in)
 
 UnresolvedAST *deserializeUnresolvedAST(const json &in)
 {
-    return LogError<UnresolvedAST>(std::string(__func__) + " not implemented yet");
+    // return new UnresolvedAST(deserializeIdentifierAST(in[CHILDREN][0])); 
+    return LogError<UnresolvedAST>("UNRESOLVED is not allowed to be present in the IR");
 }
 
 IntegerAST *deserializeIntegerAST(const json &in)

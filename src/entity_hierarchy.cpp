@@ -66,12 +66,6 @@ Value *ReferenceAST::codegen()
     return Builder.CreateLoad(Alloca);
 }
 
-// NOTE: SHOULD NOT APPEAR IN FINAL AST! (remove??)
-Value *UnresolvedAST::codegen()
-{
-    return LogError<Value>(std::string(__func__) + " not implemented yet");
-}
-
 Value *IntegerAST::codegen()
 {
     return ConstantInt::get(TheContext, APInt(32, std::stoi(value), true));

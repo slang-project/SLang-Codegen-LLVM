@@ -239,20 +239,22 @@ public:
     IdentifierAST getName() { return declarationName; }
 };
 
-// NOTE: SHOULD NOT APPEAR IN FINAL AST! (remove??)
+// NOTE: THIS TYPE SHOULD NOT BE PRESENT IN THE FINAL IR!
 class UnresolvedAST : public PrimaryAST
 {
 protected:
     IdentifierAST name;
-public:
+private:
+    // NOTE: Objects of this type must not be created!
     UnresolvedAST
     (
         IdentifierAST name
     )
-      : name(name)
+       : name(name)
     {}
+public:
     virtual ~UnresolvedAST() = default;
-    virtual Value *codegen() override;
+    // virtual Value *codegen() override;
 };
 
 // NOTE: abstract here, but not in original parser
