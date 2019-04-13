@@ -5,7 +5,7 @@
 static LLVMContext TheContext;
 static IRBuilder<> Builder(TheContext);
 static std::unique_ptr<Module> TheModule;
-static std::map<std::string, Value *> NamedValues;
+static std::map<std::string, AllocaInst*> NamedValues;
 
 
 // EXTERNAL INTERFACE
@@ -21,6 +21,14 @@ void printGeneratedCode(std::string outFilePath)
     TheModule->print(file, nullptr);
 }
 
+static AllocaInst *CreateEntryBlockAlloca(Function* TheFunction,
+                                          Type* type,
+                                          const std::string &VarName)
+{
+    IRBuilder<> TmpB(&TheFunction->getEntryBlock(),
+                     TheFunction->getEntryBlock().begin());
+    return TmpB.CreateAlloca(type, 0, VarName.c_str());
+}
 
 // HIERARCHY ------------------------------------------------
 
@@ -51,7 +59,11 @@ Value *OldAST::codegen()
 
 Value *ReferenceAST::codegen()
 {
-    return LogError<Value>(std::string(__func__) + " not implemented yet");
+    AllocaInst *Alloca = NamedValues[declarationName];
+    if (!Alloca)
+        return LogError<Value>("Unknown variable referenced");
+
+    return Builder.CreateLoad(Alloca);
 }
 
 // NOTE: SHOULD NOT APPEAR IN FINAL AST! (remove??)
@@ -94,14 +106,14 @@ Value *MemberAST::codegen()
 Value *CallAST::codegen()
 {
     ReferenceAST *callee = dynamic_cast<ReferenceAST*>(secondary);
-    if(!callee)
+    if (!callee)
         return LogError<Value>("Callee not identified.");
 
     Function *CalleeF = TheModule->getFunction(callee->getName());
     if (!CalleeF)
         return LogError<Value>("Unknown function referenced");
 
-    //TODO: add additional type checks maybe
+    // TODO: add additional type checks maybe
     if (CalleeF->arg_size() != actuals.size())
         return LogError<Value>("Incorrect number of arguments passed");
 
@@ -112,6 +124,7 @@ Value *CallAST::codegen()
         if (!ArgsV.back())
             return nullptr;
     }
+
     return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
@@ -130,34 +143,25 @@ Value *BinaryAST::codegen()
     // TODO: create binary operations versions for all type pairs:
     // e.g. this is special version for (int)a ? (int)b
     Value *L = left->codegen();
+    if (!L)
+        return nullptr;
+
     Value *R = right->codegen();
-    if (!L || !R)
+    if (!R)
         return nullptr;
 
     if (binaryOp == "+")
-    {
         return Builder.CreateAdd(L, R, "addtmp");
-    }
-    else if (binaryOp == "-")
-    {
+    if (binaryOp == "-")
         return Builder.CreateSub(L, R, "subtmp");
-    }
-    else if (binaryOp == "*")
-    {
+    if (binaryOp == "*")
         return Builder.CreateMul(L, R, "multmp");
-    }
-    else if (binaryOp == "/")
-    {
+    if (binaryOp == "/")
         return Builder.CreateUDiv(L, R, "divtmp");
-    }
-    else if (binaryOp == "<")
-    {
+    if (binaryOp == "<")
         return Builder.CreateICmpULT(L, R, "cmptmp");
-    }
-    else
-    {
-        return LogError<Value>("Unsupported binary operator.");
-    }
+
+    return LogError<Value>("Unsupported binary operator.");
 }
 
 Type *UnitRefAST::codegen()
@@ -170,7 +174,22 @@ Type *UnitRefAST::codegen()
         return LogError<Type>("Charater not implemented yet.");
     if (name == "String")
         return LogError<Type>("String not implemented yet.");
+
     return LogError<Type>("Invaid type.");
+}
+
+Value *UnitRefAST::getDefault()
+{
+    if (name == "Integer")
+        return ConstantInt::get(TheContext, APInt(32, 0, true));
+    if (name == "Real")
+        return ConstantFP::get(TheContext, APFloat(0.0));
+    if (name == "Character")
+        return LogError<Value>("Charater not implemented yet.");
+    if (name == "String")
+        return LogError<Value>("String not implemented yet.");
+
+    return LogError<Value>("Invaid type.");
 }
 
 Type *MultiTypeAST::codegen()
@@ -178,9 +197,19 @@ Type *MultiTypeAST::codegen()
     return LogError<Type>(std::string(__func__) + " not implemented yet");
 }
 
+Value *MultiTypeAST::getDefault()
+{
+    return LogError<Value>(std::string(__func__) + " not implemented yet");
+}
+
 Type *RangeTypeAST::codegen()
 {
     return LogError<Type>(std::string(__func__) + " not implemented yet");
+}
+
+Value *RangeTypeAST::getDefault()
+{
+    return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
 /* TODO:
@@ -191,58 +220,65 @@ Type *RoutineTypeAST::codegen
 {};
 */
 
-Value *VariableAST::codegen()
-{
-    Type *T = type->codegen();
-    if (!T)
-        return nullptr;
+bool VariableAST::codegen()
+{ 
+    Type *T;
+    Value *init;
+    Function *F = Builder.GetInsertBlock()->getParent();
 
-    AllocaInst *v = Builder.CreateAlloca(T, 0, name);
+    if (!type)
+        return LogError<bool>("Type inference not implemented yet");
+    
+    T = type->codegen();
+    if (!T)
+        return false;
+
+    init = type->getDefault();
+    if (!init)
+        return false;
+
+    AllocaInst *Alloca = CreateEntryBlockAlloca(F, T, name);
+    NamedValues[name] = Alloca;
 
     if (initializer)
     {
-        Value *init = initializer->codegen();
+        init = initializer->codegen();
         if (!init)
-            return nullptr;
-        Builder.CreateStore(init, v);
+            return false;
     }
 
-    return v;
+    return /*(bool)*/ Builder.CreateStore(init, Alloca);
 }
 
-// ? *UnitAST::codegen()
-// {
-//     return LogError<?>(std::string(__func__) + " not implemented yet");
-// }
-
-
+Type *UnitAST::codegen()
+{
+    return LogError<Type>(std::string(__func__) + " not implemented yet");
+}
 
 Function *RoutineAST::codegen()
 {
-/*  if (!F->empty())
-        return LogError<Function>("Function cannot be redefined.");
+/*  if (!F->empty())  // find routine with this name
+        return LogError<Function>("Routine cannot be redefined.");
 */
-    // vector for routine arguments
+    // Vector for routine arguments
     std::vector<Type*> argTypes{};
     std::vector<VariableAST*> argsAsVars{};
 
     for (auto &arg : parameters)
     {
         VariableAST *curParam = dynamic_cast<VariableAST*>(arg);
-
         if (!curParam)
             return LogError<Function>("Parameter is not variable declaration.");
 
         Type *argType = curParam->getType()->codegen();
-
         if (!argType)
-            return nullptr;
+            return nullptr;  // TODO: log?
 
         argTypes.push_back(argType);
         argsAsVars.push_back(curParam);
     }
 
-    // function type
+    // Routine type
     Type *functionType = type->codegen();
     FunctionType *FT =
         FunctionType::get(functionType, argTypes, false);
@@ -256,35 +292,27 @@ Function *RoutineAST::codegen()
     BasicBlock *BB = BasicBlock::Create(TheContext, "entry", F);
     Builder.SetInsertPoint(BB);
     
-    // NamedValues.clear();
+    NamedValues.clear();
+    Idx = 0;
     for (auto &arg : F->args())
-        NamedValues[arg.getName()] = &arg;
-
-    // TODO: rewrite to general case
-    for (auto &arg : *routineBody)
     {
-        if (ReturnAST *retstmt = dynamic_cast<ReturnAST*>(arg))
-        {
-            ExpressionAST* expr = retstmt->getExpression();
-            if (expr)
-            {
-                Value *retval = expr->codegen();
-                if (retval)
-                {
-                    Builder.CreateRet(retval);
-                    verifyFunction(*F, &errs());
-                    return F;
-                }
-            }
-        }
+        AllocaInst *Alloca = CreateEntryBlockAlloca(F, argTypes[Idx++], arg.getName());
+        NamedValues[arg.getName()] = Alloca;
     }
 
-    // TODO: handle function body
-    //bodyCodegen(routineBody, &this);
+    if (!routineBody->codegen())
+    {
+        F->eraseFromParent();
+        return LogError<Function>("Failed to generate routine body");
+    }
 
-    // Error reading body, remove function.
-    F->eraseFromParent();
-    return nullptr;
+    if (verifyFunction(*F, &errs()))
+    {
+        F->eraseFromParent();
+        return LogError<Function>("Failed to verify routine body");
+    }
+
+    return F;
 }
 
 // ? *ConstantAST::codegen()
@@ -292,58 +320,107 @@ Function *RoutineAST::codegen()
 //     return LogError<?>(std::string(__func__) + " not implemented yet");
 // }
 
-void IfThenPartAST::codegen(BasicBlock *block)
+bool BodyAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    for (auto &arg : body)
+    {
+        if (StatementAST *statement = dynamic_cast<StatementAST*>(arg))
+        {
+            if (!statement->codegen())
+                return false;
+            continue;
+        }
+
+        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
+        {
+            if (!var->codegen())
+                return false;
+            continue;
+        }
+
+        if (CallAST *call = dynamic_cast<CallAST*>(arg))
+        {
+            // TODO: check (return value of codegen?)
+            if (!call->codegen())
+                return false;
+            continue;
+        }
+
+        return LogError<bool>("Unsupported body element");
+    }
+    return true;
 }
 
-void IfAST::codegen(BasicBlock *block)
+bool IfThenPartAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-void CheckAST::codegen(BasicBlock *block)
+bool IfAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-void RaiseAST::codegen(BasicBlock *block)
+bool CheckAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-void ReturnAST::codegen(BasicBlock *block)
+bool RaiseAST::codegen()
 {
-    // B ? Builder.CreateRet(B) : Builder.CreateRetVoid();
-    LogError<void>(std::string(__func__) + " not implemented yet");  // TODO
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-void BreakAST::codegen(BasicBlock *block)
+bool ReturnAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    if (!expression)
+        return /*(bool)*/ Builder.CreateRetVoid();
+
+    Value *ret = expression->codegen();
+    if (!ret)
+        return LogError<bool>("Failed to codegen return expression");
+
+    return /*(bool)*/ Builder.CreateRet(ret);
 }
 
-void AssignmentAST::codegen(BasicBlock *block)
+bool BreakAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-void LoopAST::codegen(BasicBlock *block)
+bool AssignmentAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    ReferenceAST *var = dynamic_cast<ReferenceAST*>(left);
+    if (!var)
+        return LogError<bool>("LHS of the assignment is not a REFERENCE.");
+
+    AllocaInst *Alloca = NamedValues[var->getName()];
+    if (!Alloca)
+        return LogError<bool>("Assignemt to the undefined variable");
+
+    Value *R = right->codegen();
+    if (!R)
+        return LogError<bool>("No expression given to assign");
+
+    return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }
 
-void CatchAST::codegen(BasicBlock *block)
+bool LoopAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-void TryAST::codegen(BasicBlock *block)
+bool CatchAST::codegen()
 {
-    LogError<void>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-Function *CompilationAST::codegen()
+bool TryAST::codegen()
 {
-    return anonymous->codegen();  // TODO
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
+}
+
+bool CompilationAST::codegen()
+{
+    return anonymous->codegen();
 }

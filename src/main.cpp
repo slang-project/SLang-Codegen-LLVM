@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     std::string input_filepath{get_filepath(argc, argv)};
     
     // Check file existance
-    if(!input_filepath.length())
+    if (!input_filepath.length())
     {
         std::cerr << "No input file provided.\nUSAGE: " << "slang_jtll" << " <filepath>" << '\n';
         return 1;
@@ -43,11 +43,10 @@ int main(int argc, char **argv)
     // Parse json file
     json input = json::parse(input_file);
 
-    initLLVMGlobal("core");
+    initLLVMGlobal(input_filepath);
 
     CompilationAST* root = deserializeCompilationAST(input);
     root->codegen();
-    
 
     printGeneratedCode("out.ll");
     return 0;

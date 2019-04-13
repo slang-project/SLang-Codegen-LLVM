@@ -8,3 +8,4 @@ src/*old.hpp
 *.out
 *.ll
 *.o
+.vscode/c_cpp_properties.json
