@@ -631,6 +631,7 @@ public:
 
 class IfThenPartAST : public StatementAST
 {
+    friend class IfAST;  // TODO: remove?
 protected:
     ExpressionAST *condition;
     BodyAST *thenPart;

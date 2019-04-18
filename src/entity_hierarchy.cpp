@@ -111,7 +111,7 @@ Value *CallAST::codegen()
     if (CalleeF->arg_size() != actuals.size())
         return LogError<Value>("Incorrect number of arguments passed");
 
-    std::vector<Value *> ArgsV;
+    std::vector<Value*> ArgsV;
     for (auto &a : actuals)
     {
         ArgsV.push_back(a->codegen());
@@ -314,6 +314,12 @@ Function *RoutineAST::codegen()
 //     return LogError<?>(std::string(__func__) + " not implemented yet");
 // }
 
+// TODO: fulfill with gotos like return, break, continue, goto etc.
+bool isControlFlow(EntityAST *e)
+{
+    return dynamic_cast<ReturnAST*>(e);
+}
+
 bool BodyAST::codegen()
 {
     for (auto &arg : body)
@@ -322,26 +328,26 @@ bool BodyAST::codegen()
         {
             if (!statement->codegen())
                 return false;
-            continue;
+            if (isControlFlow(statement))
+                goto end;  // skip unreachable statements
         }
 
-        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
+        else if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
         {
             if (!var->codegen())
                 return false;
-            continue;
         }
 
-        if (CallAST *call = dynamic_cast<CallAST*>(arg))
+        else if (CallAST *call = dynamic_cast<CallAST*>(arg))
         {
             // TODO: check (return value of codegen?)
             if (!call->codegen())
                 return false;
-            continue;
         }
 
-        return LogError<bool>("Unsupported body element");
+        else return LogError<bool>("Unsupported body element");
     }
+    end:
     return true;
 }
 
@@ -352,7 +358,50 @@ bool IfThenPartAST::codegen()
 
 bool IfAST::codegen()
 {
-    return LogError<bool>(std::string(__func__) + " not implemented yet");
+    auto &Cond = ifThenParts[0]->condition;  // TODO: change
+    Value *CondV = Cond->codegen();
+    if (!CondV)
+        return false;
+
+    // Convert condition to a bool by comparing non-equal to 0.0.
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(32, 0, true)), "ifcond");
+
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+
+    // Create blocks for the then and else cases.  Insert the 'then' block at the
+    // end of the function.
+    BasicBlock *ThenBB = BasicBlock::Create(TheContext, "then", TheFunction);
+    BasicBlock *ElseBB = BasicBlock::Create(TheContext, "else");
+    BasicBlock *MergeBB = BasicBlock::Create(TheContext, "ifcont");
+
+    Builder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+    // Emit then value.
+    Builder.SetInsertPoint(ThenBB);
+
+    auto &Then = ifThenParts[0]->thenPart;  // TODO: change
+    if (!Then->codegen())
+        return false;
+
+    Builder.CreateBr(MergeBB);
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    ThenBB = Builder.GetInsertBlock();
+
+    // Emit else block.
+    TheFunction->getBasicBlockList().push_back(ElseBB);
+    Builder.SetInsertPoint(ElseBB);
+
+    if (!elsePart->codegen())
+        return false;
+
+    Builder.CreateBr(MergeBB);
+    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+    ElseBB = Builder.GetInsertBlock();
+
+    // Emit merge block.
+    TheFunction->getBasicBlockList().push_back(MergeBB);
+    Builder.SetInsertPoint(MergeBB);
+    return true;
 }
 
 bool CheckAST::codegen()

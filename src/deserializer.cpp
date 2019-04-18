@@ -197,12 +197,22 @@ BodyAST *deserializeBodyAST(const json &in)
 
 IfThenPartAST *deserializeIfThenPartAST(const json &in)
 {
-    return LogError<IfThenPartAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new IfThenPartAST
+    (
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        deserializeBodyAST(inc[1])
+    );
 }
 
 IfAST *deserializeIfAST(const json &in)
 {
-    return LogError<IfAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new IfAST
+    (
+        deserializeVector<IfThenPartAST*>(inc[0]),
+        deserializeBodyAST(inc[1])
+    );
 }
 
 CheckAST *deserializeCheckAST(const json &in)
