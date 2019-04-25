@@ -68,7 +68,7 @@ Value *ReferenceAST::codegen()
 
 Value *IntegerAST::codegen()
 {
-    return ConstantInt::get(TheContext, APInt(32, std::stoi(value), true));
+    return ConstantInt::get(TheContext, APInt(16, std::stoi(value), true));
 }
 
 Value *RealAST::codegen()
@@ -161,7 +161,7 @@ Value *BinaryAST::codegen()
 Type *UnitRefAST::codegen()
 {
     if (name == "Integer")
-        return Type::getInt32Ty(TheContext);
+        return Type::getInt16Ty(TheContext);
     if (name == "Real")
         return Type::getDoubleTy(TheContext);
     if (name == "Character")
@@ -175,7 +175,7 @@ Type *UnitRefAST::codegen()
 Value *UnitRefAST::getDefault()
 {
     if (name == "Integer")
-        return ConstantInt::get(TheContext, APInt(32, 0, true));
+        return ConstantInt::get(TheContext, APInt(16, 0, true));
     if (name == "Real")
         return ConstantFP::get(TheContext, APFloat(0.0));
     if (name == "Character")
@@ -364,7 +364,7 @@ bool IfAST::codegen()
         return false;
 
     // Convert condition to a bool by comparing non-equal to 0.0.
-    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(32, 0, true)), "ifcond");
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "ifcond");
 
     Function *TheFunction = Builder.GetInsertBlock()->getParent();
 
@@ -465,5 +465,40 @@ bool TryAST::codegen()
 
 bool CompilationAST::codegen()
 {
-    return anonymous->codegen();
+    // Declare exit function (used in startup function)
+    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
+    static const std::string _exitName = "_Exit";
+    static const std::vector<Type*> _exitArgTypes { Type::getInt16Ty(TheContext) };
+    // FIXME: _Noreturn as a return type
+    FunctionType *_exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
+    Function *_exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
+
+    // Create startup function, TODO: move in future
+    static const std::string _startName = "_start";
+    FunctionType *_startType = FunctionType::get(Type::getVoidTy(TheContext), false);
+    Function *_start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
+    BasicBlock *BB = BasicBlock::Create(TheContext, _startName, _start);
+
+    // Startup function body
+    static const std::vector<Value*> anonArgs{};
+    Function *anon = anonymous->codegen();
+    if (!anon)
+    {
+        _start->eraseFromParent();
+        return false;
+    }
+    Builder.SetInsertPoint(BB);
+    Value *anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
+    if (!Builder.CreateCall(_exit, anonRes))
+    {
+        _start->eraseFromParent();
+        return LogError<bool>("Generation of exit function call in startup failed");
+    }
+    Builder.CreateRetVoid();
+    if (verifyFunction(*_start, &errs()))
+    {
+        _start->eraseFromParent();
+        return LogError<Function>("Failed to verify routine body");
+    }
+    return true;
 }
