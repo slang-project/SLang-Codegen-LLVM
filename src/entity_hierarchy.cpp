@@ -14,6 +14,49 @@ void initLLVMGlobal(std::string moduleName)
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
 }
 
+// Write object file with given filename, return 0 indicates correct operation complete.
+int createObjectFile(std::string outFilePath)
+{
+    auto TargetTriple = sys::getDefaultTargetTriple();
+    InitializeAllTargetInfos();
+    InitializeAllTargets();
+    InitializeAllTargetMCs();
+    InitializeAllAsmParsers();
+    InitializeAllAsmPrinters();
+
+    std::string Error;
+    auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
+
+    auto CPU = "generic";
+    auto Features = "";
+
+    TargetOptions opt;
+    auto RM = Optional<Reloc::Model>();
+    auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+
+    TheModule->setDataLayout(TargetMachine->createDataLayout());
+    TheModule->setTargetTriple(TargetTriple);
+
+    std::error_code EC;
+    raw_fd_ostream dest(outFilePath, EC, sys::fs::F_None);
+
+    if (EC) {
+        errs() << "Could not open file: " << EC.message();
+        return 1;
+    }
+    legacy::PassManager pass;
+    auto FileType = TargetMachine::CGFT_ObjectFile;
+
+    if (TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)) {
+        errs() << "TargetMachine can't emit a file of this type";
+        return 1;
+    }
+
+    pass.run(*TheModule);
+    dest.flush();
+    return 0;
+}
+
 void printGeneratedCode(std::string outFilePath)
 {
     std::error_code EC;
