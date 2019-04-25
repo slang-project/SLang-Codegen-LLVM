@@ -48,6 +48,10 @@ int main(int argc, char **argv)
     CompilationAST* root = deserializeCompilationAST(input);
     root->codegen();
 
-    printGeneratedCode("out.ll");
+    std::string filename = "app";
+    printGeneratedCode(filename + ".ll");
+    createObjectFile(filename + ".o");
+    std::string linkCall{"gcc -o " + filename + " " + filename + ".o"};
+    system(linkCall.c_str());
     return 0;
 }

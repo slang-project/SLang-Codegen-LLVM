@@ -43,7 +43,7 @@ add_definitions(${LLVM_DEFINITIONS})
 
 
 #** Compilation Setup **
-SET(CMAKE_CXX_FLAGS "-g3 -Wall -std=c++11")
+SET(CMAKE_CXX_FLAGS "-g3 -Wall -std=c++11 -fstandalone-debug")
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/dependencies/include)
 file(GLOB project_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
@@ -55,8 +55,9 @@ add_executable(${EXECUTABLE_NAME} ${project_sources})
 
 
 #** Link LLVM **
-llvm_map_components_to_libnames(llvm_libs support core irreader)
-target_link_libraries(${EXECUTABLE_NAME} ${llvm_libs})
+# llvm_map_components_to_libnames(llvm_libs all)
+target_link_libraries(${EXECUTABLE_NAME} LLVM)
+# message(${llvm_libs})
 
 # #** Info Tab **
 # message("Binary Tree Path ${PROJECT_BINARY_DIR}")

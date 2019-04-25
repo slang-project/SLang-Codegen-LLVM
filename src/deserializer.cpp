@@ -6,7 +6,7 @@
 
 static std::map<std::string, std::function<EntityAST*(const json&)>> deserializeMapping =
 {
-    #include "deserializeMapping.data"
+    #include "deserializeMapping.def"
 };
 
 

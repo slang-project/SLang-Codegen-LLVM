@@ -1,4 +1,4 @@
-all: compile link run
+all: link run
 	
 compile:
 	llc -filetype=obj out.ll
