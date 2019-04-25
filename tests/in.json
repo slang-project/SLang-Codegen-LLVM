@@ -69,121 +69,35 @@
                     ]
                 },
                 {
-                    "type":"IF",
-                    "value":null,
-                    "num_children":2,
+                    "type":"LOOP",
+                    "value":"true",
+                    "num_children":5,
                     "children":[
+                        null,
                         {
-                            "type":"STMT_IF_THEN_LIST",
-                            "value":null,
-                            "num_children":1,
+                            "type":"RELATIONAL",
+                            "value":"<",
+                            "num_chidlren":2,
                             "children":[
                                 {
-                                    "type":"STMT_IF_THEN",
-                                    "value":null,
-                                    "num_children":2,
-                                    "children":[
-                                        {
-                                            "type":"REFERENCE",
-                                            "value":null,
-                                            "num_children":1,
-                                            "children":[
-                                                {
-                                                    "type":"IDENTIFIER",
-                                                    "value":"a",
-                                                    "num_children":0,
-                                                    "children":[]
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "type":"ENTITY_LIST",
-                                            "value":null,
-                                            "num_children":1,
-                                            "children":[
-                                                {
-                                                    "type":"ASSIGNMENT",
-                                                    "value":null,
-                                                    "num_children":2,
-                                                    "children":[
-                                                        {
-                                                            "type":"REFERENCE",
-                                                            "value":null,
-                                                            "num_children":1,
-                                                            "children":[
-                                                                {
-                                                                    "type":"IDENTIFIER",
-                                                                    "value":"a",
-                                                                    "num_children":0,
-                                                                    "children":[]
-                                                                }
-                                                            ]
-                                                        },
-                                                        {
-                                                            "type":"ADDITIVE",
-                                                            "value":"+",
-                                                            "num_children":2,
-                                                            "children":[
-                                                                {
-                                                                    "type":"ADDITIVE",
-                                                                    "value":"-",
-                                                                    "num_children":2,
-                                                                    "children":[
-                                                                        {
-                                                                            "type":"LITERAL_Integer",
-                                                                            "value":"18",
-                                                                            "num_children":0,
-                                                                            "children":[]
-                                                                        },
-                                                                        {
-                                                                            "type":"LITERAL_Integer",
-                                                                            "value":"3",
-                                                                            "num_children":0,
-                                                                            "children":[]
-                                                                        }
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "type":"MULTIPLICATIVE",
-                                                                    "value":"*",
-                                                                    "num_children":2,
-                                                                    "children":[
-                                                                        {
-                                                                            "type":"MULTIPLICATIVE",
-                                                                            "value":"/",
-                                                                            "num_children":2,
-                                                                            "children":[
-                                                                                {
-                                                                                    "type":"LITERAL_Integer",
-                                                                                    "value":"6",
-                                                                                    "num_children":0,
-                                                                                    "children":[]
-                                                                                },
-                                                                                {
-                                                                                    "type":"LITERAL_Integer",
-                                                                                    "value":"2",
-                                                                                    "num_children":0,
-                                                                                    "children":[]
-                                                                                }
-                                                                            ]
-                                                                        },
-                                                                        {
-                                                                            "type":"LITERAL_Integer",
-                                                                            "value":"11",
-                                                                            "num_children":0,
-                                                                            "children":[]
-                                                                        }
-                                                                    ]
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
+                                    "type":"LITERAL_Integer",
+                                    "value":"1",
+                                    "num_children":0,
+                                    "chidlren":[]
+                                },
+                                {
+                                    "type":"LITERAL_Integer",
+                                    "value":"2",
+                                    "num_children":0,
+                                    "chidlren":[]
                                 }
                             ]
+                        },
+                        {
+                            "type":"EXPRESSION_LIST",
+                            "value":null,
+                            "num_children":0,
+                            "children":[]
                         },
                         {
                             "type":"ENTITY_LIST",
@@ -217,6 +131,12 @@
                                     ]
                                 }
                             ]
+                        },
+                        {
+                            "type":"EXPRESSION_LIST",
+                            "value":null,
+                            "num_children":0,
+                            "children":[]
                         }
                     ]
                 },

@@ -251,7 +251,16 @@ AssignmentAST *deserializeAssignmentAST(const json &in)
 
 LoopAST *deserializeLoopAST(const json &in)
 {
-    return LogError<LoopAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN]; 
+    return new LoopAST
+    (
+        in[VALUE] == "true" ? true : false,
+        inc[0].is_null() ? nullptr : dynamic_cast<VariableAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1])),
+        deserializeVector<ExpressionAST*>(inc[2]),
+        deserializeBodyAST(inc[3]),
+        deserializeVector<ExpressionAST*>(inc[4])
+    );
 }
 
 CatchAST *deserializeCatchAST(const json &in)
