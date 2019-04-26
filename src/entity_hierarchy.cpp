@@ -538,8 +538,6 @@ bool TryAST::codegen()
 
 bool CompilationAST::codegen()
 {
-    return anonymous->codegen();
-/* TODO:
     // Declare exit function (used in startup function)
     // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
     static const std::string _exitName = "_Exit";
@@ -576,5 +574,4 @@ bool CompilationAST::codegen()
         return LogError<Function>("Failed to verify routine body");
     }
     return true;
-*/
 }
