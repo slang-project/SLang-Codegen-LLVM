@@ -33,22 +33,76 @@
         {
             "type":"ENTITY_LIST",
             "value":null,
-            "num_children":3,
+            "num_children":4,
             "children":[
                 {
                     "type":"VARIABLE",
-                    "value":null,
+                    "value": null,
                     "num_children":6,
                     "children":[
                         {
-                            "type":"IDENTIFIER",
+                            "type": "IDENTIFIER",
+                            "value":"b",
+                            "num_children":0,
+                            "children":[]
+                        },
+                        {
+                            "type":"REF_VAL_SPEC",
+                            "value":"ref",
+                            "num_children":0,
+                            "children":[]
+                        },
+                        null,
+                        null,
+                        {
+                            "type":"UNIT_REF",
+                            "value":"Integer",
+                            "num_children":0,
+                            "children":[]
+                        },
+                        null 
+                    ]
+                },
+                {
+                    "type":"ASSIGNMENT",
+                    "value":null,
+                    "num_children":2,
+                    "children":[
+                        {
+                            "type":"REFERENCE",
+                            "value":null,
+                            "num_children":1,
+                            "children":[
+                                {
+                                    "type":"IDENTIFIER",
+                                    "value":"b",
+                                    "num_children":0,
+                                    "children":[]
+                                }
+                            ]
+                        },
+                        {
+                            "type":"LITERAL_Integer",
+                            "value":"40",
+                            "num_children":0,
+                            "children":[]
+                        }
+                    ]
+                },
+                {
+                    "type":"VARIABLE",
+                    "value": null,
+                    "num_children":6,
+                    "children":[
+                        {
+                            "type": "IDENTIFIER",
                             "value":"a",
                             "num_children":0,
                             "children":[]
                         },
                         {
                             "type":"REF_VAL_SPEC",
-                            "value":"val",
+                            "value":"ref",
                             "num_children":0,
                             "children":[]
                         },
@@ -62,79 +116,7 @@
                         },
                         {
                             "type":"LITERAL_Integer",
-                            "value":"0",
-                            "num_children":0,
-                            "children":[]
-                        }
-                    ]
-                },
-                {
-                    "type":"LOOP",
-                    "value":"false",
-                    "num_children":5,
-                    "children":[
-                        null,
-                        {
-                            "type":"RELATIONAL",
-                            "value":"<",
-                            "num_chidlren":2,
-                            "children":[
-                                {
-                                    "type":"LITERAL_Integer",
-                                    "value":"1",
-                                    "num_children":0,
-                                    "chidlren":[]
-                                },
-                                {
-                                    "type":"LITERAL_Integer",
-                                    "value":"2",
-                                    "num_children":0,
-                                    "chidlren":[]
-                                }
-                            ]
-                        },
-                        {
-                            "type":"EXPRESSION_LIST",
-                            "value":null,
-                            "num_children":0,
-                            "children":[]
-                        },
-                        {
-                            "type":"ENTITY_LIST",
-                            "value":null,
-                            "num_children":1,
-                            "children":[
-                                {
-                                    "type":"ASSIGNMENT",
-                                    "value":null,
-                                    "num_children":2,
-                                    "children":[
-                                        {
-                                            "type":"REFERENCE",
-                                            "value":null,
-                                            "num_children":1,
-                                            "children":[
-                                                {
-                                                    "type":"IDENTIFIER",
-                                                    "value":"a",
-                                                    "num_children":0,
-                                                    "children":[]
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "type":"LITERAL_Integer",
-                                            "value":"5",
-                                            "num_children":0,
-                                            "children":[]
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "type":"EXPRESSION_LIST",
-                            "value":null,
+                            "value":"18",
                             "num_children":0,
                             "children":[]
                         }
@@ -152,7 +134,7 @@
                             "children":[
                                 {
                                     "type":"IDENTIFIER",
-                                    "value":"a",
+                                    "value":"b",
                                     "num_children":0,
                                     "children":[]
                                 }
