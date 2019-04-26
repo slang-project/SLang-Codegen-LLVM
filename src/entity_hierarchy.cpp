@@ -493,7 +493,38 @@ bool AssignmentAST::codegen()
 
 bool LoopAST::codegen()
 {
-    return LogError<bool>(std::string(__func__) + " not implemented yet");
+    Value *CondV = whileClause->codegen();
+    if (!CondV)
+        return false;
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(32, 0, true)), "loopcond");
+
+    Function* TheFunction = Builder.GetInsertBlock()->getParent();
+    BasicBlock *LoopBB =
+                   BasicBlock::Create(TheContext, "loop", TheFunction);
+    BasicBlock *EndBB = BasicBlock::Create(TheContext, "endloop");
+
+    if (prefix)
+    {
+        Builder.CreateCondBr(CondV, LoopBB, EndBB);
+    } else
+        Builder.CreateBr(LoopBB);
+
+    // Start insertion in LoopBB.
+    Builder.SetInsertPoint(LoopBB);
+
+    if (!body->codegen())
+      return false;
+
+    Builder.CreateCondBr(CondV, LoopBB, EndBB);
+
+    // Codegen of 'Loop' can change the current block, update LoopBB for the PHI 
+    LoopBB = Builder.GetInsertBlock();
+
+    // Emit End block.
+    TheFunction->getBasicBlockList().push_back(EndBB);
+
+    Builder.SetInsertPoint(EndBB);
+    return true;
 }
 
 bool CatchAST::codegen()
