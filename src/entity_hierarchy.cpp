@@ -14,6 +14,49 @@ void initLLVMGlobal(std::string moduleName)
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
 }
 
+// Write object file with given filename, return 0 indicates correct operation complete.
+int createObjectFile(std::string outFilePath)
+{
+    auto TargetTriple = sys::getDefaultTargetTriple();
+    InitializeAllTargetInfos();
+    InitializeAllTargets();
+    InitializeAllTargetMCs();
+    InitializeAllAsmParsers();
+    InitializeAllAsmPrinters();
+
+    std::string Error;
+    auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
+
+    auto CPU = "generic";
+    auto Features = "";
+
+    TargetOptions opt;
+    auto RM = Optional<Reloc::Model>();
+    auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+
+    TheModule->setDataLayout(TargetMachine->createDataLayout());
+    TheModule->setTargetTriple(TargetTriple);
+
+    std::error_code EC;
+    raw_fd_ostream dest(outFilePath, EC, sys::fs::F_None);
+
+    if (EC) {
+        errs() << "Could not open file: " << EC.message();
+        return 1;
+    }
+    legacy::PassManager pass;
+    auto FileType = TargetMachine::CGFT_ObjectFile;
+
+    if (TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)) {
+        errs() << "TargetMachine can't emit a file of this type";
+        return 1;
+    }
+
+    pass.run(*TheModule);
+    dest.flush();
+    return 0;
+}
+
 void printGeneratedCode(std::string outFilePath)
 {
     std::error_code EC;
@@ -68,7 +111,7 @@ Value *ReferenceAST::codegen()
 
 Value *IntegerAST::codegen()
 {
-    return ConstantInt::get(TheContext, APInt(32, std::stoi(value), true));
+    return ConstantInt::get(TheContext, APInt(16, std::stoi(value), true));
 }
 
 Value *RealAST::codegen()
@@ -111,7 +154,7 @@ Value *CallAST::codegen()
     if (CalleeF->arg_size() != actuals.size())
         return LogError<Value>("Incorrect number of arguments passed");
 
-    std::vector<Value *> ArgsV;
+    std::vector<Value*> ArgsV;
     for (auto &a : actuals)
     {
         ArgsV.push_back(a->codegen());
@@ -161,7 +204,7 @@ Value *BinaryAST::codegen()
 Type *UnitRefAST::codegen()
 {
     if (name == "Integer")
-        return Type::getInt32Ty(TheContext);
+        return Type::getInt16Ty(TheContext);
     if (name == "Real")
         return Type::getDoubleTy(TheContext);
     if (name == "Character")
@@ -175,7 +218,7 @@ Type *UnitRefAST::codegen()
 Value *UnitRefAST::getDefault()
 {
     if (name == "Integer")
-        return ConstantInt::get(TheContext, APInt(32, 0, true));
+        return ConstantInt::get(TheContext, APInt(16, 0, true));
     if (name == "Real")
         return ConstantFP::get(TheContext, APFloat(0.0));
     if (name == "Character")
@@ -314,6 +357,12 @@ Function *RoutineAST::codegen()
 //     return LogError<?>(std::string(__func__) + " not implemented yet");
 // }
 
+// TODO: fulfill with gotos like return, break, continue, goto etc.
+bool isControlFlow(EntityAST *e)
+{
+    return dynamic_cast<ReturnAST*>(e);
+}
+
 bool BodyAST::codegen()
 {
     for (auto &arg : body)
@@ -322,26 +371,26 @@ bool BodyAST::codegen()
         {
             if (!statement->codegen())
                 return false;
-            continue;
+            if (isControlFlow(statement))
+                goto end;  // skip unreachable statements
         }
 
-        if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
+        else if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
         {
             if (!var->codegen())
                 return false;
-            continue;
         }
 
-        if (CallAST *call = dynamic_cast<CallAST*>(arg))
+        else if (CallAST *call = dynamic_cast<CallAST*>(arg))
         {
             // TODO: check (return value of codegen?)
             if (!call->codegen())
                 return false;
-            continue;
         }
 
-        return LogError<bool>("Unsupported body element");
+        else return LogError<bool>("Unsupported body element");
     }
+    end:
     return true;
 }
 
@@ -352,7 +401,50 @@ bool IfThenPartAST::codegen()
 
 bool IfAST::codegen()
 {
-    return LogError<bool>(std::string(__func__) + " not implemented yet");
+    auto &Cond = ifThenParts[0]->condition;  // TODO: change
+    Value *CondV = Cond->codegen();
+    if (!CondV)
+        return false;
+
+    // Convert condition to a bool by comparing non-equal to 0.0.
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "ifcond");
+
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+
+    // Create blocks for the then and else cases.  Insert the 'then' block at the
+    // end of the function.
+    BasicBlock *ThenBB = BasicBlock::Create(TheContext, "then", TheFunction);
+    BasicBlock *ElseBB = BasicBlock::Create(TheContext, "else");
+    BasicBlock *MergeBB = BasicBlock::Create(TheContext, "ifcont");
+
+    Builder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+    // Emit then value.
+    Builder.SetInsertPoint(ThenBB);
+
+    auto &Then = ifThenParts[0]->thenPart;  // TODO: change
+    if (!Then->codegen())
+        return false;
+
+    Builder.CreateBr(MergeBB);
+    // Codegen of 'Then' can change the current block, update ThenBB for the PHI.
+    ThenBB = Builder.GetInsertBlock();
+
+    // Emit else block.
+    TheFunction->getBasicBlockList().push_back(ElseBB);
+    Builder.SetInsertPoint(ElseBB);
+
+    if (!elsePart->codegen())
+        return false;
+
+    Builder.CreateBr(MergeBB);
+    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+    ElseBB = Builder.GetInsertBlock();
+
+    // Emit merge block.
+    TheFunction->getBasicBlockList().push_back(MergeBB);
+    Builder.SetInsertPoint(MergeBB);
+    return true;
 }
 
 bool CheckAST::codegen()
@@ -399,9 +491,39 @@ bool AssignmentAST::codegen()
     return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }
 
-bool LoopAST::codegen()
+bool LoopAST::codegen()  // TODO: review
 {
-    return LogError<bool>(std::string(__func__) + " not implemented yet");
+    Value *CondV = whileClause->codegen();
+    if (!CondV)
+        return false;
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "loopcond");
+
+    Function* TheFunction = Builder.GetInsertBlock()->getParent();
+    BasicBlock *LoopBB =
+                   BasicBlock::Create(TheContext, "loop", TheFunction);
+    BasicBlock *EndBB = BasicBlock::Create(TheContext, "endloop");
+
+    if (prefix)
+        Builder.CreateCondBr(CondV, LoopBB, EndBB);
+    else
+        Builder.CreateBr(LoopBB);
+
+    // Start insertion in LoopBB.
+    Builder.SetInsertPoint(LoopBB);
+
+    if (!body->codegen())
+      return false;
+
+    Builder.CreateCondBr(CondV, LoopBB, EndBB);
+
+    // Codegen of 'Loop' can change the current block, update LoopBB for the PHI 
+    LoopBB = Builder.GetInsertBlock();
+
+    // Emit End block.
+    TheFunction->getBasicBlockList().push_back(EndBB);
+
+    Builder.SetInsertPoint(EndBB);
+    return true;
 }
 
 bool CatchAST::codegen()
@@ -416,5 +538,40 @@ bool TryAST::codegen()
 
 bool CompilationAST::codegen()
 {
-    return anonymous->codegen();
+    // Declare exit function (used in startup function)
+    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
+    static const std::string _exitName = "_Exit";
+    static const std::vector<Type*> _exitArgTypes { Type::getInt16Ty(TheContext) };
+    // FIXME: _Noreturn as a return type
+    FunctionType *_exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
+    Function *_exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
+
+    // Create startup function, TODO: move in future
+    static const std::string _startName = "_start";
+    FunctionType *_startType = FunctionType::get(Type::getVoidTy(TheContext), false);
+    Function *_start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
+    BasicBlock *BB = BasicBlock::Create(TheContext, _startName, _start);
+
+    // Startup function body
+    static const std::vector<Value*> anonArgs{};
+    Function *anon = anonymous->codegen();
+    if (!anon)
+    {
+        _start->eraseFromParent();
+        return false;
+    }
+    Builder.SetInsertPoint(BB);
+    Value *anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
+    if (!Builder.CreateCall(_exit, anonRes))
+    {
+        _start->eraseFromParent();
+        return LogError<bool>("Generation of exit function call in startup failed");
+    }
+    Builder.CreateRetVoid();
+    if (verifyFunction(*_start, &errs()))
+    {
+        _start->eraseFromParent();
+        return LogError<Function>("Failed to verify routine body");
+    }
+    return true;
 }

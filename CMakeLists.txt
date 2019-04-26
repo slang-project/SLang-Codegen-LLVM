@@ -55,8 +55,9 @@ add_executable(${EXECUTABLE_NAME} ${project_sources})
 
 
 #** Link LLVM **
-llvm_map_components_to_libnames(llvm_libs support core irreader)
-target_link_libraries(${EXECUTABLE_NAME} ${llvm_libs})
+# llvm_map_components_to_libnames(llvm_libs all)
+target_link_libraries(${EXECUTABLE_NAME} LLVM)
+# message(${llvm_libs})
 
 # #** Info Tab **
 # message("Binary Tree Path ${PROJECT_BINARY_DIR}")

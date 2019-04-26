@@ -6,7 +6,7 @@
 
 static std::map<std::string, std::function<EntityAST*(const json&)>> deserializeMapping =
 {
-    #include "deserializeMapping.data"
+    #include "deserializeMapping.def"
 };
 
 
@@ -197,12 +197,22 @@ BodyAST *deserializeBodyAST(const json &in)
 
 IfThenPartAST *deserializeIfThenPartAST(const json &in)
 {
-    return LogError<IfThenPartAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new IfThenPartAST
+    (
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        deserializeBodyAST(inc[1])
+    );
 }
 
 IfAST *deserializeIfAST(const json &in)
 {
-    return LogError<IfAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new IfAST
+    (
+        deserializeVector<IfThenPartAST*>(inc[0]),
+        deserializeBodyAST(inc[1])
+    );
 }
 
 CheckAST *deserializeCheckAST(const json &in)
@@ -241,7 +251,16 @@ AssignmentAST *deserializeAssignmentAST(const json &in)
 
 LoopAST *deserializeLoopAST(const json &in)
 {
-    return LogError<LoopAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN]; 
+    return new LoopAST
+    (
+        in[VALUE] == "true" ? true : false,
+        inc[0].is_null() ? nullptr : dynamic_cast<VariableAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1])),
+        deserializeVector<ExpressionAST*>(inc[2]),
+        deserializeBodyAST(inc[3]),
+        deserializeVector<ExpressionAST*>(inc[4])
+    );
 }
 
 CatchAST *deserializeCatchAST(const json &in)
