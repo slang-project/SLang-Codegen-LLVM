@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     std::string filename = "app";
     printGeneratedCode(filename + ".ll");
     createObjectFile(filename + ".o");
-    std::string linkCall{"ld -lc -o " + filename + " " + filename + ".o"};
+    std::string linkCall{"ld -o " + filename + " " + filename + ".o -static -lc"};
     system(linkCall.c_str());
     return 0;
 }
