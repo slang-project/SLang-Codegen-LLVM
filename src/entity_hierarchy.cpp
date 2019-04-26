@@ -473,7 +473,12 @@ bool LoopAST::codegen()
       return false;
 
     Builder.CreateCondBr(CondV, LoopBB, EndBB);
-    TheFunction->getBasicBlockList().push_back(LoopBB);
+
+    // Codegen of 'Loop' can change the current block, update LoopBB for the PHI 
+    LoopBB = Builder.GetInsertBlock();
+
+    // Emit End block.
+    TheFunction->getBasicBlockList().push_back(EndBB);
 
     Builder.SetInsertPoint(EndBB);
     return true;
