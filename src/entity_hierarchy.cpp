@@ -491,12 +491,12 @@ bool AssignmentAST::codegen()
     return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }
 
-bool LoopAST::codegen()
+bool LoopAST::codegen()  // TODO: review
 {
     Value *CondV = whileClause->codegen();
     if (!CondV)
         return false;
-    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(32, 0, true)), "loopcond");
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "loopcond");
 
     Function* TheFunction = Builder.GetInsertBlock()->getParent();
     BasicBlock *LoopBB =
@@ -504,9 +504,8 @@ bool LoopAST::codegen()
     BasicBlock *EndBB = BasicBlock::Create(TheContext, "endloop");
 
     if (prefix)
-    {
         Builder.CreateCondBr(CondV, LoopBB, EndBB);
-    } else
+    else
         Builder.CreateBr(LoopBB);
 
     // Start insertion in LoopBB.
