@@ -14,7 +14,7 @@ template<typename T>
 std::vector<T> deserializeVector(const json &in)
 {
     std::vector<T> container{};
-    for (auto &elem : in[CHILDREN])
+    for (const auto &elem : in[CHILDREN])
         container.push_back(dynamic_cast<T>(deserializeMapping[elem[TYPE].get<std::string>()](elem)));
     return container;
 }

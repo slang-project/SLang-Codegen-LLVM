@@ -38,9 +38,9 @@ class ExpressionAST;
 
 
 // EXTERNAL INTERFACE
-void initLLVMGlobal(std::string moduleName);
-int createObjectFile(std::string outFilePath);
-void printGeneratedCode(std::string outFilePath);
+void initLLVMGlobal(const std::string moduleName);
+int createObjectFile(const std::string outFilePath);
+void printGeneratedCode(const std::string outFilePath);
 
 
 // LOGGING
@@ -52,13 +52,13 @@ T *LogError(const char *str)
 }
 
 template<typename T>
-T *LogError(std::string str)
+T *LogError(const std::string str)
 {
     return LogError<T>(str.c_str());
 }
 
 template<bool>
-bool LogError(std::string str)
+bool LogError(const std::string str)
 {
     LogError<void>(str.c_str());
     return false;
@@ -80,8 +80,14 @@ class TypeAST : public EntityAST  // abstract
 protected:
 public:
     virtual ~TypeAST() = default;
-    virtual Type *codegen() { return LogError<Type>(std::string(__func__) + ": use of abstract class"); }
-    virtual Value *getDefault() { return LogError<Value>(std::string(__func__) + ": use of abstract class"); }
+    virtual Type *codegen() const
+    {
+        return LogError<Type>(std::string(__func__) + ": use of abstract class");
+    }
+    virtual Value *getDefault() const
+    {
+        return LogError<Value>(std::string(__func__) + ": use of abstract class");
+    }
 };
 
 class UnitRefAST : public TypeAST
@@ -100,9 +106,12 @@ public:
       : name(name)
     {}
     virtual ~UnitRefAST() = default;
-    virtual Type *codegen() override;
-    virtual Value *getDefault() override;
-    IdentifierAST getName() { return name; }  
+    virtual Type *codegen() const override;
+    virtual Value *getDefault() const override;
+    IdentifierAST getName() const
+    {
+        return name;
+    }  
 };
 
 class MultiTypeAST : public TypeAST
@@ -117,8 +126,8 @@ public:
       : types(types)
     {}
     virtual ~MultiTypeAST() = default;
-    virtual Type *codegen() override;
-    virtual Value *getDefault() override;
+    virtual Type *codegen() const override;
+    virtual Value *getDefault() const override;
 };
 
 class RangeTypeAST : public TypeAST
@@ -136,8 +145,8 @@ public:
         right(right)
     {}
     virtual ~RangeTypeAST() = default;
-    virtual Type *codegen() override;
-    virtual Value *getDefault() override;
+    virtual Type *codegen() const override;
+    virtual Value *getDefault() const override;
 };
 
 /* TODO:
@@ -152,7 +161,10 @@ protected:
     UnitRefAST *type = nullptr;  // NOTE: not like in original parser, but own computed
 public:
     virtual ~ExpressionAST() = default;
-    virtual Value *codegen() { return LogError<Value>(std::string(__func__) + ": use of abstract class"); }
+    virtual Value *codegen() const
+    {
+        return LogError<Value>(std::string(__func__) + ": use of abstract class");
+    }
 };
 
 class PrimaryAST : public ExpressionAST  // abstract
@@ -177,7 +189,7 @@ public:
         thenPart(thenPart)
     {}
     virtual ~ConditionalIfThenPartAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class ConditionalAST : public PrimaryAST
@@ -195,7 +207,7 @@ public:
         elsePart(elsePart)
     {}
     virtual ~ConditionalAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class ThisAST : public PrimaryAST
@@ -204,7 +216,7 @@ protected:
     // UNIT unit
 public:
     virtual ~ThisAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class ReturnExprAST : public PrimaryAST
@@ -213,7 +225,7 @@ protected:
     // ROUTINE routine
 public:
     virtual ~ReturnExprAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class OldAST : public PrimaryAST
@@ -228,7 +240,7 @@ public:
       : old(old)
     {}
     virtual ~OldAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class ReferenceAST : public PrimaryAST
@@ -244,8 +256,11 @@ public:
       : declarationName(declarationName)
     {}
     virtual ~ReferenceAST() = default;
-    virtual Value *codegen() override;
-    IdentifierAST getName() { return declarationName; }
+    virtual Value *codegen() const override;
+    IdentifierAST getName() const
+    {
+        return declarationName;
+    }
 };
 
 // NOTE: THIS TYPE SHOULD NOT BE PRESENT IN THE FINAL IR!
@@ -263,7 +278,7 @@ private:
     {}
 public:
     virtual ~UnresolvedAST() = default;
-    // virtual Value *codegen() override;
+    // virtual Value *codegen() const override;
 };
 
 // NOTE: abstract here, but not in original parser
@@ -295,7 +310,7 @@ public:
         this->type = new UnitRefAST("Integer");
     }
     virtual ~IntegerAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 // NOTE: absent in original parser
@@ -312,7 +327,7 @@ public:
         this->type = new UnitRefAST("Real");
     }
     virtual ~RealAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 // NOTE: absent in original parser
@@ -329,7 +344,7 @@ public:
         this->type = new UnitRefAST("Character");
     }
     virtual ~CharacterAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 // NOTE: absent in original parser
@@ -346,7 +361,7 @@ public:
         this->type = new UnitRefAST("String");
     }
     virtual ~StringAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class TupleAST : public PrimaryAST
@@ -361,7 +376,7 @@ public:
       : expressions(expressions)
     {}
     virtual ~TupleAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class SecondaryAST : public ExpressionAST  // indirectly abstract
@@ -387,7 +402,7 @@ public:
         member(member)
     {}
     virtual ~MemberAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class CallAST : public SecondaryAST
@@ -405,7 +420,7 @@ public:
         actuals(actuals)
     {}
     virtual ~CallAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class UnaryAST : public ExpressionAST
@@ -423,7 +438,7 @@ public:
         primary(primary)
     {}
     virtual ~UnaryAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 /* TODO:
@@ -443,7 +458,7 @@ public:
         range(range)
     {}
     virtual ~InExprAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 */
 
@@ -465,7 +480,7 @@ public:
         right(right)
     {}
     virtual ~BinaryAST() = default;
-    virtual Value *codegen() override;
+    virtual Value *codegen() const override;
 };
 
 class DeclarationAST : public EntityAST  // abstract
@@ -514,9 +529,15 @@ public:
         initializer(initializer)
     {}
     virtual ~VariableAST() = default;
-    virtual bool codegen();  // TODO: think about case of unit member
-    TypeAST *getType() { return type; }
-    IdentifierAST getName() { return name; }
+    virtual bool codegen() const;  // TODO: think about case of unit member
+    TypeAST *getType() const
+    {
+        return type;
+    }
+    IdentifierAST getName() const
+    {
+        return name;
+    }
 };
 
 class UnitAST : public DeclarationAST
@@ -551,7 +572,7 @@ public:
         invariants(invariants)
     {}
     virtual ~UnitAST() = default;
-    virtual Type *codegen();
+    virtual Type *codegen() const;
 };
 
 class RoutineAST : public DeclarationAST
@@ -596,7 +617,7 @@ public:
         ensureThen(ensureThen)
     {}
     virtual ~RoutineAST() = default;
-    virtual Function *codegen();
+    virtual Function *codegen() const;
 };
 
 class ConstantAST : public DeclarationAST
@@ -612,7 +633,7 @@ public:
         constants(constants)
     {}
     virtual ~ConstantAST() = default;
-    // virtual ? *codegen();  // TODO
+    // virtual ? *codegen() const;  // TODO
 };
 
 class StatementAST : public EntityAST  // abstract
@@ -620,7 +641,10 @@ class StatementAST : public EntityAST  // abstract
 protected:
 public:
     virtual ~StatementAST() = default;
-    virtual bool codegen() { return LogError<bool>(std::string(__func__) + ": use of abstract class"); }
+    virtual bool codegen() const
+    {
+        return LogError<bool>(std::string(__func__) + ": use of abstract class");
+    }
 };
 
 class BodyAST : public StatementAST
@@ -635,7 +659,7 @@ public:
       : body(body)
     {}
     virtual ~BodyAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class IfThenPartAST : public StatementAST
@@ -654,7 +678,7 @@ public:
         thenPart(thenPart)
     {}
     virtual ~IfThenPartAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class IfAST : public StatementAST
@@ -672,7 +696,7 @@ public:
         elsePart(elsePart)
     {}
     virtual ~IfAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class CheckAST : public StatementAST
@@ -687,7 +711,7 @@ public:
       : predicates(predicates)
     {}
     virtual ~CheckAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class RaiseAST : public StatementAST
@@ -702,7 +726,7 @@ public:
       : expression(expression)
     {}
     virtual ~RaiseAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class ReturnAST : public StatementAST
@@ -717,7 +741,7 @@ public:
       : expression(expression)
     {}
     virtual ~ReturnAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class BreakAST : public StatementAST
@@ -733,7 +757,7 @@ public:
       : label(label)
     {}
     virtual ~BreakAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
     
 };
 
@@ -752,7 +776,7 @@ public:
         right(right)
     {}
     virtual ~AssignmentAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class LoopAST : public StatementAST
@@ -782,7 +806,7 @@ public:
         variants(variants)
     {}
     virtual ~LoopAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class CatchAST : public StatementAST
@@ -803,7 +827,7 @@ public:
         body(body)
     {}
     virtual ~CatchAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class TryAST : public StatementAST
@@ -824,7 +848,7 @@ public:
         elsePart(elsePart)
     {}
     virtual ~TryAST() = default;
-    virtual bool codegen() override;
+    virtual bool codegen() const override;
 };
 
 class CompilationAST : public EntityAST
@@ -845,5 +869,5 @@ public:
         anonymous->type = new UnitRefAST("Integer");
     }
     virtual ~CompilationAST() = default;
-    virtual bool codegen();
+    virtual bool codegen() const;
 };
