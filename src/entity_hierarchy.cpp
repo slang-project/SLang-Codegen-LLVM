@@ -9,15 +9,15 @@ static std::map<std::string, AllocaInst*> NamedValues;
 
 
 // EXTERNAL INTERFACE
-void initLLVMGlobal(std::string moduleName)
+void initLLVMGlobal(const std::string moduleName)
 {
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
 }
 
 // Write object file with given filename, return 0 indicates correct operation complete.
-int createObjectFile(std::string outFilePath)
+int createObjectFile(const std::string outFilePath)
 {
-    auto TargetTriple = sys::getDefaultTargetTriple();
+    const std::string TargetTriple = sys::getDefaultTargetTriple();
     InitializeAllTargetInfos();
     InitializeAllTargets();
     InitializeAllTargetMCs();
@@ -25,14 +25,14 @@ int createObjectFile(std::string outFilePath)
     InitializeAllAsmPrinters();
 
     std::string Error;
-    auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
+    const auto trg = TargetRegistry::lookupTarget(TargetTriple, Error);
 
-    auto CPU = "generic";
-    auto Features = "";
+    static const std::string CPU = "generic";
+    static const std::string Features = "";
 
-    TargetOptions opt;
-    auto RM = Optional<Reloc::Model>();
-    auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+    const TargetOptions opt {};
+    const auto RM = Optional<Reloc::Model>();
+    const auto TargetMachine = trg->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
 
     TheModule->setDataLayout(TargetMachine->createDataLayout());
     TheModule->setTargetTriple(TargetTriple);
@@ -44,8 +44,8 @@ int createObjectFile(std::string outFilePath)
         errs() << "Could not open file: " << EC.message();
         return 1;
     }
-    legacy::PassManager pass;
-    auto FileType = TargetMachine::CGFT_ObjectFile;
+    legacy::PassManager pass {};
+    const auto FileType = TargetMachine::CGFT_ObjectFile;
 
     if (TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)) {
         errs() << "TargetMachine can't emit a file of this type";
@@ -57,7 +57,7 @@ int createObjectFile(std::string outFilePath)
     return 0;
 }
 
-void printGeneratedCode(std::string outFilePath)
+void printGeneratedCode(const std::string outFilePath)
 {
     std::error_code EC;
     raw_fd_ostream file(outFilePath.c_str(), EC);
@@ -75,78 +75,78 @@ static AllocaInst *CreateEntryBlockAlloca(Function* TheFunction,
 
 // HIERARCHY ------------------------------------------------
 
-Value *ConditionalIfThenPartAST::codegen()
+Value *ConditionalIfThenPartAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *ConditionalAST::codegen()
+Value *ConditionalAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *ThisAST::codegen()
+Value *ThisAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *ReturnExprAST::codegen()
+Value *ReturnExprAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *OldAST::codegen()
+Value *OldAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *ReferenceAST::codegen()
+Value *ReferenceAST::codegen() const
 {
-    AllocaInst *Alloca = NamedValues[declarationName];
+    AllocaInst * const Alloca = NamedValues[declarationName];
     if (!Alloca)
         return LogError<Value>("Unknown variable referenced");
 
     return Builder.CreateLoad(Alloca);
 }
 
-Value *IntegerAST::codegen()
+Value *IntegerAST::codegen() const
 {
     return ConstantInt::get(TheContext, APInt(16, std::stoi(value), true));
 }
 
-Value *RealAST::codegen()
+Value *RealAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *CharacterAST::codegen()
+Value *CharacterAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *StringAST::codegen()
+Value *StringAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *TupleAST::codegen()
+Value *TupleAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
 // TODO: think about code generation semantics
-Value *MemberAST::codegen()
+Value *MemberAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Value *CallAST::codegen()
+Value *CallAST::codegen() const
 {
-    ReferenceAST *callee = dynamic_cast<ReferenceAST*>(secondary);
+    const ReferenceAST * const callee = dynamic_cast<ReferenceAST*>(secondary);
     if (!callee)
         return LogError<Value>("Callee not identified.");
 
-    Function *CalleeF = TheModule->getFunction(callee->getName());
+    Function * const CalleeF = TheModule->getFunction(callee->getName());
     if (!CalleeF)
         return LogError<Value>("Unknown function referenced");
 
@@ -155,7 +155,7 @@ Value *CallAST::codegen()
         return LogError<Value>("Incorrect number of arguments passed");
 
     std::vector<Value*> ArgsV;
-    for (auto &a : actuals)
+    for (const auto &a : actuals)
     {
         ArgsV.push_back(a->codegen());
         if (!ArgsV.back())
@@ -165,7 +165,7 @@ Value *CallAST::codegen()
     return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
-Value *UnaryAST::codegen()
+Value *UnaryAST::codegen() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
@@ -175,7 +175,7 @@ Value *InExprAST::codegen()
 {}
 */
 
-Value *BinaryAST::codegen()
+Value *BinaryAST::codegen() const
 {
     // TODO: create binary operations versions for all type pairs:
     // e.g. this is special version for (int)a ? (int)b
@@ -201,7 +201,7 @@ Value *BinaryAST::codegen()
     return LogError<Value>("Unsupported binary operator.");
 }
 
-Type *UnitRefAST::codegen()
+Type *UnitRefAST::codegen() const
 {
     if (name == "Integer")
         return Type::getInt16Ty(TheContext);
@@ -215,7 +215,7 @@ Type *UnitRefAST::codegen()
     return LogError<Type>("Invaid type.");
 }
 
-Value *UnitRefAST::getDefault()
+Value *UnitRefAST::getDefault() const
 {
     if (name == "Integer")
         return ConstantInt::get(TheContext, APInt(16, 0, true));
@@ -229,39 +229,39 @@ Value *UnitRefAST::getDefault()
     return LogError<Value>("Invaid type.");
 }
 
-Type *MultiTypeAST::codegen()
+Type *MultiTypeAST::codegen() const
 {
     return LogError<Type>(std::string(__func__) + " not implemented yet");
 }
 
-Value *MultiTypeAST::getDefault()
+Value *MultiTypeAST::getDefault() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
-Type *RangeTypeAST::codegen()
+Type *RangeTypeAST::codegen() const
 {
     return LogError<Type>(std::string(__func__) + " not implemented yet");
 }
 
-Value *RangeTypeAST::getDefault()
+Value *RangeTypeAST::getDefault() const
 {
     return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
 /* TODO:
-Type *TupleTypeAST::codegen
+Type *TupleTypeAST::codegen() const
 {};
 
-Type *RoutineTypeAST::codegen
+Type *RoutineTypeAST::codegen() const
 {};
 */
 
-bool VariableAST::codegen()
+bool VariableAST::codegen() const
 { 
     Type *T;
     Value *init;
-    Function *F = Builder.GetInsertBlock()->getParent();
+    Function * const F = Builder.GetInsertBlock()->getParent();
 
     if (!type)
         return LogError<bool>("Type inference not implemented yet");
@@ -274,7 +274,7 @@ bool VariableAST::codegen()
     if (!init)
         return false;
 
-    AllocaInst *Alloca = CreateEntryBlockAlloca(F, T, name);
+    AllocaInst * const Alloca = CreateEntryBlockAlloca(F, T, name);
     NamedValues[name] = Alloca;
 
     if (initializer)
@@ -287,23 +287,23 @@ bool VariableAST::codegen()
     return /*(bool)*/ Builder.CreateStore(init, Alloca);
 }
 
-Type *UnitAST::codegen()
+Type *UnitAST::codegen() const
 {
     return LogError<Type>(std::string(__func__) + " not implemented yet");
 }
 
-Function *RoutineAST::codegen()
+Function *RoutineAST::codegen() const
 {
 /*  if (!F->empty())  // find routine with this name
         return LogError<Function>("Routine cannot be redefined.");
 */
     // Vector for routine arguments
-    std::vector<Type*> argTypes{};
-    std::vector<VariableAST*> argsAsVars{};
+    std::vector<Type*> argTypes {};
+    std::vector<VariableAST*> argsAsVars {};
 
-    for (auto &arg : parameters)
+    for (const auto &arg : parameters)
     {
-        VariableAST *curParam = dynamic_cast<VariableAST*>(arg);
+        VariableAST * const curParam = dynamic_cast<VariableAST*>(arg);
         if (!curParam)
             return LogError<Function>("Parameter is not variable declaration.");
 
@@ -316,22 +316,22 @@ Function *RoutineAST::codegen()
     }
 
     // Routine type
-    Type *functionType = type->codegen();
-    FunctionType *FT =
+    Type * const functionType = type->codegen();
+    FunctionType * const FT =
         FunctionType::get(functionType, argTypes, false);
-    Function *F =
+    Function * const F =
         Function::Create(FT, Function::ExternalLinkage, name, TheModule.get());
 
-    unsigned Idx = 0;
+    size_t Idx = 0;
     for (auto &arg : F->args())
         arg.setName(argsAsVars[Idx++]->getName());
 
     BasicBlock *BB = BasicBlock::Create(TheContext, "entry", F);
     Builder.SetInsertPoint(BB);
-    
+
     NamedValues.clear();
     Idx = 0;
-    for (auto &arg : F->args())
+    for (const auto &arg : F->args())
     {
         AllocaInst *Alloca = CreateEntryBlockAlloca(F, argTypes[Idx++], arg.getName());
         NamedValues[arg.getName()] = Alloca;
@@ -352,22 +352,22 @@ Function *RoutineAST::codegen()
     return F;
 }
 
-// ? *ConstantAST::codegen()
+// ? *ConstantAST::codegen() const
 // {
 //     return LogError<?>(std::string(__func__) + " not implemented yet");
 // }
 
 // TODO: fulfill with gotos like return, break, continue, goto etc.
-bool isControlFlow(EntityAST *e)
+bool isControlFlow(const EntityAST * const e)
 {
-    return dynamic_cast<ReturnAST*>(e);
+    return dynamic_cast<const ReturnAST*>(e);
 }
 
-bool BodyAST::codegen()
+bool BodyAST::codegen() const
 {
-    for (auto &arg : body)
+    for (const auto &arg : body)
     {
-        if (StatementAST *statement = dynamic_cast<StatementAST*>(arg))
+        if (const StatementAST *statement = dynamic_cast<StatementAST*>(arg))
         {
             if (!statement->codegen())
                 return false;
@@ -375,13 +375,13 @@ bool BodyAST::codegen()
                 goto end;  // skip unreachable statements
         }
 
-        else if (VariableAST *var = dynamic_cast<VariableAST*>(arg))
+        else if (const VariableAST *var = dynamic_cast<VariableAST*>(arg))
         {
             if (!var->codegen())
                 return false;
         }
 
-        else if (CallAST *call = dynamic_cast<CallAST*>(arg))
+        else if (const CallAST *call = dynamic_cast<CallAST*>(arg))
         {
             // TODO: check (return value of codegen?)
             if (!call->codegen())
@@ -394,14 +394,14 @@ bool BodyAST::codegen()
     return true;
 }
 
-bool IfThenPartAST::codegen()
+bool IfThenPartAST::codegen() const
 {
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool IfAST::codegen()
+bool IfAST::codegen() const
 {
-    auto &Cond = ifThenParts[0]->condition;  // TODO: change
+    const ExpressionAST * const Cond = ifThenParts[0]->condition;  // TODO: change
     Value *CondV = Cond->codegen();
     if (!CondV)
         return false;
@@ -409,7 +409,7 @@ bool IfAST::codegen()
     // Convert condition to a bool by comparing non-equal to 0.0.
     CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "ifcond");
 
-    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    Function * const TheFunction = Builder.GetInsertBlock()->getParent();
 
     // Create blocks for the then and else cases.  Insert the 'then' block at the
     // end of the function.
@@ -422,7 +422,7 @@ bool IfAST::codegen()
     // Emit then value.
     Builder.SetInsertPoint(ThenBB);
 
-    auto &Then = ifThenParts[0]->thenPart;  // TODO: change
+    const BodyAST * const Then = ifThenParts[0]->thenPart;  // TODO: change
     if (!Then->codegen())
         return false;
 
@@ -447,61 +447,61 @@ bool IfAST::codegen()
     return true;
 }
 
-bool CheckAST::codegen()
+bool CheckAST::codegen() const
 {
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool RaiseAST::codegen()
+bool RaiseAST::codegen() const
 {
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool ReturnAST::codegen()
+bool ReturnAST::codegen() const
 {
     if (!expression)
         return /*(bool)*/ Builder.CreateRetVoid();
 
-    Value *ret = expression->codegen();
+    Value * const ret = expression->codegen();
     if (!ret)
         return LogError<bool>("Failed to codegen return expression");
 
     return /*(bool)*/ Builder.CreateRet(ret);
 }
 
-bool BreakAST::codegen()
+bool BreakAST::codegen() const
 {
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool AssignmentAST::codegen()
+bool AssignmentAST::codegen() const
 {
-    ReferenceAST *var = dynamic_cast<ReferenceAST*>(left);
+    const ReferenceAST * const var = dynamic_cast<ReferenceAST*>(left);
     if (!var)
         return LogError<bool>("LHS of the assignment is not a REFERENCE.");
 
-    AllocaInst *Alloca = NamedValues[var->getName()];
+    AllocaInst * const Alloca = NamedValues[var->getName()];
     if (!Alloca)
         return LogError<bool>("Assignemt to the undefined variable");
 
-    Value *R = right->codegen();
+    Value * const R = right->codegen();
     if (!R)
         return LogError<bool>("No expression given to assign");
 
     return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }
 
-bool LoopAST::codegen()  // TODO: review
+bool LoopAST::codegen() const  // TODO: review
 {
     Value *CondV = whileClause->codegen();
     if (!CondV)
         return false;
     CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "loopcond");
 
-    Function* TheFunction = Builder.GetInsertBlock()->getParent();
+    Function * const TheFunction = Builder.GetInsertBlock()->getParent();
     BasicBlock *LoopBB =
                    BasicBlock::Create(TheContext, "loop", TheFunction);
-    BasicBlock *EndBB = BasicBlock::Create(TheContext, "endloop");
+    BasicBlock * const EndBB = BasicBlock::Create(TheContext, "endloop");
 
     if (prefix)
         Builder.CreateCondBr(CondV, LoopBB, EndBB);
@@ -526,42 +526,42 @@ bool LoopAST::codegen()  // TODO: review
     return true;
 }
 
-bool CatchAST::codegen()
+bool CatchAST::codegen() const
 {
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool TryAST::codegen()
+bool TryAST::codegen() const
 {
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool CompilationAST::codegen()
+bool CompilationAST::codegen() const
 {
     // Declare exit function (used in startup function)
     // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
     static const std::string _exitName = "_Exit";
     static const std::vector<Type*> _exitArgTypes { Type::getInt16Ty(TheContext) };
     // FIXME: _Noreturn as a return type
-    FunctionType *_exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
-    Function *_exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
+    FunctionType * const _exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
+    Function * const _exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
 
     // Create startup function, TODO: move in future
     static const std::string _startName = "_start";
-    FunctionType *_startType = FunctionType::get(Type::getVoidTy(TheContext), false);
-    Function *_start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
-    BasicBlock *BB = BasicBlock::Create(TheContext, _startName, _start);
+    FunctionType * const _startType = FunctionType::get(Type::getVoidTy(TheContext), false);
+    Function * const _start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
+    BasicBlock * const BB = BasicBlock::Create(TheContext, _startName, _start);
 
     // Startup function body
     static const std::vector<Value*> anonArgs{};
-    Function *anon = anonymous->codegen();
+    Function * const anon = anonymous->codegen();
     if (!anon)
     {
         _start->eraseFromParent();
         return false;
     }
     Builder.SetInsertPoint(BB);
-    Value *anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
+    Value * const anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
     if (!Builder.CreateCall(_exit, anonRes))
     {
         _start->eraseFromParent();
