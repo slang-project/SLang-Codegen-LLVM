@@ -265,7 +265,7 @@ bool VariableAST::codegen() const
 
     if (!type)
         return LogError<bool>("Type inference not implemented yet");
-    
+
     T = type->codegen();
     if (!T)
         return false;

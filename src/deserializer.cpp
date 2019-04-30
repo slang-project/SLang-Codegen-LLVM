@@ -111,7 +111,7 @@ CallAST *deserializeCallAST(const json &in)
 {
     return LogError<CallAST>(std::string(__func__) + " not implemented yet");
 }
- 
+
 UnaryAST *deserializeUnaryAST(const json &in)
 {
     return LogError<UnaryAST>(std::string(__func__) + " not implemented yet");

@@ -40,7 +40,7 @@ TupleAST *deserializeTupleAST(const json &in);
 MemberAST *deserializeMemberAST(const json &in);
 
 CallAST *deserializeCallAST(const json &in);
- 
+
 UnaryAST *deserializeUnaryAST(const json &in);
 
 BinaryAST *deserializeBinaryAST(const json &in);

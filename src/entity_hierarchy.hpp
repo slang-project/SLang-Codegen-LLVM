@@ -758,7 +758,6 @@ public:
     {}
     virtual ~BreakAST() = default;
     virtual bool codegen() const override;
-    
 };
 
 class AssignmentAST : public StatementAST
