@@ -38,27 +38,27 @@ class ExpressionAST;
 
 
 // EXTERNAL INTERFACE
-void initLLVMGlobal(const std::string moduleName);
-int createObjectFile(const std::string outFilePath);
-void printGeneratedCode(const std::string outFilePath);
+void initLLVMGlobal(const std::string &moduleName);
+int createObjectFile(const std::string &outFilePath);
+void printGeneratedCode(const std::string &outFilePath);
 
 
 // LOGGING
 template<typename T>
-T *LogError(const char *str)
+T *LogError(const char * const str)
 {
     fprintf(stderr, "Error: %s\n", str);
     return nullptr;
 }
 
 template<typename T>
-T *LogError(const std::string str)
+T *LogError(const std::string &str)
 {
     return LogError<T>(str.c_str());
 }
 
 template<bool>
-bool LogError(const std::string str)
+bool LogError(const std::string &str)
 {
     LogError<void>(str.c_str());
     return false;
