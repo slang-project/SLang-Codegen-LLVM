@@ -9,13 +9,13 @@ static std::map<std::string, AllocaInst*> NamedValues;
 
 
 // EXTERNAL INTERFACE
-void initLLVMGlobal(const std::string moduleName)
+void initLLVMGlobal(const std::string &moduleName)
 {
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
 }
 
 // Write object file with given filename, return 0 indicates correct operation complete.
-int createObjectFile(const std::string outFilePath)
+int createObjectFile(const std::string &outFilePath)
 {
     const std::string TargetTriple = sys::getDefaultTargetTriple();
     InitializeAllTargetInfos();
@@ -57,7 +57,7 @@ int createObjectFile(const std::string outFilePath)
     return 0;
 }
 
-void printGeneratedCode(const std::string outFilePath)
+void printGeneratedCode(const std::string &outFilePath)
 {
     std::error_code EC;
     raw_fd_ostream file(outFilePath.c_str(), EC);
