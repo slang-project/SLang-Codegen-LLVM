@@ -3,6 +3,8 @@
 #include <map>
 #include <utility>
 
+#define DC(type, in) dynamic_cast<type>(in)
+
 
 static std::map<std::string, std::function<EntityAST*(const json&)>> deserializeMapping =
 {
@@ -55,45 +57,24 @@ ReferenceAST *deserializeReferenceAST(const json &in)
     auto &inc = in[CHILDREN];
     return new ReferenceAST
     (
-        deserializeIdentifierAST(inc[0])
-    ); 
+        dynamic_cast<TypeAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        deserializeIdentifierAST(inc[1])
+    );
 }
 
 UnresolvedAST *deserializeUnresolvedAST(const json &in)
 {
-    // return new UnresolvedAST(deserializeIdentifierAST(in[CHILDREN][0])); 
+    // return new UnresolvedAST(deserializeIdentifierAST(in[CHILDREN][0]));
     return LogError<UnresolvedAST>("UNRESOLVED is not allowed to be present in the IR");
 }
 
-IntegerAST *deserializeIntegerAST(const json &in)
+LiteralAST *deserializeLiteralAST(const json &in)
 {
-    return new IntegerAST
+    auto &inc = in[CHILDREN];
+    return new LiteralAST
     (
-        in[VALUE].get<std::string>()
-    );
-}
-
-RealAST *deserializeRealAST(const json &in)
-{
-    return new RealAST
-    (
-        in[VALUE].get<std::string>()
-    );
-}
-
-CharacterAST *deserializeCharacterAST(const json &in)
-{
-    return new CharacterAST
-    (
-        in[VALUE].get<std::string>()
-    );
-}
-
-StringAST *deserializeStringAST(const json &in)
-{
-    return new StringAST
-    (
-        in[VALUE].get<std::string>()
+        in[VALUE].get<std::string>(),
+        dynamic_cast<TypeAST*>(deserializeUnitRefAST(inc[0]))
     );
 }
 
@@ -109,7 +90,13 @@ MemberAST *deserializeMemberAST(const json &in)
 
 CallAST *deserializeCallAST(const json &in)
 {
-    return LogError<CallAST>(std::string(__func__) + " not implemented yet");
+    auto &inc = in[CHILDREN];
+    return new CallAST
+    (
+        dynamic_cast<TypeAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1])),
+        deserializeVector<ExpressionAST*>(inc[2])
+    );
 }
 
 UnaryAST *deserializeUnaryAST(const json &in)
@@ -123,8 +110,9 @@ BinaryAST *deserializeBinaryAST(const json &in)
     return new BinaryAST
     (
         in[VALUE],
-        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
-        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1]))
+        dynamic_cast<TypeAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1])),
+        dynamic_cast<ExpressionAST*>(deserializeMapping[inc[2][TYPE].get<std::string>()](inc[2]))
     );
 }
 
@@ -148,7 +136,7 @@ RangeTypeAST *deserializeRangeTypeAST(const json &in)
 
 VariableAST *deserializeVariableAST(const json &in)
 {
-    auto &inc = in[CHILDREN]; 
+    auto &inc = in[CHILDREN];
     return new VariableAST
     (
         deserializeIdentifierAST(inc[0]),
@@ -246,12 +234,12 @@ AssignmentAST *deserializeAssignmentAST(const json &in)
     (
         dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
         dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1]))
-    ); 
+    );
 }
 
 LoopAST *deserializeLoopAST(const json &in)
 {
-    auto &inc = in[CHILDREN]; 
+    auto &inc = in[CHILDREN];
     return new LoopAST
     (
         in[VALUE] == "true" ? true : false,
@@ -275,8 +263,10 @@ TryAST *deserializeTryAST(const json &in)
 
 CompilationAST *deserializeCompilationAST(const json &in)
 {
+    auto &inc = in[CHILDREN];
     return new CompilationAST
     (
-        deserializeRoutineAST(in)  // for now COMPILATION type is skipped in JSON IR
+        deserializeVector<DeclarationAST*>(inc[0]),
+        deserializeRoutineAST(inc[1])
     );
 }

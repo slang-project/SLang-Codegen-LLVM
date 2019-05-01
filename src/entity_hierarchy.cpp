@@ -109,24 +109,9 @@ Value *ReferenceAST::codegen() const
     return Builder.CreateLoad(Alloca);
 }
 
-Value *IntegerAST::codegen() const
+Value *LiteralAST::codegen() const
 {
     return ConstantInt::get(TheContext, APInt(16, std::stoi(value), true));
-}
-
-Value *RealAST::codegen() const
-{
-    return LogError<Value>(std::string(__func__) + " not implemented yet");
-}
-
-Value *CharacterAST::codegen() const
-{
-    return LogError<Value>(std::string(__func__) + " not implemented yet");
-}
-
-Value *StringAST::codegen() const
-{
-    return LogError<Value>(std::string(__func__) + " not implemented yet");
 }
 
 Value *TupleAST::codegen() const
@@ -171,7 +156,7 @@ Value *UnaryAST::codegen() const
 }
 
 /* TODO:
-Value *InExprAST::codegen()
+Value *InExprAST::codegen() const
 {}
 */
 
@@ -196,7 +181,11 @@ Value *BinaryAST::codegen() const
     if (binaryOp == "/")
         return Builder.CreateUDiv(L, R, "divtmp");
     if (binaryOp == "<")
-        return Builder.CreateICmpULT(L, R, "cmptmp");
+        return Builder.CreateICmpSLT(L, R, "lttmp");
+    if (binaryOp == ">")
+        return Builder.CreateICmpSGT(L, R, "gttmp");
+    if (binaryOp == "==")
+        return Builder.CreateICmpEQ(L, R, "eqtmp");
 
     return LogError<Value>("Unsupported binary operator.");
 }
@@ -211,6 +200,8 @@ Type *UnitRefAST::codegen() const
         return LogError<Type>("Charater not implemented yet.");
     if (name == "String")
         return LogError<Type>("String not implemented yet.");
+    if (name == "Boolean")
+        return Type::getInt1Ty(TheContext);
 
     return LogError<Type>("Invaid type.");
 }
@@ -258,7 +249,7 @@ Type *RoutineTypeAST::codegen() const
 */
 
 bool VariableAST::codegen() const
-{ 
+{
     Type *T;
     Value *init;
     Function * const F = Builder.GetInsertBlock()->getParent();
@@ -287,12 +278,12 @@ bool VariableAST::codegen() const
     return /*(bool)*/ Builder.CreateStore(init, Alloca);
 }
 
-Type *UnitAST::codegen() const
+bool UnitAST::codegen() const
 {
-    return LogError<Type>(std::string(__func__) + " not implemented yet");
+    return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-Function *RoutineAST::codegen() const
+bool RoutineAST::codegen() const
 {
 /*  if (!F->empty())  // find routine with this name
         return LogError<Function>("Routine cannot be redefined.");
@@ -309,7 +300,7 @@ Function *RoutineAST::codegen() const
 
         Type *argType = curParam->getType()->codegen();
         if (!argType)
-            return nullptr;  // TODO: log?
+            return false;  // TODO: log?
 
         argTypes.push_back(argType);
         argsAsVars.push_back(curParam);
@@ -407,7 +398,7 @@ bool IfAST::codegen() const
         return false;
 
     // Convert condition to a bool by comparing non-equal to 0.0.
-    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "ifcond");
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(1, 0, false)), "ifcond");
 
     Function * const TheFunction = Builder.GetInsertBlock()->getParent();
 
@@ -496,7 +487,8 @@ bool LoopAST::codegen() const  // TODO: review
     Value *CondV = whileClause->codegen();
     if (!CondV)
         return false;
-    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(16, 0, true)), "loopcond");
+
+    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(1, 0, false)), "loopcond");
 
     Function * const TheFunction = Builder.GetInsertBlock()->getParent();
     BasicBlock *LoopBB =
@@ -516,7 +508,7 @@ bool LoopAST::codegen() const  // TODO: review
 
     Builder.CreateCondBr(CondV, LoopBB, EndBB);
 
-    // Codegen of 'Loop' can change the current block, update LoopBB for the PHI 
+    // Codegen of 'Loop' can change the current block, update LoopBB for the PHI
     LoopBB = Builder.GetInsertBlock();
 
     // Emit End block.
@@ -538,6 +530,11 @@ bool TryAST::codegen() const
 
 bool CompilationAST::codegen() const
 {
+    for (const auto &decl : units_and_standalones)
+    {
+        decl->codegen();
+    }
+
     // Declare exit function (used in startup function)
     // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
     static const std::string _exitName = "_Exit";
@@ -553,13 +550,15 @@ bool CompilationAST::codegen() const
     BasicBlock * const BB = BasicBlock::Create(TheContext, _startName, _start);
 
     // Startup function body
-    static const std::vector<Value*> anonArgs{};
-    Function * const anon = anonymous->codegen();
+    anonymous->codegen();
+    Function * const anon = TheModule->getFunction(anonymous->name);
     if (!anon)
     {
         _start->eraseFromParent();
         return false;
     }
+
+    static const std::vector<Value*> anonArgs{};
     Builder.SetInsertPoint(BB);
     Value * const anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
     if (!Builder.CreateCall(_exit, anonRes))

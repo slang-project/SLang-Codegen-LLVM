@@ -111,7 +111,7 @@ public:
     IdentifierAST getName() const
     {
         return name;
-    }  
+    }
 };
 
 class MultiTypeAST : public TypeAST
@@ -157,8 +157,13 @@ class RoutineTypeAST : public TypeAST {};
 class ExpressionAST : public EntityAST  // abstract
 {
 protected:
-    // TYPE type !! changed to:
-    UnitRefAST *type = nullptr;  // NOTE: not like in original parser, but own computed
+    TypeAST *type;
+    ExpressionAST
+    (
+        TypeAST *type
+    )
+      : type(type)
+    {}
 public:
     virtual ~ExpressionAST() = default;
     virtual Value *codegen() const
@@ -170,6 +175,13 @@ public:
 class PrimaryAST : public ExpressionAST  // abstract
 {
 protected:
+    TypeAST *type;
+    PrimaryAST
+    (
+        TypeAST *type
+    )
+      : ExpressionAST(type)
+    {}
 public:
     virtual ~PrimaryAST() = default;
 };
@@ -182,10 +194,12 @@ protected:
 public:
     ConditionalIfThenPartAST
     (
+        TypeAST *type,
         ExpressionAST *condition,
         ExpressionAST *thenPart
     )
-      : condition(condition),
+      : ExpressionAST(type),
+        condition(condition),
         thenPart(thenPart)
     {}
     virtual ~ConditionalIfThenPartAST() = default;
@@ -200,10 +214,12 @@ protected:
 public:
     ConditionalAST
     (
+        TypeAST *type,
         std::vector<ConditionalIfThenPartAST *> ifThenParts,
         ExpressionAST *elsePart
     )
-      : ifThenParts(ifThenParts),
+      : PrimaryAST(type),
+        ifThenParts(ifThenParts),
         elsePart(elsePart)
     {}
     virtual ~ConditionalAST() = default;
@@ -235,9 +251,11 @@ protected:
 public:
     OldAST
     (
+        TypeAST *type,
         ExpressionAST *old
     )
-      : old(old)
+      : PrimaryAST(type),
+        old(old)
     {}
     virtual ~OldAST() = default;
     virtual Value *codegen() const override;
@@ -251,9 +269,11 @@ protected:
 public:
     ReferenceAST
     (
+        TypeAST *type,
         IdentifierAST declarationName
     )
-      : declarationName(declarationName)
+      : PrimaryAST(type),
+        declarationName(declarationName)
     {}
     virtual ~ReferenceAST() = default;
     virtual Value *codegen() const override;
@@ -272,95 +292,31 @@ private:
     // NOTE: Objects of this type must not be created!
     UnresolvedAST
     (
+        TypeAST *type,
         IdentifierAST name
     )
-       : name(name)
+      : PrimaryAST(type),
+        name(name)
     {}
 public:
     virtual ~UnresolvedAST() = default;
     // virtual Value *codegen() const override;
 };
 
-// NOTE: abstract here, but not in original parser
-class LiteralAST : public PrimaryAST  // indirectly abstract
+class LiteralAST : public PrimaryAST
 {
 protected:
     std::string value;  // value
 public:
     LiteralAST
     (
-        std::string value
+        std::string value,
+        TypeAST *type
     )
-      : value(value)
+      : PrimaryAST(type),
+        value(value)
     {}
     virtual ~LiteralAST() = default;
-};
-
-// NOTE: absent in original parser
-class IntegerAST : public LiteralAST
-{
-protected:
-public:
-    IntegerAST
-    (
-        std::string value
-    )
-      : LiteralAST(value)
-    {
-        this->type = new UnitRefAST("Integer");
-    }
-    virtual ~IntegerAST() = default;
-    virtual Value *codegen() const override;
-};
-
-// NOTE: absent in original parser
-class RealAST : public LiteralAST
-{
-protected:
-public:
-    RealAST
-    (
-        std::string value
-    )
-      : LiteralAST(value)
-    {
-        this->type = new UnitRefAST("Real");
-    }
-    virtual ~RealAST() = default;
-    virtual Value *codegen() const override;
-};
-
-// NOTE: absent in original parser
-class CharacterAST : public LiteralAST
-{
-protected:
-public:
-    CharacterAST
-    (
-        std::string value
-    )
-      : LiteralAST(value)
-    {
-        this->type = new UnitRefAST("Character");
-    }
-    virtual ~CharacterAST() = default;
-    virtual Value *codegen() const override;
-};
-
-// NOTE: absent in original parser
-class StringAST : public LiteralAST
-{
-protected:
-public:
-    StringAST
-    (
-        std::string value
-    )
-      : LiteralAST(value)
-    {
-        this->type = new UnitRefAST("String");
-    }
-    virtual ~StringAST() = default;
     virtual Value *codegen() const override;
 };
 
@@ -371,9 +327,11 @@ protected:
 public:
     TupleAST
     (
+        TypeAST *type,
         std::vector<ExpressionAST*> expressions
     )
-      : expressions(expressions)
+      : PrimaryAST(type),
+        expressions(expressions)
     {}
     virtual ~TupleAST() = default;
     virtual Value *codegen() const override;
@@ -383,6 +341,12 @@ class SecondaryAST : public ExpressionAST  // indirectly abstract
 {
 protected:
 public:
+    SecondaryAST
+    (
+        TypeAST* type
+    )
+      : ExpressionAST(type)
+    {}
     virtual ~SecondaryAST() = default;
 };
 
@@ -395,10 +359,12 @@ protected:
 public:
     MemberAST
     (
+        TypeAST *type,
         ExpressionAST *secondary,
         IdentifierAST member
     )
-      : secondary(secondary),
+      : SecondaryAST(type),
+        secondary(secondary),
         member(member)
     {}
     virtual ~MemberAST() = default;
@@ -413,10 +379,12 @@ protected:
 public:
     CallAST
     (
+        TypeAST *type,
         ExpressionAST *secondary,
         std::vector<ExpressionAST*> actuals
     )
-      : secondary(secondary),
+      : SecondaryAST(type),
+        secondary(secondary),
         actuals(actuals)
     {}
     virtual ~CallAST() = default;
@@ -432,9 +400,11 @@ public:
     UnaryAST
     (
         std::string unaryOp,
+        TypeAST *type,
         ExpressionAST *primary
     )
-      : unaryOp(unaryOp),
+      : ExpressionAST(type),
+        unaryOp(unaryOp),
         primary(primary)
     {}
     virtual ~UnaryAST() = default;
@@ -451,10 +421,11 @@ public:
     InExprAST
     (
         std::string unaryOp,
+        TypeAST *type,
         ExpressionAST *primary,
         RangeTypeAST *range
     )
-      : UnaryAST(unaryOp, primary),
+      : UnaryAST(unaryOp, type, primary),
         range(range)
     {}
     virtual ~InExprAST() = default;
@@ -472,10 +443,12 @@ public:
     BinaryAST
     (
         std::string binaryOp,
+        TypeAST *type,
         ExpressionAST *left,
         ExpressionAST *right
     )
-      : binaryOp(binaryOp),
+      : ExpressionAST(type),
+        binaryOp(binaryOp),
         left(left),
         right(right)
     {}
@@ -489,14 +462,15 @@ protected:
     // bool isHidden
     // bool isFinal
     IdentifierAST name;
-public:
     DeclarationAST
     (
         IdentifierAST name
     )
       : name(name)
     {}
+public:
     virtual ~DeclarationAST() = default;
+    virtual bool codegen() const = 0;
 };
 
 class VariableAST : public DeclarationAST
@@ -514,8 +488,8 @@ protected:
 public:
     VariableAST
     (
-        IdentifierAST name, 
-        bool isRef, 
+        IdentifierAST name,
+        bool isRef,
         bool isConcurrent,
         bool isForeign,
         TypeAST *type,
@@ -558,10 +532,10 @@ public:
     UnitAST
     (
         IdentifierAST name,
-        bool isRef, 
-        bool isConcurrent, 
-        bool isForeign, 
-        std::vector<DeclarationAST*> declarations, 
+        bool isRef,
+        bool isConcurrent,
+        bool isForeign,
+        std::vector<DeclarationAST*> declarations,
         std::vector<ExpressionAST*> invariants
     )
       : DeclarationAST(name),
@@ -572,7 +546,7 @@ public:
         invariants(invariants)
     {}
     virtual ~UnitAST() = default;
-    virtual Type *codegen() const;
+    virtual bool codegen() const;
 };
 
 class RoutineAST : public DeclarationAST
@@ -617,7 +591,7 @@ public:
         ensureThen(ensureThen)
     {}
     virtual ~RoutineAST() = default;
-    virtual Function *codegen() const;
+    virtual bool codegen() const;
 };
 
 class ConstantAST : public DeclarationAST
@@ -633,7 +607,7 @@ public:
         constants(constants)
     {}
     virtual ~ConstantAST() = default;
-    // virtual ? *codegen() const;  // TODO
+    virtual bool codegen() const;  // TODO
 };
 
 class StatementAST : public EntityAST  // abstract
@@ -795,7 +769,7 @@ public:
         ExpressionAST* whileClause,
         std::vector<ExpressionAST*> invariants,
         BodyAST *body,
-        std::vector<ExpressionAST*> variants   
+        std::vector<ExpressionAST*> variants
     )
       : prefix(prefix),
         loopCounter(loopCounter),
@@ -854,17 +828,18 @@ class CompilationAST : public EntityAST
 {
 protected:
     // USE_LIST         uses
-    // DECLARATION_LIST units_and_standalones
+    std::vector<DeclarationAST*> units_and_standalones;
     RoutineAST *anonymous;
 public:
     CompilationAST
     (
+        std::vector<DeclarationAST*> units_and_standalones,
         RoutineAST *anonymous
     )
-      : anonymous(anonymous)
+      : units_and_standalones(units_and_standalones),
+        anonymous(anonymous)
     {
-        // NOTE: temporary changes for compatibility with linker of GCC
-        anonymous->name = "main";
+        // TODO: remove, $anonymous does not return anything
         anonymous->type = new UnitRefAST("Integer");
     }
     virtual ~CompilationAST() = default;

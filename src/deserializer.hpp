@@ -27,13 +27,7 @@ ReferenceAST *deserializeReferenceAST(const json &in);
 
 UnresolvedAST *deserializeUnresolvedAST(const json &in);
 
-IntegerAST *deserializeIntegerAST(const json &in);
-
-RealAST *deserializeRealAST(const json &in);
-
-CharacterAST *deserializeCharacterAST(const json &in);
-
-StringAST *deserializeStringAST(const json &in);
+LiteralAST *deserializeLiteralAST(const json &in);
 
 TupleAST *deserializeTupleAST(const json &in);
 

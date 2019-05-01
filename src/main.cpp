@@ -7,13 +7,13 @@
 
 using json = nlohmann::json;
 
-// given command line arguments try to deduce 
+// given command line arguments try to deduce
 std::string get_filepath(const int &argc, const char * const * const &argv)
 {
     if (argc >= 2)
     {
         const std::string filename { argv[1] };
-        return filename;        
+        return filename;
     }
     else
     {
