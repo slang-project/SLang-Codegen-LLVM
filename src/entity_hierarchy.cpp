@@ -397,8 +397,7 @@ bool IfAST::codegen() const
     if (!CondV)
         return false;
 
-    // Convert condition to a bool by comparing non-equal to 0.0.
-    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(1, 0, false)), "ifcond");
+    // TODO: add cast to Boolean
 
     Function * const TheFunction = Builder.GetInsertBlock()->getParent();
 
@@ -488,7 +487,7 @@ bool LoopAST::codegen() const  // TODO: review
     if (!CondV)
         return false;
 
-    CondV = Builder.CreateICmpEQ(CondV, ConstantInt::get(TheContext, APInt(1, 0, false)), "loopcond");
+    // TODO: add cast to Boolean
 
     Function * const TheFunction = Builder.GetInsertBlock()->getParent();
     BasicBlock *LoopBB =

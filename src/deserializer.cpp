@@ -3,8 +3,6 @@
 #include <map>
 #include <utility>
 
-#define DC(type, in) dynamic_cast<type>(in)
-
 
 static std::map<std::string, std::function<EntityAST*(const json&)>> deserializeMapping =
 {
@@ -215,10 +213,11 @@ RaiseAST *deserializeRaiseAST(const json &in)
 
 ReturnAST *deserializeReturnAST(const json &in)
 {
-    auto &inc = in[CHILDREN][0];
+    auto &inc = in[CHILDREN];
+    std::string a = in[TYPE].get<std::string>();
     return new ReturnAST
     (
-        inc.is_null() ? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[TYPE].get<std::string>()](inc))
+        inc.is_null() ? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0]))
     );
 }
 
