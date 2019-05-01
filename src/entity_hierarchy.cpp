@@ -483,37 +483,47 @@ bool AssignmentAST::codegen() const
 
 bool LoopAST::codegen() const  // TODO: review
 {
-    Value *CondV = whileClause->codegen();
-    if (!CondV)
-        return false;
+    // TODO: loop counter
 
     // TODO: add cast to Boolean
 
     Function * const TheFunction = Builder.GetInsertBlock()->getParent();
-    BasicBlock *LoopBB =
-                   BasicBlock::Create(TheContext, "loop", TheFunction);
+    BasicBlock *CondBB =
+                   BasicBlock::Create(TheContext, "loopcond", TheFunction);
+    BasicBlock *LoopBB = BasicBlock::Create(TheContext, "loop");
     BasicBlock * const EndBB = BasicBlock::Create(TheContext, "endloop");
 
+    // CONDITION
     if (prefix)
-        Builder.CreateCondBr(CondV, LoopBB, EndBB);
+        Builder.CreateBr(CondBB);
     else
         Builder.CreateBr(LoopBB);
 
-    // Start insertion in LoopBB.
-    Builder.SetInsertPoint(LoopBB);
+    Builder.SetInsertPoint(CondBB);
 
-    if (!body->codegen())
-      return false;
+    Value *CondV = whileClause->codegen();
+    if (!CondV)
+        return false;
 
     Builder.CreateCondBr(CondV, LoopBB, EndBB);
 
-    // Codegen of 'Loop' can change the current block, update LoopBB for the PHI
+    // BODY
+    TheFunction->getBasicBlockList().push_back(LoopBB);
+
+    Builder.SetInsertPoint(LoopBB);
+
+    if (!body->codegen())
+        return false;
+
     LoopBB = Builder.GetInsertBlock();
 
-    // Emit End block.
+    Builder.CreateBr(CondBB);
+
+    // END
     TheFunction->getBasicBlockList().push_back(EndBB);
 
     Builder.SetInsertPoint(EndBB);
+
     return true;
 }
 
