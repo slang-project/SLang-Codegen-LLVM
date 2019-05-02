@@ -34,10 +34,11 @@ extern std::unique_ptr<Module> TheModule;
 
 // EXTERNAL INTERFACE
 
+bool isLibcName(const std::string &name);  // TODO: move away
 void initLLVMGlobal(const std::string &moduleName);
+bool generateStartupRoutine(const std::string &mainName); // TODO: move away
 void addType(const std::string &name, Type *llvmType, Value *defValue);
 Type *getLLVMType(const std::string &name);
 Value *getLLVMDefaultValue(const std::string &name);
 int createObjectFile(const std::string &outFilePath);
 void writeGeneratedCode(const std::string &outFilePath);
-bool isLibcName(const std::string &name);  // TODO: move away

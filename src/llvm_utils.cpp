@@ -5,6 +5,7 @@
 LLVMContext TheContext;
 IRBuilder<> Builder(TheContext);
 std::unique_ptr<Module> TheModule;
+
 static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 {
     { "Boolean",   { Type::getInt1Ty(TheContext),   ConstantInt::get(TheContext, APInt(1, 0, false)) } },  // TODO: remove
@@ -15,16 +16,65 @@ static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 
     { "c$int",     { Type::getInt16Ty(TheContext),  ConstantInt::get(TheContext, APInt(16, 0, true)) } },
 };
-static const std::vector<std::string> LibcNames
-{
-    #include "libc_names.def"
-};
 
-// EXTERNAL INTERFACE
+bool isLibcName(const std::string &name)
+{
+    // Reserved identifiers and possible collisions with the C Standard Library
+    // Currently considered: ISO/IEC 9899:2018, 7.1.3 Reserved identifiers
+    // TODO: enumerations?
+    static const std::vector<std::string> LibcNames
+    {
+        #include "libc_names.def"
+    };
+    return (name[0] == '_' && (isupper(name[1]) || name[1] == '_'))
+        || std::find(LibcNames.begin(), LibcNames.end(), name) != LibcNames.end();
+}
 
 void initLLVMGlobal(const std::string &moduleName)
 {
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
+}
+
+bool generateStartupRoutine(const std::string &mainName)
+{
+    // Declare exit function (used in startup function)
+    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
+    static const std::string _exitName = "_Exit";
+    static const std::vector<Type*> _exitArgTypes { getLLVMType("c$int") };
+    // FIXME: _Noreturn as a return type
+    FunctionType * const _exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
+    Function * const _exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
+
+    // Create startup function, TODO: move in future
+    static const std::string _startName = "_start";
+    FunctionType * const _startType = FunctionType::get(Type::getVoidTy(TheContext), false);
+    Function * const _start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
+    BasicBlock * const BB = BasicBlock::Create(TheContext, _startName, _start);
+
+    // Startup function body
+    Function * const main = TheModule->getFunction(mainName);
+    if (!main)
+    {
+        _start->eraseFromParent();
+        return false;
+    }
+
+    static const std::vector<Value*> mainArgs{};
+    Builder.SetInsertPoint(BB);
+    Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
+    Value * const castedRes = Builder.CreateIntCast(mainRes, _exitArgTypes[0], true, "rescast");
+    if (!Builder.CreateCall(_exit, castedRes))
+    {
+        _start->eraseFromParent();
+        return false;
+    }
+    Builder.CreateUnreachable();
+    if (verifyFunction(*_start, &errs()))
+    {
+        _start->eraseFromParent();
+        return false;
+    }
+    return true;
 }
 
 void addType(const std::string &name, Type * const llvmType, Value * const defValue)
@@ -99,13 +149,4 @@ void writeGeneratedCode(const std::string &outFilePath)
     std::error_code EC;
     raw_fd_ostream file(outFilePath.c_str(), EC);
     TheModule->print(file, nullptr);
-}
-
-bool isLibcName(const std::string &name)
-{
-    // Reserved identifiers and possible collisions with the C Standard Library
-    // Currently considered: ISO/IEC 9899:2018, 7.1.3 Reserved identifiers
-    // TODO: enumerations?
-    return (name[0] == '_' && (isupper(name[1]) || name[1] == '_'))
-        || std::find(LibcNames.begin(), LibcNames.end(), name) != LibcNames.end();
 }

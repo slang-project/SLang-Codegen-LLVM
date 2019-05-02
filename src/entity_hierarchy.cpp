@@ -477,43 +477,15 @@ bool CompilationAST::codegen() const
     }
     // TODO: check if startup function is required
 
-    // Declare exit function (used in startup function)
-    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
-    static const std::string _exitName = "_Exit";
-    static const std::vector<Type*> _exitArgTypes { getLLVMType("c$int") };
-    // FIXME: _Noreturn as a return type
-    FunctionType * const _exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
-    Function * const _exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
-
-    // Create startup function, TODO: move in future
-    static const std::string _startName = "_start";
-    FunctionType * const _startType = FunctionType::get(Type::getVoidTy(TheContext), false);
-    Function * const _start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
-    BasicBlock * const BB = BasicBlock::Create(TheContext, _startName, _start);
-
-    // Startup function body
-    anonymous->codegen();
-    Function * const anon = TheModule->getFunction(anonymous->name);
-    if (!anon)
+    if (!anonymous->codegen())
     {
-        _start->eraseFromParent();
-        return false;
+        return LogError<bool>("Anonymous routine generation failed");
     }
 
-    static const std::vector<Value*> anonArgs{};
-    Builder.SetInsertPoint(BB);
-    Value * const anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
-    Value * const castedRes = Builder.CreateIntCast(anonRes, _exitArgTypes[0], true, "rescast");
-    if (!Builder.CreateCall(_exit, castedRes))
+    if (!generateStartupRoutine(anonymous->name))
     {
-        _start->eraseFromParent();
-        return LogError<bool>("Generation of exit function call in startup failed");
+        return LogError<bool>("Startup routine generation failed");
     }
-    Builder.CreateUnreachable();
-    if (verifyFunction(*_start, &errs()))
-    {
-        _start->eraseFromParent();
-        return LogError<Function>("Failed to verify routine body");
-    }
+
     return true;
 }
