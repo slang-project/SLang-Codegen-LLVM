@@ -1,26 +1,5 @@
-// LLVM INCLUDES
-#include "llvm/ADT/APInt.h"
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/IR/BasicBlock.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/Verifier.h"
-#include "llvm/Support/TargetRegistry.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetOptions.h"
-#include "llvm/Support/FileSystem.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/Support/FileSystem.h"
-#include "llvm/Support/Host.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm_utils.hpp"  // TheModule, Builder, TheContext
 
-// ADDITIONAL INCLUDES
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string>
@@ -29,21 +8,22 @@
 
 // NAMESPACES SETUP
 using json = nlohmann::json;
-using namespace llvm;
+
+
+// INTERNAL NEEDS CONTAINERS
+
+extern std::map<std::string, AllocaInst*> NamedValues;
+// TODO: type table
 
 
 // FORWARD DECLARATION NEEDS
+
 class BodyAST;
 class ExpressionAST;
 
 
-// EXTERNAL INTERFACE
-void initLLVMGlobal(const std::string &moduleName);
-int createObjectFile(const std::string &outFilePath);
-void printGeneratedCode(const std::string &outFilePath);
-
-
 // LOGGING
+
 template<typename T>
 T *LogError(const char * const str)
 {

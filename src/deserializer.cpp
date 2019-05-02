@@ -13,7 +13,7 @@ static std::map<std::string, std::function<EntityAST*(const json&)>> deserialize
 template<typename T>
 std::vector<T> deserializeVector(const json &in)
 {
-    std::vector<T> container{};
+    std::vector<T> container {};
     for (const auto &elem : in[CHILDREN])
         container.push_back(dynamic_cast<T>(deserializeMapping[elem[TYPE].get<std::string>()](elem)));
     return container;

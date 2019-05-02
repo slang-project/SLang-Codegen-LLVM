@@ -1,4 +1,5 @@
 #include "deserializer.hpp"
+
 #include <nlohmann/json.hpp>
 #include <cstdlib>
 #include <iostream>
@@ -7,27 +8,31 @@
 
 using json = nlohmann::json;
 
-// given command line arguments try to deduce
-std::string get_filepath(const int &argc, const char * const * const &argv)
+struct Parameters
+{
+    std::string in_path {};  // TODO: filesystem::path
+
+    std::string out_path { "app" };  // TODO: filesystem::path
+
+    bool save_ll_listing = true;
+    bool save_o_file = false;
+};
+
+// Given command line arguments try to deduce parameters
+void parse_args(Parameters &params, const int &argc, const char * const * const &argv)
 {
     if (argc >= 2)
     {
-        const std::string filename { argv[1] };
-        return filename;
-    }
-    else
-    {
-        return std::string {};
+        params.in_path = std::string { argv[1] };
     }
 }
 
 int main(const int argc, const char * const * const argv)
 {
     // TODO: Consider using Boost.Program_options for cli
-    // Get filepath from command line args
-    const std::string input_filepath { get_filepath(argc, argv) };
+    Parameters params; parse_args(params, argc, argv);
 
-    // Check file existance
+    const std::string &input_filepath = params.in_path;
     if (!input_filepath.length())
     {
         std::cerr << "No input file provided.\nUSAGE: " << "slang_jtll" << " <filepath>" << '\n';
@@ -36,29 +41,62 @@ int main(const int argc, const char * const * const argv)
 
     // Read file by path into input stream
     std::fstream input_file { input_filepath, std::ios_base::in };
-
     if (!input_file)
     {
-        std::cerr << "No input file found: " << input_filepath << std::endl;
+        std::cerr << "Cannot open input file: " << input_filepath << std::endl;
         return 1;
     }
 
-    // Parse json file
+    // JSON PARSE
     json input = json::parse(input_file);
 
+    // CODE GENERATION
     initLLVMGlobal(input_filepath);
 
     const CompilationAST* root = deserializeCompilationAST(input);
-    root->codegen();
 
-    static const std::string filename = "app";
+    if (!root->codegen())
+    {
+        std::cerr << "Compilation failed: " << input_filepath << std::endl;
+        return 2;
+    }
 
-    printGeneratedCode(filename + ".ll");
-    createObjectFile(filename + ".o");
+    // OUTPUT WRITING
+    const std::string &output_filepath = params.out_path;
+    if (!output_filepath.length())
+    {
+        std::cerr << "No output path provided." << std::endl;
+        return 1;
+    }
 
-    static const std::string linkCall { "ld -o " + filename + " " + filename + ".o -static -lc" };
+    // LL FILE WRITE
+    if (params.save_ll_listing)
+    {
+        static const std::string ll_file_format { ".ll" };
+        static const std::string ll_file_path { output_filepath + ll_file_format };  // TODO: filesystem::path
+        writeGeneratedCode(ll_file_path);
+    }
 
-    std::system(linkCall.c_str());
+    // OBJECT FILE WRITE
+    static const std::string o_file_format { ".o" };
+    static const std::string o_file_path { output_filepath + o_file_format };  // TODO: filesystem::path
+    createObjectFile(o_file_path);
+
+    // LINKAGE
+    static const std::string linkCall { "ld -o " + output_filepath + " " + o_file_path + " -static -lc" };
+    const bool linkage_succeed = !std::system(linkCall.c_str());
+
+    if (!params.save_o_file)
+    {
+        static const std::string rmCall { "rm " + o_file_path };
+        std::system(rmCall.c_str());  // TODO: filesystem::remove
+    }
+
+    if (!linkage_succeed)
+    {
+        std::cerr << "Linkage failed: " << linkCall << std::endl;
+        return 2;
+    }
 
     return 0;
 }
