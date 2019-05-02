@@ -6,6 +6,8 @@ LLVMContext TheContext;
 IRBuilder<> Builder(TheContext);
 std::unique_ptr<Module> TheModule;
 
+static const std::string _exitName = "_Exit";
+
 static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 {
     { "Boolean",   { Type::getInt1Ty(TheContext),   ConstantInt::get(TheContext, APInt(1, 0, false)) } },  // TODO: remove
@@ -15,6 +17,14 @@ static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
     { "String",    { nullptr,                       nullptr                                          } },  // TODO
 
     { "c$int",     { Type::getInt16Ty(TheContext),  ConstantInt::get(TheContext, APInt(16, 0, true)) } },
+};
+
+static std::map<const std::string, FunctionType*> LibcInterfaces
+{
+    { _exitName, FunctionType::get(
+            Type::getVoidTy(TheContext),
+            std::vector<Type*> { getLLVMType("c$int") },
+            false) },
 };
 
 bool isLibcName(const std::string &name)
@@ -33,18 +43,20 @@ bool isLibcName(const std::string &name)
 void initLLVMGlobal(const std::string &moduleName)
 {
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
+
+    // EXTERNAL DECLARATIONS
+
+    // Routine for exit to system (used in startup function)
+    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
+    Function::Create(
+        LibcInterfaces[_exitName],
+        Function::ExternalLinkage,
+        _exitName,
+        TheModule.get());
 }
 
 bool generateStartupRoutine(const std::string &mainName)
 {
-    // Declare exit function (used in startup function)
-    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
-    static const std::string _exitName = "_Exit";
-    static const std::vector<Type*> _exitArgTypes { getLLVMType("c$int") };
-    // FIXME: _Noreturn as a return type
-    FunctionType * const _exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
-    Function * const _exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
-
     // Create startup function, TODO: move in future
     static const std::string _startName = "_start";
     FunctionType * const _startType = FunctionType::get(Type::getVoidTy(TheContext), false);
@@ -59,10 +71,17 @@ bool generateStartupRoutine(const std::string &mainName)
         return false;
     }
 
-    static const std::vector<Value*> mainArgs{};
+    Function * const _exit = TheModule->getFunction(_exitName);
+    if (!_exit)
+    {
+        _start->eraseFromParent();
+        return false;
+    }
+
+    static const std::vector<Value*> mainArgs {};
     Builder.SetInsertPoint(BB);
     Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
-    Value * const castedRes = Builder.CreateIntCast(mainRes, _exitArgTypes[0], true, "rescast");
+    Value * const castedRes = Builder.CreateIntCast(mainRes, LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
     if (!Builder.CreateCall(_exit, castedRes))
     {
         _start->eraseFromParent();
