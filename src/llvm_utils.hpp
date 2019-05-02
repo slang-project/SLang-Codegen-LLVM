@@ -35,5 +35,9 @@ extern std::unique_ptr<Module> TheModule;
 // EXTERNAL INTERFACE
 
 void initLLVMGlobal(const std::string &moduleName);
+void addType(const std::string &name, Type *llvmType, Value *defValue);
+Type *getLLVMType(const std::string &name);
+Value *getLLVMDefaultValue(const std::string &name);
 int createObjectFile(const std::string &outFilePath);
 void writeGeneratedCode(const std::string &outFilePath);
+bool isLibcName(const std::string &name);  // TODO: move away

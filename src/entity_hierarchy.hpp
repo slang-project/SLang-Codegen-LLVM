@@ -44,6 +44,9 @@ bool LogError(const std::string &str)
     return false;
 }
 
+/// Mangle the given name in case if it is the same as libc name.
+std::string mangleRoutineName(const std::string &name);
+
 // HIERARCHY ------------------------------------------------
 
 class EntityAST  // abstract
@@ -243,6 +246,7 @@ public:
 
 class ReferenceAST : public PrimaryAST
 {
+    friend class CallAST; // for name mangling
 protected:
     // DECLARATION declaration !! changed to:
     IdentifierAST declarationName;  // NOTE: not like in original parser
@@ -366,7 +370,14 @@ public:
       : SecondaryAST(type),
         secondary(secondary),
         actuals(actuals)
-    {}
+    {
+        ReferenceAST *sec = dynamic_cast<ReferenceAST*>(secondary);
+        if (!sec)
+        {
+            throw "Only REFERENCE objects may be called.";
+        }
+        sec->declarationName = mangleRoutineName(sec->declarationName);
+    }
     virtual ~CallAST() = default;
     virtual Value *codegen() const override;
 };
@@ -560,7 +571,7 @@ public:
         std::vector<ExpressionAST*> postconditions,
         bool ensureThen
     )
-      : DeclarationAST(name),
+      : DeclarationAST(mangleRoutineName(name)),
         isForeign(isForeign),
         parameters(parameters),
         type(type),

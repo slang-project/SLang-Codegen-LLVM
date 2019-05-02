@@ -35,7 +35,7 @@ int main(const int argc, const char * const * const argv)
     const std::string &input_filepath = params.in_path;
     if (!input_filepath.length())
     {
-        std::cerr << "No input file provided.\nUSAGE: " << "slang_jtll" << " <filepath>" << '\n';
+        std::cerr << "No input file provided.\nUSAGE: " << "slang_jtll" << " <filepath>" << std::endl;
         return 1;
     }
 

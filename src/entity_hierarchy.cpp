@@ -17,6 +17,11 @@ static AllocaInst *CreateEntryBlockAlloca(Function* TheFunction,
     return TmpB.CreateAlloca(type, 0, VarName.c_str());
 }
 
+std::string mangleRoutineName(const std::string &name)
+{
+    return isLibcName(name) ? "$" + name : name;
+}
+
 // HIERARCHY ------------------------------------------------
 
 Value *ConditionalIfThenPartAST::codegen() const
@@ -136,32 +141,18 @@ Value *BinaryAST::codegen() const
 
 Type *UnitRefAST::codegen() const
 {
-    if (name == "Integer")
-        return Type::getInt16Ty(TheContext);
-    if (name == "Real")
-        return Type::getDoubleTy(TheContext);
-    if (name == "Character")
-        return LogError<Type>("Charater not implemented yet.");
-    if (name == "String")
-        return LogError<Type>("String not implemented yet.");
-    if (name == "Boolean")
-        return Type::getInt1Ty(TheContext);
-
-    return LogError<Type>("Invaid type.");
+    Type *res = getLLVMType(name);
+    if (!res)
+        return LogError<Type>("Type was not defined: " + name);
+    return res;
 }
 
 Value *UnitRefAST::getDefault() const
 {
-    if (name == "Integer")
-        return ConstantInt::get(TheContext, APInt(16, 0, true));
-    if (name == "Real")
-        return ConstantFP::get(TheContext, APFloat(0.0));
-    if (name == "Character")
-        return LogError<Value>("Charater not implemented yet.");
-    if (name == "String")
-        return LogError<Value>("String not implemented yet.");
-
-    return LogError<Value>("Invaid type.");
+    Value *res = getLLVMDefaultValue(name);
+    if (!res)
+        return LogError<Value>("Type was not defined: " + name);
+    return res;
 }
 
 Type *MultiTypeAST::codegen() const
@@ -438,10 +429,7 @@ bool LoopAST::codegen() const  // TODO: review
     BasicBlock * const EndBB = BasicBlock::Create(TheContext, "endloop");
 
     // CONDITION
-    if (prefix)
-        Builder.CreateBr(CondBB);
-    else
-        Builder.CreateBr(LoopBB);
+    Builder.CreateBr(prefix ? CondBB : LoopBB);
 
     Builder.SetInsertPoint(CondBB);
 
@@ -487,11 +475,12 @@ bool CompilationAST::codegen() const
     {
         decl->codegen();
     }
+    // TODO: check if startup function is required
 
     // Declare exit function (used in startup function)
     // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
     static const std::string _exitName = "_Exit";
-    static const std::vector<Type*> _exitArgTypes { Type::getInt16Ty(TheContext) };
+    static const std::vector<Type*> _exitArgTypes { getLLVMType("c$int") };
     // FIXME: _Noreturn as a return type
     FunctionType * const _exitType = FunctionType::get(Type::getVoidTy(TheContext), _exitArgTypes, false);
     Function * const _exit = Function::Create(_exitType, Function::ExternalLinkage, _exitName, TheModule.get());
@@ -514,7 +503,8 @@ bool CompilationAST::codegen() const
     static const std::vector<Value*> anonArgs{};
     Builder.SetInsertPoint(BB);
     Value * const anonRes = Builder.CreateCall(anon, anonArgs, "anoncall");
-    if (!Builder.CreateCall(_exit, anonRes))
+    Value * const castedRes = Builder.CreateIntCast(anonRes, _exitArgTypes[0], true, "rescast");
+    if (!Builder.CreateCall(_exit, castedRes))
     {
         _start->eraseFromParent();
         return LogError<bool>("Generation of exit function call in startup failed");
