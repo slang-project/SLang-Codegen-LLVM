@@ -509,7 +509,7 @@ bool CompilationAST::codegen() const
         _start->eraseFromParent();
         return LogError<bool>("Generation of exit function call in startup failed");
     }
-    Builder.CreateRetVoid();
+    Builder.CreateUnreachable();
     if (verifyFunction(*_start, &errs()))
     {
         _start->eraseFromParent();
