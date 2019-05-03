@@ -89,7 +89,7 @@ bool generateStartupRoutine(const std::string &mainName)
     Value * const castedRes = Builder.CreateIntCast(mainRes,
         LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
 
-    Function * const putcharf = TheModule->getFunction("putchar");
+    Function * const putcharf = TheModule->getFunction("putchar");  // TODO: remove!
     Builder.CreateCall(putcharf, castedRes);
 
     const auto _exitCall = Builder.CreateCall(_exit, castedRes);
