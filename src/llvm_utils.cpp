@@ -21,6 +21,7 @@ static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 
 static std::map<const std::string, FunctionType*> LibcInterfaces
 {
+    // ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
     { _exitName, FunctionType::get(
             Type::getVoidTy(TheContext),
             std::vector<Type*> { getLLVMType("c$int") },
@@ -30,7 +31,7 @@ static std::map<const std::string, FunctionType*> LibcInterfaces
 bool isLibcName(const std::string &name)
 {
     // Reserved identifiers and possible collisions with the C Standard Library
-    // Currently considered: ISO/IEC 9899:2018, 7.1.3 Reserved identifiers
+    // ISO/IEC 9899:2018, 7.1.3 Reserved identifiers
     // TODO: enumerations?
     static const std::vector<std::string> LibcNames
     {
@@ -45,14 +46,14 @@ void initLLVMGlobal(const std::string &moduleName)
     TheModule = llvm::make_unique<Module>(moduleName, TheContext);
 
     // EXTERNAL DECLARATIONS
-
-    // Routine for exit to system (used in startup function)
-    // Currently considered: ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
-    Function::Create(
-        LibcInterfaces[_exitName],
-        Function::ExternalLinkage,
-        _exitName,
-        TheModule.get());
+    for (const auto &libcEntryPair : LibcInterfaces)
+    {
+        Function::Create(
+            libcEntryPair.second, // FunctionType
+            Function::ExternalLinkage,
+            libcEntryPair.first, // Name
+            TheModule.get());
+    }
 }
 
 bool generateStartupRoutine(const std::string &mainName)
