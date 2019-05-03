@@ -36,7 +36,7 @@ int main(const int argc, const char * const * const argv)
     if (!input_filepath.length())
     {
         std::cerr << "No input file provided.\nUSAGE: " << "slang_jtll" << " <filepath>" << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // Read file by path into input stream
@@ -44,7 +44,7 @@ int main(const int argc, const char * const * const argv)
     if (!input_file)
     {
         std::cerr << "Cannot open input file: " << input_filepath << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // JSON PARSE
@@ -58,7 +58,7 @@ int main(const int argc, const char * const * const argv)
     if (!root->codegen())
     {
         std::cerr << "Compilation failed: " << input_filepath << std::endl;
-        return 2;
+        return EXIT_FAILURE;
     }
 
     // OUTPUT WRITING
@@ -66,7 +66,7 @@ int main(const int argc, const char * const * const argv)
     if (!output_filepath.length())
     {
         std::cerr << "No output path provided." << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // LL FILE WRITE
@@ -95,8 +95,8 @@ int main(const int argc, const char * const * const argv)
     if (!linkage_succeed)
     {
         std::cerr << "Linkage failed: " << linkCall << std::endl;
-        return 2;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
