@@ -15,7 +15,7 @@ struct Parameters
     std::string out_path { "app" };  // TODO: filesystem::path
 
     bool save_ll_listing = true;
-    bool save_o_file = false;
+    bool save_o_file = true;
 };
 
 // Given command line arguments try to deduce parameters
@@ -83,7 +83,9 @@ int main(const int argc, const char * const * const argv)
     createObjectFile(o_file_path);
 
     // LINKAGE
-    static const std::string linkCall { "ld -o " + output_filepath + " " + o_file_path + " -static -lc" };
+    static const std::string linkCall { "ld -o " + params.out_path +
+        " -dynamic-linker /lib/ld-linux.so.2 /usr/lib/crt1.o"
+        " /usr/lib/crti.o -lc " + o_file_path + " /usr/lib/crtn.o" };
     const bool linkage_succeed = !std::system(linkCall.c_str());
 
     if (!params.save_o_file)

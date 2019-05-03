@@ -62,24 +62,16 @@ void initLLVMGlobal(const std::string &moduleName)
 bool generateStartupRoutine(const std::string &mainName)
 {
     // Create startup function, TODO: move in future
-    static const std::string _startName = "_start";  // Like in ld and lld
-    FunctionType * const _startType = FunctionType::get(Type::getVoidTy(TheContext), false);
-    Function * const _start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
-    BasicBlock * const BB = BasicBlock::Create(TheContext, _startName, _start);
+    static const std::string startName = "main";  // "_start";  // Like in ld and lld
+    FunctionType * const startType = FunctionType::get(getLLVMType("c$int"), false);
+    Function * const start = Function::Create(startType, Function::ExternalLinkage, startName, TheModule.get());
+    BasicBlock * const BB = BasicBlock::Create(TheContext, startName, start);
 
     // Startup function body
     Function * const main = TheModule->getFunction(mainName);
     if (!main)
     {
-        _start->eraseFromParent();
-        return false;
-    }
-
-    static const std::string _exitName = "_Exit";
-    Function * const _exit = TheModule->getFunction(_exitName);
-    if (!_exit)
-    {
-        _start->eraseFromParent();
+        start->eraseFromParent();
         return false;
     }
 
@@ -87,23 +79,16 @@ bool generateStartupRoutine(const std::string &mainName)
     Builder.SetInsertPoint(BB);
     Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
     Value * const castedRes = Builder.CreateIntCast(mainRes,
-        LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
+        startType->getReturnType(), true, "rescast");
 
     Function * const putcharf = TheModule->getFunction("putchar");  // TODO: remove!
-    Builder.CreateCall(putcharf, castedRes);
+    Builder.CreateCall(putcharf, castedRes, "char");
 
-    const auto _exitCall = Builder.CreateCall(_exit, castedRes);
-    if (!_exitCall)
-    {
-        _start->eraseFromParent();
-        return false;
-    }
-    _exitCall->setTailCall();
+    Builder.CreateRet(castedRes);
 
-    Builder.CreateUnreachable();
-    if (verifyFunction(*_start, &errs()))
+    if (verifyFunction(*start, &errs()))
     {
-        _start->eraseFromParent();
+        start->eraseFromParent();
         return false;
     }
     return true;
