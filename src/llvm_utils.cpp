@@ -83,11 +83,15 @@ bool generateStartupRoutine(const std::string &mainName)
     Builder.SetInsertPoint(BB);
     Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
     Value * const castedRes = Builder.CreateIntCast(mainRes, LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
-    if (!Builder.CreateCall(_exit, castedRes))
+
+    const auto _exitCall = Builder.CreateCall(_exit, castedRes);
+    if (!_exitCall)
     {
         _start->eraseFromParent();
         return false;
     }
+    _exitCall->setTailCall();
+
     Builder.CreateUnreachable();
     if (verifyFunction(*_start, &errs()))
     {
