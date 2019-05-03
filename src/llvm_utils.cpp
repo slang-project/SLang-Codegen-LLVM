@@ -7,6 +7,7 @@ IRBuilder<> Builder(TheContext);
 std::unique_ptr<Module> TheModule;
 
 static const std::string _exitName = "_Exit";
+static const std::string putcharName = "putchar";
 
 static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 {
@@ -24,6 +25,11 @@ static std::map<const std::string, FunctionType*> LibcInterfaces
     // ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
     { _exitName, FunctionType::get(
             Type::getVoidTy(TheContext),
+            std::vector<Type*> { getLLVMType("c$int") },
+            false) },
+    // ISO/IEC 9899:2018, 7.21.7.8 The putchar function
+    { putcharName, FunctionType::get(
+            getLLVMType("c$int"),
             std::vector<Type*> { getLLVMType("c$int") },
             false) },
 };
@@ -59,7 +65,7 @@ void initLLVMGlobal(const std::string &moduleName)
 bool generateStartupRoutine(const std::string &mainName)
 {
     // Create startup function, TODO: move in future
-    static const std::string _startName = "_start";
+    static const std::string _startName = "_start";  // Like in ld and lld
     FunctionType * const _startType = FunctionType::get(Type::getVoidTy(TheContext), false);
     Function * const _start = Function::Create(_startType, Function::ExternalLinkage, _startName, TheModule.get());
     BasicBlock * const BB = BasicBlock::Create(TheContext, _startName, _start);
@@ -83,6 +89,9 @@ bool generateStartupRoutine(const std::string &mainName)
     Builder.SetInsertPoint(BB);
     Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
     Value * const castedRes = Builder.CreateIntCast(mainRes, LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
+
+    Function * const putcharf = TheModule->getFunction(putcharName);
+    Builder.CreateCall(putcharf, castedRes);
 
     const auto _exitCall = Builder.CreateCall(_exit, castedRes);
     if (!_exitCall)
