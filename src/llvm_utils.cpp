@@ -6,9 +6,6 @@ LLVMContext TheContext;
 IRBuilder<> Builder(TheContext);
 std::unique_ptr<Module> TheModule;
 
-static const std::string _exitName = "_Exit";
-static const std::string putcharName = "putchar";
-
 static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 {
     { "Boolean",   { Type::getInt1Ty(TheContext),   ConstantInt::get(TheContext, APInt(1, 0, false)) } },  // TODO: remove
@@ -23,12 +20,12 @@ static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 static std::map<const std::string, FunctionType*> LibcInterfaces
 {
     // ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
-    { _exitName, FunctionType::get(
+    { "_Exit", FunctionType::get(
             Type::getVoidTy(TheContext),
             std::vector<Type*> { getLLVMType("c$int") },
             false) },
     // ISO/IEC 9899:2018, 7.21.7.8 The putchar function
-    { putcharName, FunctionType::get(
+    { "putchar", FunctionType::get(
             getLLVMType("c$int"),
             std::vector<Type*> { getLLVMType("c$int") },
             false) },
@@ -78,6 +75,7 @@ bool generateStartupRoutine(const std::string &mainName)
         return false;
     }
 
+    static const std::string _exitName = "_Exit";
     Function * const _exit = TheModule->getFunction(_exitName);
     if (!_exit)
     {
@@ -88,9 +86,10 @@ bool generateStartupRoutine(const std::string &mainName)
     static const std::vector<Value*> mainArgs {};
     Builder.SetInsertPoint(BB);
     Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
-    Value * const castedRes = Builder.CreateIntCast(mainRes, LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
+    Value * const castedRes = Builder.CreateIntCast(mainRes,
+        LibcInterfaces[_exitName]->getParamType(0), true, "rescast");
 
-    Function * const putcharf = TheModule->getFunction(putcharName);
+    Function * const putcharf = TheModule->getFunction("putchar");
     Builder.CreateCall(putcharf, castedRes);
 
     const auto _exitCall = Builder.CreateCall(_exit, castedRes);
