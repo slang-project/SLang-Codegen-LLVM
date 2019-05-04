@@ -216,7 +216,7 @@ ReturnAST *deserializeReturnAST(const json &in)
     auto &inc = in[CHILDREN];
     return new ReturnAST
     (
-        inc.is_null() ? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0]))
+        inc[0].is_null() ? nullptr : dynamic_cast<ExpressionAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0]))
     );
 }
 

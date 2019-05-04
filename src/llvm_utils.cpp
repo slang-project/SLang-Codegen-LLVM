@@ -112,9 +112,9 @@ bool generateStartupRoutine(const std::string &mainName)
 
     static const std::vector<Value*> mainArgs {};
     Builder.SetInsertPoint(BB);
-    Builder.CreateCall(main, mainArgs, "maincall");
+    Builder.CreateCall(main, mainArgs);
 
-    Builder.CreateRet(ConstantInt::get(getLLVMType("c$int"), APInt(0, 16, true)));
+    Builder.CreateRet(ConstantInt::get(getLLVMType("c$int"), APInt(16, 0, true)));
 
     if (verifyFunction(*start, &errs()))
     {
