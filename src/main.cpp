@@ -83,9 +83,9 @@ int main(const int argc, const char * const * const argv)
     createObjectFile(o_file_path);
 
     // LINKAGE
-    static const std::string linkCall { "ld -o " + params.out_path +
-        " -dynamic-linker /lib/ld-linux.so.2 /usr/lib/crt1.o"
-        " /usr/lib/crti.o -lc " + o_file_path + " /usr/lib/crtn.o" };
+    // Note: recommended command is...
+    // ld -o app -dynamic-linker /lib/ld-linux.so.2 /usr/lib/crt1.o /usr/lib/crti.o app.o -lc /usr/lib/crtn.o
+    static const std::string linkCall { "gcc -o " + params.out_path + " " + o_file_path };
     const bool linkage_succeed = !std::system(linkCall.c_str());
 
     if (!params.save_o_file)
