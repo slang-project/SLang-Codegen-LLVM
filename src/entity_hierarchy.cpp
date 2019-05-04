@@ -1,21 +1,17 @@
 #include "entity_hierarchy.hpp"
 
-
 // INTERNAL NEEDS CONTAINERS
 
-std::map<std::string, AllocaInst*> NamedValues;
+enum class variableType
+{
+    AllocaVar,
+    ValueVar
+};
+
+static std::map<std::string, std::pair<variableType, Value*>> NamedValues;
 
 
 // EXTERNAL INTERFACE
-
-static AllocaInst *CreateEntryBlockAlloca(Function* TheFunction,
-                                          Type* type,
-                                          const std::string &VarName)
-{
-    IRBuilder<> TmpB(&TheFunction->getEntryBlock(),
-                     TheFunction->getEntryBlock().begin());
-    return TmpB.CreateAlloca(type, 0, VarName.c_str());
-}
 
 std::string mangleRoutineName(const std::string &name)
 {
@@ -51,11 +47,17 @@ Value *OldAST::codegen() const
 
 Value *ReferenceAST::codegen() const
 {
-    AllocaInst * const Alloca = NamedValues[declarationName];
-    if (!Alloca)
+    if (NamedValues.find(declarationName) == NamedValues.end())
+        return LogError<Value>("Variable used as REFERENCE was not found.");
+
+    if (NamedValues[declarationName].first == variableType::ValueVar)
+        return NamedValues[declarationName].second;
+
+    Value * const ref = NamedValues[declarationName].second;
+    if (!ref)
         return LogError<Value>("Unknown variable referenced");
 
-    return Builder.CreateLoad(Alloca);
+    return Builder.CreateLoad(ref);
 }
 
 Value *LiteralAST::codegen() const
@@ -80,6 +82,8 @@ Value *CallAST::codegen() const
     if (!callee)
         return LogError<Value>("Callee not identified.");
 
+    // TODO: check if ReferenceAST is of Routine type
+
     Function * const CalleeF = TheModule->getFunction(callee->getName());
     if (!CalleeF)
         return LogError<Value>("Unknown function referenced");
@@ -96,7 +100,7 @@ Value *CallAST::codegen() const
             return nullptr;
     }
 
-    return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    return Builder.CreateCall(CalleeF, ArgsV);
 }
 
 Value *UnaryAST::codegen() const
@@ -201,7 +205,7 @@ bool VariableAST::codegen() const
         return false;
 
     AllocaInst * const Alloca = CreateEntryBlockAlloca(F, T, name);
-    NamedValues[name] = Alloca;
+    NamedValues[name] = { variableType::AllocaVar, Alloca };
 
     if (initializer)
     {
@@ -242,7 +246,7 @@ bool RoutineAST::codegen() const
     }
 
     // Routine type
-    Type * const functionType = type->codegen();
+    Type * const functionType = type ? type->codegen() : Type::getVoidTy(TheContext);
     FunctionType * const FT =
         FunctionType::get(functionType, argTypes, false);
     Function * const F =
@@ -257,10 +261,9 @@ bool RoutineAST::codegen() const
 
     NamedValues.clear();
     Idx = 0;
-    for (const auto &arg : F->args())
+    for (auto &arg : F->args())
     {
-        AllocaInst *Alloca = CreateEntryBlockAlloca(F, argTypes[Idx++], arg.getName());
-        NamedValues[arg.getName()] = Alloca;
+        NamedValues[arg.getName()] = { variableType::ValueVar, &arg };
     }
 
     if (!routineBody->codegen())
@@ -405,13 +408,17 @@ bool AssignmentAST::codegen() const
     if (!var)
         return LogError<bool>("LHS of the assignment is not a REFERENCE.");
 
-    AllocaInst * const Alloca = NamedValues[var->getName()];
-    if (!Alloca)
+    if (NamedValues.find(var->getName()) == NamedValues.end())
         return LogError<bool>("Assignemt to the undefined variable");
+
+    if (NamedValues[var->getName()].first == variableType::ValueVar)
+        return LogError<bool>("Assignment to the non-reference value.");
+
+    Value * const Alloca = NamedValues[var->getName()].second;
 
     Value * const R = right->codegen();
     if (!R)
-        return LogError<bool>("No expression given to assign");
+        return LogError<bool>("No expression given to assign.");
 
     return /*(bool)*/ Builder.CreateStore(R, Alloca);
 }

@@ -31,6 +31,23 @@ static std::map<const std::string, FunctionType*> LibcInterfaces
             false) },
 };
 
+static std::map<const std::string, FunctionType*> BuiltInRoutines
+{
+    { "StandardIO$put$Character", FunctionType::get(
+            Type::getVoidTy(TheContext),
+            std::vector<Type*> { getLLVMType("Integer") },
+            false) },
+};
+
+AllocaInst *CreateEntryBlockAlloca(Function* TheFunction,
+                                          Type* type,
+                                          const std::string &VarName)
+{
+    IRBuilder<> TmpB(&TheFunction->getEntryBlock(),
+                     TheFunction->getEntryBlock().begin());
+    return TmpB.CreateAlloca(type, 0, VarName.c_str());
+}
+
 bool isLibcName(const std::string &name)
 {
     // Reserved identifiers and possible collisions with the C Standard Library
@@ -57,6 +74,24 @@ void initLLVMGlobal(const std::string &moduleName)
             libcEntryPair.first, // Name
             TheModule.get());
     }
+
+    // Built-in routine StandardIO.put
+    // TODO: move!
+    const std::string stdioName = "StandardIO$put$Character";
+    Function * const stdioFunc = Function::Create(
+        BuiltInRoutines[stdioName], Function::ExternalLinkage, stdioName, TheModule.get());
+    BasicBlock * const stdioBB = BasicBlock::Create(TheContext, stdioName, stdioFunc);
+    Argument *argVal;
+    for (auto &arg : stdioFunc->args())
+    {
+        argVal = &arg;
+        arg.setName("ch");  // FIXME: different names
+    }
+    Builder.SetInsertPoint(stdioBB);
+    Value * const castedArg = Builder.CreateIntCast(argVal, getLLVMType("c$int"), true, "rescast");
+    Builder.CreateCall(TheModule->getFunction("putchar"), castedArg);
+    Builder.CreateRetVoid();
+    verifyFunction(*stdioFunc, &errs());
 }
 
 bool generateStartupRoutine(const std::string &mainName)
@@ -77,14 +112,9 @@ bool generateStartupRoutine(const std::string &mainName)
 
     static const std::vector<Value*> mainArgs {};
     Builder.SetInsertPoint(BB);
-    Value * const mainRes = Builder.CreateCall(main, mainArgs, "maincall");
-    Value * const castedRes = Builder.CreateIntCast(mainRes,
-        startType->getReturnType(), true, "rescast");
+    Builder.CreateCall(main, mainArgs, "maincall");
 
-    Function * const putcharf = TheModule->getFunction("putchar");  // TODO: remove!
-    Builder.CreateCall(putcharf, castedRes, "char");
-
-    Builder.CreateRet(castedRes);
+    Builder.CreateRet(ConstantInt::get(getLLVMType("c$int"), APInt(0, 16, true)));
 
     if (verifyFunction(*start, &errs()))
     {

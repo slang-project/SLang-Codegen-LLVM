@@ -34,6 +34,7 @@ extern std::unique_ptr<Module> TheModule;
 
 // EXTERNAL INTERFACE
 
+AllocaInst *CreateEntryBlockAlloca(Function* TheFunction, Type* type, const std::string &VarName);
 bool isLibcName(const std::string &name);  // TODO: move away
 void initLLVMGlobal(const std::string &moduleName);
 bool generateStartupRoutine(const std::string &mainName); // TODO: move away

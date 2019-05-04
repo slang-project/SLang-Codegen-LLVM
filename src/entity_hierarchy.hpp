@@ -10,12 +10,6 @@
 using json = nlohmann::json;
 
 
-// INTERNAL NEEDS CONTAINERS
-
-extern std::map<std::string, AllocaInst*> NamedValues;
-// TODO: type table
-
-
 // FORWARD DECLARATION NEEDS
 
 class BodyAST;
@@ -829,10 +823,7 @@ public:
     )
       : units_and_standalones(units_and_standalones),
         anonymous(anonymous)
-    {
-        // TODO: remove, $anonymous does not return anything
-        anonymous->type = new UnitRefAST("Integer");
-    }
+    {}
     virtual ~CompilationAST() = default;
     virtual bool codegen() const;
 };
