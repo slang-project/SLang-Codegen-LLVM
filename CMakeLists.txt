@@ -10,62 +10,87 @@ SET(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 # ^ COMMENT BOTH FOR SYSTEM TO FIND APPROPRIATE COMPILER, E.G. ON WINDOWS
 
-project(SLangLLVM)
+PROJECT(SLangLLVM)
 
 #** Version Setup **
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "1")
-SET(VERSION_PATCH "2")
+SET(VERSION_PATCH "3")
 
 SET(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 #** Environment Setup **
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../executable)
+SET(INNER_EXECUTABLE_FOLDER "../bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${INNER_EXECUTABLE_FOLDER})
 
 
 #** Colored Errors Output **
-option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
-if (${FORCE_COLORED_OUTPUT})
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-       add_compile_options (-fdiagnostics-color=always)
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-       add_compile_options (-fcolor-diagnostics)
-    endif ()
-endif ()
+OPTION (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
+IF (${FORCE_COLORED_OUTPUT})
+    IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+       ADD_COMPILE_OPTIONS (-fdiagnostics-color=always)
+    ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+       ADD_COMPILE_OPTIONS (-fcolor-diagnostics)
+    ENDIF ()
+ENDIF ()
 
 
 #** Discover LLVM **
-find_package(LLVM REQUIRED CONFIG)
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-include_directories(${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
+FIND_PACKAGE(LLVM REQUIRED CONFIG)
+MESSAGE(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+MESSAGE(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+INCLUDE_DIRECTORIES(${LLVM_INCLUDE_DIRS})
+ADD_DEFINITIONS(${LLVM_DEFINITIONS})
 
 
 #** Compilation Setup **
 SET(CMAKE_CXX_FLAGS "-g3 -Wall -std=c++11")
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/dependencies/include)
-file(GLOB project_sources "${PROJECT_SOURCE_DIR}/src/*.cpp")
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(SYSTEM ${PROJECT_SOURCE_DIR}/dependencies/include)
+FILE(GLOB PROJECT_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 
 #** Compiler Output **
-set(EXECUTABLE_NAME slang_jtll)
-add_executable(${EXECUTABLE_NAME} ${project_sources})
+SET(EXECUTABLE_NAME slang_jtll)
+ADD_EXECUTABLE(${EXECUTABLE_NAME} ${PROJECT_SOURCES})
 
 
 #** Link LLVM **
-target_link_libraries(${EXECUTABLE_NAME} LLVM)
+TARGET_LINK_LIBRARIES(${EXECUTABLE_NAME} LLVM)
 
 
 #** Build Parser **
-set(PARSER_BUILD_COMMAND dotnet publish -c release --self-contained --runtime linux-x64 --framework netcoreapp2.2 --output "${PROJECT_SOURCE_DIR}/executable/parser" "${PROJECT_SOURCE_DIR}/Parser/SLang Compiler/SLang Compiler.csproj")
-add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD COMMAND ${PARSER_BUILD_COMMAND})
+SET(PARSER_BUILD_COMMAND dotnet publish -c release --self-contained --runtime linux-x64 --framework netcoreapp2.2 --output "${CMAKE_CURRENT_BINARY_DIR}/${INNER_EXECUTABLE_FOLDER}/slang_parser" "${CMAKE_SOURCE_DIR}/Parser/SLang Compiler/SLang Compiler.csproj")
+ADD_CUSTOM_COMMAND(TARGET ${EXECUTABLE_NAME} POST_BUILD COMMAND ${PARSER_BUILD_COMMAND})
 
 
+#** Copy compiler launch script for specific OS. **
+IF(UNIX)
+   SET(OS_TOP_SCRIPT_NAME slang-llvm)
+   SET(OS_PIPELINE_DEFINED TRUE)
+ELSEIF(WIN32)
+   MESSAGE(WARNING "NO PIPELINE FOR THIS OS DEFINED YET")
+   SET(OS_PIPELINE_DEFINED FALSE)
+ENDIF()
+
+IF(OS_PIPELINE_DEFINED)
+ADD_CUSTOM_COMMAND(
+        TARGET ${EXECUTABLE_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/src/${OS_TOP_SCRIPT_NAME}
+                ${CMAKE_CURRENT_BINARY_DIR}/${INNER_EXECUTABLE_FOLDER}/${OS_TOP_SCRIPT_NAME})
+ENDIF()
+
+
+#** Define installation rules. **
+INSTALL(
+   DIRECTORY ${PROJECT_BINARY_DIR}/${INNER_EXECUTABLE_FOLDER}/ 
+   DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+   PATTERN ${OS_TOP_SCRIPT_NAME}
+   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+
+   
 # #** Info Tab **
-# message("Binary Tree Path ${PROJECT_BINARY_DIR}")
-# message("Source Tree Path ${PROJECT_SOURCE_DIR}")
-# message("Executables Location ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-# message("Project Version " ${VERSION})
-
+MESSAGE(STATUS "Source Tree Path ${PROJECT_SOURCE_DIR}")
+MESSAGE(STATUS "Executables Location ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+MESSAGE(STATUS "Project Version " ${VERSION})
