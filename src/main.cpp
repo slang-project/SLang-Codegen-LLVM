@@ -14,7 +14,7 @@ struct Parameters
 
     std::string out_path { "app" };  // TODO: filesystem::path
 
-    bool save_ll_listing = true;
+    bool save_ll_listing = false;
     bool save_o_file = true;
 };
 
@@ -81,7 +81,7 @@ int main(const int argc, const char * const * const argv)
     static const std::string o_file_format { ".o" };
     static const std::string o_file_path { output_filepath + o_file_format };  // TODO: filesystem::path
     createObjectFile(o_file_path);
-
+/*
     // LINKAGE
     // Note: recommended command is...
     // ld -o app -dynamic-linker /lib/ld-linux.so.2 /usr/lib/crt1.o /usr/lib/crti.o app.o -lc /usr/lib/crtn.o
@@ -99,6 +99,6 @@ int main(const int argc, const char * const * const argv)
         std::cerr << "Linkage failed: " << linkCall << std::endl;
         return EXIT_FAILURE;
     }
-
+*/
     return EXIT_SUCCESS;
 }
