@@ -91,7 +91,7 @@ CallAST *deserializeCallAST(const json &in)
     auto &inc = in[CHILDREN];
     return new CallAST
     (
-        dynamic_cast<TypeAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
+        inc[0].is_null() ? nullptr : dynamic_cast<TypeAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0])),
         dynamic_cast<ExpressionAST*>(deserializeMapping[inc[1][TYPE].get<std::string>()](inc[1])),
         deserializeVector<ExpressionAST*>(inc[2])
     );
