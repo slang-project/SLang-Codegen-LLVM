@@ -72,7 +72,7 @@ LiteralAST *deserializeLiteralAST(const json &in)
     return new LiteralAST
     (
         in[VALUE].get<std::string>(),
-        dynamic_cast<TypeAST*>(deserializeUnitRefAST(inc[0]))
+        dynamic_cast<TypeAST*>(deserializeMapping[inc[0][TYPE].get<std::string>()](inc[0]))
     );
 }
 

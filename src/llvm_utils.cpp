@@ -9,7 +9,7 @@ std::unique_ptr<Module> TheModule;
 static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 {
     { "Boolean",   { Type::getInt1Ty(TheContext),   ConstantInt::get(TheContext, APInt(1, 0, false)) } },  // TODO: remove
-    { "Integer",   { Type::getInt16Ty(TheContext),  ConstantInt::get(TheContext, APInt(16, 0, true)) } },
+    { "Integer",   { Type::getInt16Ty(TheContext),  ConstantInt::get(TheContext, APInt(32, 0, true)) } },
     { "Real",      { Type::getDoubleTy(TheContext), ConstantFP::get(TheContext, APFloat(0.0))        } },
     { "Character", { Type::getInt8Ty(TheContext),   ConstantInt::get(TheContext, APInt(8, 0, false)) } },
     { "String",    { nullptr,                       nullptr                                          } },  // TODO
@@ -34,6 +34,10 @@ static std::map<const std::string, FunctionType*> LibcInterfaces
 static std::map<const std::string, FunctionType*> BuiltInRoutines
 {
     { "StandardIO$put$Character", FunctionType::get(
+            Type::getVoidTy(TheContext),
+            std::vector<Type*> { getLLVMType("Character") },
+            false) },
+    { "StandardIO$put$Integer", FunctionType::get(
             Type::getVoidTy(TheContext),
             std::vector<Type*> { getLLVMType("Integer") },
             false) },
@@ -77,7 +81,7 @@ void initLLVMGlobal(const std::string &moduleName)
 
     // Built-in routine StandardIO.put
     // TODO: move!
-    const std::string stdioName = "StandardIO$put$Character";
+    const std::string stdioName = "StandardIO$put$Integer";
     Function * const stdioFunc = Function::Create(
         BuiltInRoutines[stdioName], Function::ExternalLinkage, stdioName, TheModule.get());
     BasicBlock * const stdioBB = BasicBlock::Create(TheContext, stdioName, stdioFunc);
@@ -92,6 +96,22 @@ void initLLVMGlobal(const std::string &moduleName)
     Builder.CreateCall(TheModule->getFunction("putchar"), castedArg);
     Builder.CreateRetVoid();
     verifyFunction(*stdioFunc, &errs());
+
+    const std::string stdioCharName = "StandardIO$put$Character";
+    Function * const stdioCharFunc = Function::Create(
+        BuiltInRoutines[stdioCharName], Function::ExternalLinkage, stdioCharName, TheModule.get());
+    BasicBlock * const stdioCharBB = BasicBlock::Create(TheContext, stdioCharName, stdioCharFunc);
+    for (auto &arg : stdioCharFunc->args())
+    {
+        argVal = &arg;
+        arg.setName("ch");
+    }
+    Builder.SetInsertPoint(stdioCharBB);
+    Builder.CreateCall(TheModule->getFunction(stdioName),
+        Builder.CreateIntCast(
+            argVal, BuiltInRoutines[stdioName]->getParamType(0), true, "rescast"));
+    Builder.CreateRetVoid();
+    verifyFunction(*stdioCharFunc, &errs());
 }
 
 bool generateStartupRoutine(const std::string &mainName)

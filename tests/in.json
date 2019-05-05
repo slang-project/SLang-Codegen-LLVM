@@ -581,7 +581,7 @@
                                         },
                                         {
                                             "type":"IDENTIFIER",
-                                            "value":"StandardIO$put$Character",
+                                            "value":"StandardIO$put$Integer",
                                             "num_children":0,
                                             "children":[]
                                         }

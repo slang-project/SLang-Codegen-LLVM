@@ -1,4 +1,5 @@
 #include "entity_hierarchy.hpp"
+#include <sstream>
 
 // INTERNAL NEEDS CONTAINERS
 
@@ -55,14 +56,54 @@ Value *ReferenceAST::codegen() const
 
     Value * const ref = NamedValues[declarationName].second;
     if (!ref)
-        return LogError<Value>("Unknown variable referenced");
+        return LogError<Value>("Unknown variable referenced.");
 
     return Builder.CreateLoad(ref);
 }
 
 Value *LiteralAST::codegen() const
 {
-    return ConstantInt::get(TheContext, APInt(16, std::stoi(value), true));
+    UnitRefAST * const ureftype = dynamic_cast<UnitRefAST*>(type);
+    if (!ureftype)
+        return LogError<Value>("Literal type is not UnitRef.");
+    const std::string typeName = ureftype->getName();
+
+    if (typeName == "Integer")
+    {
+        IntegerType * const intType = static_cast<IntegerType*>(getLLVMType("Integer"));
+        assert(intType);
+        uint64_t intVal;
+        std::istringstream valStr(value);
+        valStr >> intVal;
+        return ConstantInt::get(TheContext, APInt(
+            intType->getBitWidth(),
+            intVal,
+            false)); // TODO: get sign from intType
+    }
+
+    if (typeName == "Real")
+    {
+        return ConstantFP::get(TheContext, APFloat(std::stod(value)));
+    }
+
+    if (typeName == "Character")
+    {
+        if (value.length() != 1)
+            return LogError<Value>("Character value is too long.");
+        IntegerType * const charType = static_cast<IntegerType*>(getLLVMType("Character"));
+        assert(charType);
+        return ConstantInt::get(TheContext, APInt(
+            charType->getBitWidth(),
+            value[0],
+            false)); // TODO: get sign from charType
+    }
+
+    if (typeName == "String")
+    {
+        return LogError<Value>("String literal is not supported yet.");
+    }
+
+    return LogError<Value>("Literal type is not supported.");
 }
 
 Value *TupleAST::codegen() const
