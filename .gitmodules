@@ -1,0 +1,4 @@
+[submodule "Parser"]
+	path = Parser
+	url = https://github.com/Zouev/Slang
+	branch = json-serialization
