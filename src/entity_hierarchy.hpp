@@ -152,7 +152,6 @@ public:
 class PrimaryAST : public ExpressionAST  // abstract
 {
 protected:
-    TypeAST *type;
     PrimaryAST
     (
         TypeAST *type
