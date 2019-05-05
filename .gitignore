@@ -1,5 +1,6 @@
 build/
 executable/
+bin/
 *.swp
 .DS_Store
 .vscode/ipch/
