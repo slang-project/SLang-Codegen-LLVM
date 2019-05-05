@@ -562,12 +562,7 @@
                             "value":null,
                             "num_children":3,
                             "children":[
-                                {
-                                    "type":"UNIT_REF",
-                                    "value":"Integer",
-                                    "num_children":0,
-                                    "children":[]
-                                },
+                                null,
                                 {
                                     "type":"REFERENCE",
                                     "value":null,
