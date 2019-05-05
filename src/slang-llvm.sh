@@ -24,8 +24,8 @@ if [ -z "${out_path}" ]; then
     out_path="${in_path}.out"
 fi
 
-"slang-compiler/parser/SLang Compiler" /json "${in_file}"
-"slang-compiler/slang_jtll" "${in_path}.json"
+"../slang-compiler/parser/SLang Compiler" /json "${in_file}"
+"../slang-compiler/slang_jtll" "${in_path}.json"
 rm "${in_path}.json"
 clang -o "${out_path}" app.o
 rm app.o
