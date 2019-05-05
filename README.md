@@ -6,16 +6,66 @@ Convert JSON IR of SLang program to LLVM IR which can be compiled into binary wi
 ## How to build and run?
 >assuming current working directory is root of project, i.e. SLang-LLVM
 
+### Linux (Arch-based)
+#### Prerequisites
+`LLVM Tools`
+```bash
+sudo pacman -S llvm llvm-libs lld clang lldb
+```
+
+`CMake`
+```bash
+sudo pacman -S cmake
+```
+`Ninja build system`
+```bash
+sudo pacman -S ninja
+```
+
+#### Compile
+
+`Manual:`
+```bash
+mkdir build && cd build
+cmake ../
+ninja
+```
+
+`Install (to "/usr/local/bin"):`
+```bash
+mkdir build && cd build
+cmake ../
+sudo ninja install
+```
+
+`VS Code:`
+>Use **(lldb) Launch** configuration for starting with default input\
+>Use Build task **ninja** (Ctrl+Shift+B) for building only\
+>Use Clean task **clean_build_executable** for deleting "build" and "executable" directories 
+#### Run
+Go to project root.
+
+Use tests
+```bash
+./bin/slang_jtll ./tests/in.json
+```
+
+Use full pipeline
+```bash
+./bin/slang-llvm ./tests/mandelbrot.slang
+```
+#### Troubleshooting
+`-lz linking error`
+```bash
+sudo pacman -S zlib
+```
+
+
 ### Linux (Ubuntu)
 #### Prerequisites
 `LLVM Tools`
 >refer to instructions on [llvm repository](https://apt.llvm.org/)
 
-`G++ (optionally disabled, i.e. if you use clang++)`
-```bash
-sudo apt install g++
-# change compiler config in CMakeFiles.txt to use clang
-```
 `CMake`
 ```bash
 sudo apt install cmake
@@ -33,8 +83,9 @@ mkdir build && cd build
 cmake ../
 ninja
 ```
+
 `VS Code:`
->Use **(gdb) Launch** configuration for starting with default input\
+>Use **(lldb) Launch** configuration for starting with default input\
 >Use Build task **ninja** (Ctrl+Shift+B) for building only\
 >Use Clean task **clean_build_executable** for deleting "build" and "executable" directories 
 #### Run
@@ -42,7 +93,7 @@ Go to project root.
 
 Use tests
 ```bash
-./executable/slang_jtll ./tests/in.json
+./bin/slang_jtll ./tests/in.json
 ```
 #### Troubleshooting
 `-lz linking error`
@@ -63,11 +114,6 @@ export LDFLAGS="-L/usr/local/opt/llvm/lib"
 export CPPFLAGS="-I/usr/local/opt/llvm/include"
 ```
 
-`G++ (optionally disabled, i.e. if you use clang++)`
-```bash
-sudo apt install g++
-# change compiler config in CMakeFiles.txt to use clang
-```
 `CMake`
 ```bash
 brew install cmake
@@ -93,5 +139,5 @@ Go to project root.
 
 Use tests
 ```bash
-./executable/slang_jtll ./tests/in.json
+./bin/slang_jtll ./tests/in.json
 ```
