@@ -92,8 +92,12 @@ void initLLVMGlobal(const std::string &moduleName)
         arg.setName("ch");  // FIXME: different names
     }
     Builder.SetInsertPoint(stdioBB);
-    Value * const castedArg = Builder.CreateIntCast(argVal, getLLVMType("c$int"), true, "rescast");
-    Builder.CreateCall(TheModule->getFunction("putchar"), castedArg);
+    Builder.CreateCall(
+            TheModule->getFunction("putchar"),
+            Builder.CreateIntCast(
+                argVal, getLLVMType("c$int"), true, "rescast"
+            )
+        )->setTailCall();
     Builder.CreateRetVoid();
     verifyFunction(*stdioFunc, &errs());
 
@@ -107,9 +111,12 @@ void initLLVMGlobal(const std::string &moduleName)
         arg.setName("ch");
     }
     Builder.SetInsertPoint(stdioCharBB);
-    Builder.CreateCall(TheModule->getFunction(stdioName),
-        Builder.CreateIntCast(
-            argVal, BuiltInRoutines[stdioName]->getParamType(0), true, "rescast"));
+    Builder.CreateCall(
+            TheModule->getFunction(stdioName),
+            Builder.CreateIntCast(
+                argVal, BuiltInRoutines[stdioName]->getParamType(0), true, "rescast"
+            )
+        )->setTailCall();
     Builder.CreateRetVoid();
     verifyFunction(*stdioCharFunc, &errs());
 }
