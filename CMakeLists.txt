@@ -55,9 +55,13 @@ add_executable(${EXECUTABLE_NAME} ${project_sources})
 
 
 #** Link LLVM **
-# llvm_map_components_to_libnames(llvm_libs all)
 target_link_libraries(${EXECUTABLE_NAME} LLVM)
-# message(${llvm_libs})
+
+
+#** Build Parser **
+set(PARSER_BUILD_COMMAND dotnet publish -c release --self-contained --runtime linux-x64 --framework netcoreapp2.2 --output "${PROJECT_SOURCE_DIR}/executable/parser" "${PROJECT_SOURCE_DIR}/Parser/SLang Compiler/SLang Compiler.csproj")
+add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD COMMAND ${PARSER_BUILD_COMMAND})
+
 
 # #** Info Tab **
 # message("Binary Tree Path ${PROJECT_BINARY_DIR}")
