@@ -9,7 +9,7 @@ std::unique_ptr<Module> TheModule;
 static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 {
     { "Boolean",   { Type::getInt1Ty(TheContext),   ConstantInt::get(TheContext, APInt(1, 0, false)) } },  // TODO: remove
-    { "Integer",   { Type::getInt16Ty(TheContext),  ConstantInt::get(TheContext, APInt(32, 0, true)) } },
+    { "Integer",   { Type::getInt32Ty(TheContext),  ConstantInt::get(TheContext, APInt(32, 0, true)) } },
     { "Real",      { Type::getDoubleTy(TheContext), ConstantFP::get(TheContext, APFloat(0.0))        } },
     { "Character", { Type::getInt8Ty(TheContext),   ConstantInt::get(TheContext, APInt(8, 0, false)) } },
     { "String",    { nullptr,                       nullptr                                          } },  // TODO
@@ -82,7 +82,7 @@ void initLLVMGlobal(const std::string &moduleName)
             libcEntryPair.first, // Name
             TheModule.get());
     }
-
+/* TODO:
     static const std::map<std::string, std::string> BuiltInMappings
     { //{ CALLER, CALLEE }
         { "Exit", "exit" },
@@ -154,55 +154,72 @@ void initLLVMGlobal(const std::string &moduleName)
         }
         verifyFunction(*thisRoutine, &errs());
     }
-/*
-    // Built-in routine StandardIO.put
-    // TODO: move!
+*/
     const std::string stdioName = "StandardIO$put$Integer";
-    Function * const stdioFunc = Function::Create(
-        BuiltInRoutines[stdioName], Function::ExternalLinkage, stdioName, TheModule.get());
-    BasicBlock * const stdioBB = BasicBlock::Create(TheContext, stdioName, stdioFunc);
-    Argument *argVal;
-    for (auto &arg : stdioFunc->args())
-    {
-        argVal = &arg;
+    {  // StandardIO.put(Integer)
+        Function * const stdioFunc = Function::Create(
+            BuiltInRoutines[stdioName], Function::ExternalLinkage, stdioName, TheModule.get());
+        BasicBlock * const stdioBB = BasicBlock::Create(TheContext, stdioName, stdioFunc);
+        Argument *argVal;
+        for (auto &arg : stdioFunc->args())
+        {
+            argVal = &arg;
+        }
+        Function * const callee = TheModule->getFunction("putchar");
+        Builder.SetInsertPoint(stdioBB);
+        Builder.CreateCall(
+                callee,
+                Builder.CreateIntCast(
+                    argVal, callee->getFunctionType()->getParamType(0), true, "rescast"
+                )
+            )->setTailCall();
+        Builder.CreateRetVoid();
+        verifyFunction(*stdioFunc, &errs());
     }
-    Builder.SetInsertPoint(stdioBB);
-    Builder.CreateCall(
-            TheModule->getFunction("putchar"),
-            Builder.CreateIntCast(
-                argVal, getLLVMType("c$int"), true, "rescast"
-            )
-        )->setTailCall();
-    Builder.CreateRetVoid();
-    verifyFunction(*stdioFunc, &errs());
 
-    const std::string stdioCharName = "StandardIO$put$Character";
-    Function * const stdioCharFunc = Function::Create(
-        BuiltInRoutines[stdioCharName], Function::ExternalLinkage, stdioCharName, TheModule.get());
-    BasicBlock * const stdioCharBB = BasicBlock::Create(TheContext, stdioCharName, stdioCharFunc);
-    for (auto &arg : stdioCharFunc->args())
-    {
-        argVal = &arg;
+    {  // StandardIO.put(Character)
+        const std::string stdioCharName = "StandardIO$put$Character";
+        Function * const stdioCharFunc = Function::Create(
+            BuiltInRoutines[stdioCharName], Function::ExternalLinkage, stdioCharName, TheModule.get());
+        BasicBlock * const stdioCharBB = BasicBlock::Create(TheContext, stdioCharName, stdioCharFunc);
+        Argument *argVal;
+        for (auto &arg : stdioCharFunc->args())
+        {
+            argVal = &arg;
+        }
+        Function * const callee = TheModule->getFunction(stdioName);
+        Builder.SetInsertPoint(stdioCharBB);
+        Builder.CreateCall(
+                callee,
+                Builder.CreateIntCast(
+                    argVal, callee->getFunctionType()->getParamType(0), true, "rescast"
+                )
+            )->setTailCall();
+        Builder.CreateRetVoid();
+        verifyFunction(*stdioCharFunc, &errs());
     }
-    Builder.SetInsertPoint(stdioCharBB);
-    Builder.CreateCall(
-            TheModule->getFunction(stdioName),
-            Builder.CreateIntCast(
-                argVal, BuiltInRoutines[stdioName]->getParamType(0), true, "rescast"
-            )
-        )->setTailCall();
-    Builder.CreateRetVoid();
-    verifyFunction(*stdioCharFunc, &errs());
 
-    // Built-in routine Exit
-    const std::string stdioCharName = "Exit";
-    Function * const stdioCharFunc = Function::Create(
-        BuiltInRoutines[stdioCharName], Function::ExternalLinkage, stdioCharName, TheModule.get());
-    BasicBlock * const stdioCharBB = BasicBlock::Create(TheContext, stdioCharName, stdioCharFunc);
-    for (auto &arg : stdioCharFunc->args())
-    {
-        argVal = &arg;
-    }*/
+    {  // Exit(Integer)
+        const std::string exitRoutineName = "Exit";
+        Function * const exitRoutine = Function::Create(
+            BuiltInRoutines[exitRoutineName], Function::ExternalLinkage, exitRoutineName, TheModule.get());
+        BasicBlock * const exitRoutineBB = BasicBlock::Create(TheContext, exitRoutineName, exitRoutine);
+        Argument *argVal;
+        for (auto &arg : exitRoutine->args())
+        {
+            argVal = &arg;
+        }
+        Function * const callee = TheModule->getFunction("exit");
+        Builder.SetInsertPoint(exitRoutineBB);
+        Builder.CreateCall(
+                callee,
+                Builder.CreateIntCast(
+                    argVal, callee->getFunctionType()->getParamType(0), true, "rescast"
+                )
+            )->setTailCall();
+        Builder.CreateUnreachable();
+        verifyFunction(*exitRoutine, &errs());
+    }
 }
 
 bool generateStartupRoutine(const std::string &mainName)
