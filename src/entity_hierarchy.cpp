@@ -313,11 +313,6 @@ bool RoutineAST::codegen() const
         return LogError<Function>("Failed to generate routine body");
     }
 
-    if (FT->getReturnType()->isVoidTy())
-    {
-        Builder.CreateRetVoid();  // TODO: check
-    }
-
     if (verifyFunction(*F, &errs()))
     {
         F->eraseFromParent();
