@@ -19,14 +19,14 @@ static std::map<const std::string, std::pair<Type*, Value*>> TypeTable
 
 static std::map<const std::string, FunctionType*> LibcInterfaces
 {
-    // ISO/IEC 9899:2018, 7.22.4.5 The _Exit function
-    { "_Exit", FunctionType::get(
-            Type::getVoidTy(TheContext),
-            std::vector<Type*> { getLLVMType("c$int") },
-            false) },
     // ISO/IEC 9899:2018, 7.21.7.8 The putchar function
     { "putchar", FunctionType::get(
             getLLVMType("c$int"),
+            std::vector<Type*> { getLLVMType("c$int") },
+            false) },
+    // ISO/IEC 9899:2018, 7.22.4.4 The exit function
+    { "exit", FunctionType::get(
+            Type::getVoidTy(TheContext),
             std::vector<Type*> { getLLVMType("c$int") },
             false) },
 };
@@ -38,6 +38,10 @@ static std::map<const std::string, FunctionType*> BuiltInRoutines
             std::vector<Type*> { getLLVMType("Character") },
             false) },
     { "StandardIO$put$Integer", FunctionType::get(
+            Type::getVoidTy(TheContext),
+            std::vector<Type*> { getLLVMType("Integer") },
+            false) },
+    { "Exit", FunctionType::get(
             Type::getVoidTy(TheContext),
             std::vector<Type*> { getLLVMType("Integer") },
             false) },
@@ -79,6 +83,78 @@ void initLLVMGlobal(const std::string &moduleName)
             TheModule.get());
     }
 
+    static const std::map<std::string, std::string> BuiltInMappings
+    { //{ CALLER, CALLEE }
+        { "Exit", "exit" },
+        { "StandardIO$put$Integer", "putchar" },
+        { "StandardIO$put$Character", "StandardIO$put$Integer" },
+    };
+
+    // BUILT-IN DEFINITIONS
+    for (const auto &namesMapping : BuiltInMappings)
+    {
+        const auto &routineName = namesMapping.first;
+        const auto &routineType = BuiltInRoutines[namesMapping.first];
+        const auto &calleeFunc = TheModule->getFunction(namesMapping.second);
+        const auto &calleeFuncType = calleeFunc->getFunctionType();
+
+        Function * const thisRoutine = Function::Create(
+            routineType, Function::ExternalLinkage, routineName, TheModule.get());
+        BasicBlock * const BB = BasicBlock::Create(TheContext, "entry", thisRoutine);
+        Builder.SetInsertPoint(BB);
+
+        std::vector<Value*> args {};
+        { // i scope
+            int i = 0;
+            for (auto &arg : thisRoutine->args())
+            {
+                Value *castedVal;
+                const auto &argType = arg.getType();
+                const auto &calleeFuncArgType = calleeFuncType->getParamType(i++);
+                if (argType->isIntegerTy())
+                {
+                    castedVal = Builder.CreateIntCast(&arg, calleeFuncArgType, true, "casted");
+                }
+                // TODO: other conversions
+                else
+                {
+                    thisRoutine->eraseFromParent();
+                    continue;
+                }
+
+                args.push_back(castedVal);
+                arg.setName("arg");
+            }
+        } // i scope
+
+        if (routineType->getReturnType()->isVoidTy())
+        {
+            Builder.CreateCall(calleeFunc, args)->setTailCall();
+            Builder.CreateRetVoid();
+        }
+        else
+        {
+            Value * const res = Builder.CreateCall(calleeFunc, args, "calleecall");
+
+            Value *castedVal;
+            const auto &calleeFuncRetType = calleeFuncType->getReturnType();
+            const auto &thisRoutineRetType = routineType->getReturnType();
+            if (calleeFuncRetType->isIntegerTy())
+            {
+                castedVal = Builder.CreateIntCast(res, thisRoutineRetType, true, "castedres");
+            }
+            // TODO: other conversions
+            else
+            {
+                thisRoutine->eraseFromParent();
+                continue;
+            }
+
+            Builder.CreateRet(castedVal);
+        }
+        verifyFunction(*thisRoutine, &errs());
+    }
+/*
     // Built-in routine StandardIO.put
     // TODO: move!
     const std::string stdioName = "StandardIO$put$Integer";
@@ -89,7 +165,6 @@ void initLLVMGlobal(const std::string &moduleName)
     for (auto &arg : stdioFunc->args())
     {
         argVal = &arg;
-        arg.setName("ch");  // FIXME: different names
     }
     Builder.SetInsertPoint(stdioBB);
     Builder.CreateCall(
@@ -108,7 +183,6 @@ void initLLVMGlobal(const std::string &moduleName)
     for (auto &arg : stdioCharFunc->args())
     {
         argVal = &arg;
-        arg.setName("ch");
     }
     Builder.SetInsertPoint(stdioCharBB);
     Builder.CreateCall(
@@ -119,6 +193,16 @@ void initLLVMGlobal(const std::string &moduleName)
         )->setTailCall();
     Builder.CreateRetVoid();
     verifyFunction(*stdioCharFunc, &errs());
+
+    // Built-in routine Exit
+    const std::string stdioCharName = "Exit";
+    Function * const stdioCharFunc = Function::Create(
+        BuiltInRoutines[stdioCharName], Function::ExternalLinkage, stdioCharName, TheModule.get());
+    BasicBlock * const stdioCharBB = BasicBlock::Create(TheContext, stdioCharName, stdioCharFunc);
+    for (auto &arg : stdioCharFunc->args())
+    {
+        argVal = &arg;
+    }*/
 }
 
 bool generateStartupRoutine(const std::string &mainName)
