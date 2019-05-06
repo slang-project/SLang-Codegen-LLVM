@@ -13,6 +13,11 @@ Convert JSON IR of SLang program to LLVM IR which can be compiled into binary wi
 sudo pacman -S llvm llvm-libs lld clang lldb
 ```
 
+`.NET Core (for Parser)`
+```
+sudo pacman -S dotnet-sdk
+```
+
 `CMake`
 ```bash
 sudo pacman -S cmake
@@ -70,6 +75,13 @@ sudo pacman -S zlib
 ```bash
 sudo apt install cmake
 ```
+
+`.NET Core (for Parser)`
+
+Refer to 
+https://dotnet.microsoft.com/download/linux-package-manager/rhel/sdk-2.2.203
+
+
 `Ninja build system`
 ```bash
 sudo apt install ninja-build
