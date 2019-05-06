@@ -2,10 +2,16 @@
 
 usage() { echo "Usage: ${0} [-o <target_name>] <source_name>" 1>&2; exit 1; }
 
-while getopts ":ho:" arg; do
+while getopts ":hjov:" arg; do
     case "${arg}" in
+        j)
+            json="j"
+            ;;
         o)
-            out_path=${OPTARG}
+            out_path="${OPTARG}"
+            ;;
+        v)
+            verbose="&1"
             ;;
         h | *)
             usage
@@ -24,8 +30,28 @@ if [ -z "${out_path}" ]; then
     out_path="${in_path}.out"
 fi
 
-"./slang_parser/SLang Compiler" /json "${in_path}"
-"./slang_jtll" "${in_path}.json"
-rm "${in_path}.json"
-clang -o "${out_path}" app.o
-rm app.o
+if [ -z "${verbose}" ]; then
+    verbose="/dev/null"
+fi
+
+verbose_suff="1>${verbose} 2>&1"
+
+obj_path="app.o"  # TODO: replace with option
+
+"./slang_parser/SLang Compiler" /json "${in_path}" \
+    "${verbose_suff}" || { echo "Parser call failed"; exit 1; }
+
+./slang_jtll "${in_path}.json" \
+    "${verbose_suff}" || { echo "Code generator call failed"; exit 1; }
+
+if [ -z "${json}" ]; then
+    rm "${in_path}.json" \
+        "${verbose_suff}" || echo "JSON file remove failed"
+fi
+
+#ld -o "${out_path}" -dynamic-linker /lib/ld-linux.so.2 /usr/lib/crt1.o /usr/lib/crti.o -lc "${obj_path}" /usr/lib/crtn.o
+clang -o "${out_path}" "${obj_path}" \
+    "${verbose_suff}" || { echo "Linkage call failed"; exit 1; }
+
+rm "${obj_path}" \
+    "${verbose_suff}" || echo "Object file remove failed"
