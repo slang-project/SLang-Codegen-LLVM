@@ -824,5 +824,11 @@ public:
         anonymous(anonymous)
     {}
     virtual ~CompilationAST() = default;
-    virtual bool codegen() const;
+
+    enum class StartupBehavior
+    {
+        isStartup,
+        isSubmodule,
+    };
+    virtual bool codegen(StartupBehavior behaviour) const;
 };

@@ -517,22 +517,24 @@ bool TryAST::codegen() const
     return LogError<bool>(std::string(__func__) + " not implemented yet");
 }
 
-bool CompilationAST::codegen() const
+bool CompilationAST::codegen(StartupBehavior behavior) const
 {
     for (const auto &decl : units_and_standalones)
     {
         decl->codegen();
     }
-    // TODO: check if startup function is required
 
     if (!anonymous->codegen())
     {
         return LogError<bool>("Anonymous routine generation failed");
     }
 
-    if (!generateStartupRoutine(anonymous->name))
+    if (behavior == StartupBehavior::isStartup)
     {
-        return LogError<bool>("Startup routine generation failed");
+        if (!generateStartupRoutine(anonymous->name))
+        {
+            return LogError<bool>("Startup routine generation failed");
+        }
     }
 
     return true;
