@@ -17,7 +17,6 @@ struct Parameters
     CompilationAST::StartupBehavior startupBehavior = CompilationAST::StartupBehavior::isStartup;
 
     bool saveLLlisting = false;
-    // bool saveObjFile = true;
 };
 
 // Given command line arguments try to deduce parameters
@@ -83,24 +82,6 @@ int main(const int argc, const char * const * const argv)
     static const std::string objFileFormat { ".o" };
     static const std::string objFilePath { outputFilePath + objFileFormat };  // TODO: filesystem::path
     createObjectFile(objFilePath);
-/*
-    // LINKAGE
-    // Note: recommended command is...
-    // ld -o app -dynamic-linker /lib/ld-linux.so.2 /usr/lib/crt1.o /usr/lib/crti.o app.o -lc /usr/lib/crtn.o
-    static const std::string linkCall { "clang -o " + params.outPath + " " + objFilePath };
-    const bool linkageSucceed = !std::system(linkCall.c_str());
 
-    if (!params.saveObjFile)
-    {
-        static const std::string rmCall { "rm " + objFilePath };
-        std::system(rmCall.c_str());  // TODO: filesystem::remove
-    }
-
-    if (!linkageSucceed)
-    {
-        std::cerr << "Linkage failed: " << linkCall << std::endl;
-        return EXIT_FAILURE;
-    }
-*/
     return EXIT_SUCCESS;
 }
