@@ -3,7 +3,6 @@
 
 #define TYPE "type"
 #define VALUE "value"
-#define NUM_CHILDREN "num_children"
 #define CHILDREN "children"
 
 
