@@ -404,8 +404,8 @@
 "fputs",
 "getc",
 "getchar",
-"putc" // macros?,
-"putchar" // macros?,
+"putc", // macros?
+"putchar", // macros?
 "puts",
 "ungetc",
 "fread",
