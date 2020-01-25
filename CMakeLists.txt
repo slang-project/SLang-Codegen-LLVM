@@ -1,5 +1,7 @@
-﻿cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.12)
 
-project ("SLang-LLVM")
+project (SLang-LLVM VERSION 0.0 LANGUAGES CXX)
 
-add_subdirectory ("SLang-LLVM")
+add_subdirectory (SLang-LLVM)
+
+set_property(TARGET SLang-LLVM PROPERTY CXX_STANDARD 17)
