@@ -1,12 +1,6 @@
-﻿// SLang-LLVM.cpp : Defines the entry point for the application.
-//
+﻿#include <cstdlib>
 
-#include "SLang-LLVM.h"
-
-using namespace std;
-
-int main()
+int main(int const argc, char const * const * const argv)
 {
-	cout << "Hello CMake." << endl;
-	return 0;
+	return EXIT_SUCCESS;
 }
