@@ -1,7 +1,7 @@
-﻿cmake_minimum_required (VERSION 3.12)
+﻿cmake_minimum_required(VERSION 3.12)
 
-project (SLang-LLVM VERSION 0.0 LANGUAGES CXX)
+project(SLang-LLVM VERSION 0.0 LANGUAGES CXX)
 
-add_subdirectory (SLang-LLVM)
+set(CMAKE_CXX_STANDARD 17)
 
-set_property(TARGET SLang-LLVM PROPERTY CXX_STANDARD 17)
+add_subdirectory(CodeGenerator)
