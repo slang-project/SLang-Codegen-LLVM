@@ -4,4 +4,4 @@ project(SLang-LLVM VERSION 0.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_subdirectory(CodeGenerator)
+add_subdirectory(code_generator)
