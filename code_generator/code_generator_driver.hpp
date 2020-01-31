@@ -3,19 +3,14 @@
 
 #include "utils/command_line_args.hpp"
 
-namespace CodeGenerator
-{
-
-namespace Driver
+namespace CodeGenerator::Driver
 {
 	/**
 	 * \brief Execute code generator.
 	 * \param args Command line arguments.
 	 * \return `true` - program has finished successfully; `false` - otherwise.
 	 */
-	bool Main(CommandLineArgs::Arguments args) noexcept;
-}
-
+	[[nodiscard]] bool Main(const CommandLineArgs &args) noexcept;
 }
 
 #endif

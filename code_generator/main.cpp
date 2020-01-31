@@ -5,13 +5,11 @@
 using namespace CodeGenerator;
 
 int main(int const argc, char const * const * const argv) noexcept
-try
 {
-	return Driver::Main(CommandLineArgs::Parse(argv, argc).value())
-		? EXIT_SUCCESS
-		: EXIT_FAILURE;
-}
-catch (const std::bad_optional_access &)
-{
+	if (const auto args = CommandLineArgs::Parse(argv, argc); args.has_value())
+	{
+		return Driver::Main(*args) ? EXIT_SUCCESS : EXIT_FAILURE;
+	}
+
 	return EXIT_FAILURE;
 }

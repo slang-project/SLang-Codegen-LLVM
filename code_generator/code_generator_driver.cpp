@@ -1,9 +1,8 @@
 #include "code_generator_driver.hpp"
 
 using namespace CodeGenerator;
-using namespace Driver;
 
-bool Driver::Main(CommandLineArgs::Arguments args) noexcept
+bool Driver::Main(const CommandLineArgs &args) noexcept
 {
 	return false; // TODO: code generator
 }
