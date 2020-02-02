@@ -1,16 +1,16 @@
-#ifndef CODE_GENERATOR_DRIVER_H
-#define CODE_GENERATOR_DRIVER_H
+#ifndef CODE_GENERATOR_DRIVER_HPP
+#define CODE_GENERATOR_DRIVER_HPP
 
-#include "utils/command_line_args.hpp"
+#include "command_line_args/command_line_args.hpp"
 
-namespace CodeGenerator::Driver
+namespace SLang::CodeGenerator::Driver
 {
-	/**
-	 * \brief Execute code generator.
-	 * \param args Command line arguments.
-	 * \return `true` - program has finished successfully; `false` - otherwise.
-	 */
-	[[nodiscard]] bool Main(const CommandLineArgs &args) noexcept;
+    /**
+     * \brief Execute code generator.
+     * \param args Command line arguments.
+     * \return `true` - program has finished successfully; `false` - otherwise.
+     */
+    [[nodiscard]] bool Main(const CommandLineArgs &args) noexcept;
 }
 
 #endif
