@@ -2,7 +2,7 @@
 
 using namespace SLang::CodeGenerator;
 
-bool ObjectFileGenerator::ConvertIrToObjectFile(const SLangIr &program, const std::filesystem::path &out_path) noexcept
+bool ObjectFileGenerator::ConvertIrToObjectFile(const llvm::Module &module, const std::filesystem::path &out_path) noexcept
 {
     // TODO: generate object file with program.
     return false;

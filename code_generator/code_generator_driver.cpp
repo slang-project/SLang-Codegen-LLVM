@@ -1,5 +1,6 @@
 #include "code_generator_driver.hpp"
 
+#include "ir_converter/ir_converter.hpp"
 #include "object_file_generator/object_file_generator.hpp"
 
 #include <fstream>
@@ -32,9 +33,16 @@ bool Driver::Main(const CommandLineArgs &args) noexcept
         return false;
     }
 
-    if (!ObjectFileGenerator::ConvertIrToObjectFile(parsed_content, args.OutputPath()))
+    const auto program_module = Ir::Convert(parsed_content);
+    if (!program_module)
     {
-        // TODO: message on code generation failure.
+        // TODO: message on code conversion failure.
+        return false;
+    }
+
+    if (!ObjectFileGenerator::ConvertIrToObjectFile(*program_module, args.OutputPath()))
+    {
+        // TODO: message on object file generation failure.
         return false;
     }
 
