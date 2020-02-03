@@ -11,13 +11,9 @@ namespace SLang::CodeGenerator
      */
     class CommandLineArgs
     {
+    public:
         using PathType = std::filesystem::path;
 
-        PathType in_path_, out_path_;
-
-        CommandLineArgs() noexcept = default;
-
-    public:
         /**
          * \brief Parse provided command line arguments for code generator.
          * \param args Collection of `std::string_view`'s on command line argument strings.
@@ -29,19 +25,18 @@ namespace SLang::CodeGenerator
          * \brief Get input file path.
          * \return Input file path object.
          */
-        [[nodiscard]] const PathType &InputPath() const
-        {
-            return in_path_;
-        }
+        [[nodiscard]] const PathType &InputPath() const noexcept;
 
         /**
          * \brief Get output file path.
          * \return Output file path object.
          */
-        [[nodiscard]] const PathType &OutputPath() const
-        {
-            return out_path_;
-        }
+        [[nodiscard]] const PathType &OutputPath() const noexcept;
+
+    private:
+        CommandLineArgs() noexcept = default;
+
+        PathType in_path_, out_path_;
     };
 }
 

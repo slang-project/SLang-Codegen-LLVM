@@ -22,3 +22,13 @@ optional<CommandLineArgs> CommandLineArgs::Parse(const vector<string_view> &args
 
     return result;
 }
+
+auto CommandLineArgs::InputPath() const noexcept -> const PathType &
+{
+    return in_path_;
+}
+
+auto CommandLineArgs::OutputPath() const noexcept -> const PathType &
+{
+    return out_path_;
+}
