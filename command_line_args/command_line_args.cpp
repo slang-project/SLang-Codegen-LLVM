@@ -4,7 +4,11 @@ using namespace SLang::CodeGenerator;
 
 using namespace std;
 
-optional<CommandLineArgs> CommandLineArgs::Parse(const vector<string_view> &args) noexcept
+optional<CommandLineArgs> CommandLineArgs::Parse(
+    const vector<string_view> &args,
+    wostream& outs,
+    wostream& errs,
+    wostream& logs) noexcept
 {
     CommandLineArgs result;
 
@@ -18,7 +22,7 @@ optional<CommandLineArgs> CommandLineArgs::Parse(const vector<string_view> &args
     // TODO: use constructor of `std::filesystem::path` with C++20 (`u8path` will be deprecated).
     result.in_path_ = filesystem::u8path(args[1]).lexically_normal();
 
-    (result.out_path_ = result.InputPath()).replace_extension(u8".obj");
+    (result.out_path_ = result.InputPath()).replace_extension(L".obj");
 
     return result;
 }

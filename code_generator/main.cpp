@@ -6,6 +6,8 @@
 
 using namespace SLang::CodeGenerator;
 
+using namespace std;
+
 /**
  * \brief Parse provided command line arguments for code generator.
  * \param argv Pointer to array of c-style strings of arguments (like `main`'s `argv`).
@@ -18,7 +20,7 @@ using namespace SLang::CodeGenerator;
 static auto ArgsToVector(const char * const * const argv, const int argc) noexcept
 // TODO: use `const std::span<const char *> &` instead of `argv` and `argc` in C++20.
 {
-    std::vector<std::string_view> result;
+    vector<string_view> result;
     result.reserve(argc);
 
     // TODO: use range-based for loop
@@ -32,6 +34,8 @@ static auto ArgsToVector(const char * const * const argv, const int argc) noexce
 
 int main(const int argc, const char * const * const argv) noexcept
 {
+    ios_base::sync_with_stdio(false);
+
     if (const auto args = CommandLineArgs::Parse(ArgsToVector(argv, argc)); args.has_value())
     {
         return Driver::Main(*args) ? EXIT_SUCCESS : EXIT_FAILURE;
