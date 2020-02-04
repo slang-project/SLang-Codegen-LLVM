@@ -1,4 +1,4 @@
-#include "ir_converter.hpp"
+﻿#include "ir_converter.hpp"
 
 using namespace SLang::CodeGenerator;
 

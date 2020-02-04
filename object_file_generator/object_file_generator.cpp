@@ -1,4 +1,4 @@
-#include "object_file_generator.hpp"
+﻿#include "object_file_generator.hpp"
 
 using namespace SLang::CodeGenerator;
 

@@ -1,4 +1,4 @@
-#include "command_line_args.hpp"
+﻿#include "command_line_args.hpp"
 
 using namespace SLang::CodeGenerator;
 

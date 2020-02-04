@@ -1,4 +1,4 @@
-#ifndef COMMAND_LINE_ARGS_HPP
+﻿#ifndef COMMAND_LINE_ARGS_HPP
 #define COMMAND_LINE_ARGS_HPP
 
 #include <filesystem>

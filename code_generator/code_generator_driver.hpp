@@ -1,4 +1,4 @@
-#ifndef CODE_GENERATOR_DRIVER_HPP
+﻿#ifndef CODE_GENERATOR_DRIVER_HPP
 #define CODE_GENERATOR_DRIVER_HPP
 
 #include "command_line_args/command_line_args.hpp"
