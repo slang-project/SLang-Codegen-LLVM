@@ -17,7 +17,7 @@ using namespace std;
  * \pre Each element pointed by elements of `argv` is null-terminated c-style string.
  * \note The order of parameters was changed due to possible usage of `std::span`.
  */
-static auto ArgsToVector(const char * const * const argv, const int argc) noexcept
+static auto ArgsToVector(const char *const *const argv, const int argc) noexcept
 // TODO: use `const std::span<const char *> &` instead of `argv` and `argc` in C++20.
 {
     vector<string_view> result;
@@ -32,7 +32,7 @@ static auto ArgsToVector(const char * const * const argv, const int argc) noexce
     return result;
 }
 
-int main(const int argc, const char * const * const argv) noexcept
+int main(const int argc, const char *const *const argv) noexcept
 {
     ios_base::sync_with_stdio(false);
 

@@ -14,7 +14,9 @@ namespace SLang::CodeGenerator::ObjectFileGenerator
      * \return `true` - file was generated successfully; `false` - otherwise.
      * \note If some file exists at `out_path`, it will be overwritten.
      */
-    [[nodiscard]] bool ConvertIrToObjectFile(const llvm::Module &module, const std::filesystem::path &out_path) noexcept;
+    [[nodiscard]] bool ConvertIrToObjectFile(
+        const llvm::Module &module,
+        const std::filesystem::path &out_path) noexcept;
 }
 
 #endif

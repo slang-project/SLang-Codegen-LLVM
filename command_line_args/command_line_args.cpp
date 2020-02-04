@@ -6,9 +6,9 @@ using namespace std;
 
 optional<CommandLineArgs> CommandLineArgs::Parse(
     const vector<string_view> &args,
-    wostream& outs,
-    wostream& errs,
-    wostream& logs) noexcept
+    wostream &outs,
+    wostream &errs,
+    wostream &logs) noexcept
 {
     CommandLineArgs result;
 
@@ -27,12 +27,12 @@ optional<CommandLineArgs> CommandLineArgs::Parse(
     return result;
 }
 
-auto CommandLineArgs::InputPath() const noexcept -> const PathType &
+auto CommandLineArgs::InputPath() const noexcept -> const PathType&
 {
     return in_path_;
 }
 
-auto CommandLineArgs::OutputPath() const noexcept -> const PathType &
+auto CommandLineArgs::OutputPath() const noexcept -> const PathType&
 {
     return out_path_;
 }
