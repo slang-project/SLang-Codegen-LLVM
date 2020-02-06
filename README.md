@@ -22,7 +22,7 @@ _Note_: Visual Studio 2019 is recommended. Older versions require some additiona
     * Install dependencies
         * `.\vcpkg install nlohmann-json`
 * [LLVM 9.0.1](https://github.com/llvm/llvm-project/releases/tag/llvmorg-9.0.1)
-    * TODO: move to LLVM provided by Vcpkg
+    * _**TODO**: move to LLVM provided by Vcpkg_
     * Download "Source code"
     * [Compile](https://llvm.org/docs/CMake.html#embedding-llvm-in-your-project) with required configuration (`Debug`, `Release`, etc.)
         * May require [CMake](https://cmake.org/download) to be installed separately
@@ -32,7 +32,7 @@ _Note_: Visual Studio 2019 is recommended. Older versions require some additiona
 * Open project folder from Visual Studio 2019
     * You may just run it with chosen configuration
     * Don't forget to setup command line arguments for debug
-        * `.vs/launch.vs.json`
+        * `.vs\launch.vs.json`
             * `{..."configurations": [...{..."args": "path/to/in.debug.slangir"...}...]...}`
         * Using GUI
             * Right-click on top `CMakeLists.txt`
@@ -50,7 +50,7 @@ _Note_: this instructions assume presence of [Homebrew](https://brew.sh).
 * Build project
     * By hand
         * `mkdir bld && cd bld && cmake .. && make`
-        * TODO: check if LLVM is recognized properly
+        * _**TODO**: check if LLVM is recognized properly_
     * Open using CLion or other IDE that supports CMake appropriately
 
 ## How to run project
