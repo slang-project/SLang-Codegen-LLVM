@@ -261,5 +261,4 @@ __pycache__/
 *.pyc
 
 # Custom rules
-/CMakeSettings.json
 *.debug.slangir
