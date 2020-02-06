@@ -4,6 +4,7 @@
 #include "object_file_generator/object_file_generator.hpp"
 
 #include <fstream>
+#include <system_error>
 
 using namespace SLang::CodeGenerator;
 

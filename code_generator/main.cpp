@@ -1,8 +1,6 @@
 ﻿#include "code_generator_driver.hpp"
 
 #include <cstdlib>
-#include <string_view>
-#include <vector>
 
 using namespace SLang::CodeGenerator;
 

@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <iostream>
 #include <optional>
+#include <string_view>
+#include <vector>
 
 namespace SLang::CodeGenerator
 {
