@@ -1,0 +1,7 @@
+﻿cmake_minimum_required(VERSION 3.12)
+
+add_library(code_generator_driver code_generator_driver.cpp)
+
+target_link_libraries(code_generator_driver PUBLIC command_line_args)
+target_link_libraries(code_generator_driver PRIVATE ir_converter object_file_generator)
+target_include_directories(code_generator_driver PRIVATE ${ROOT_PATH})
