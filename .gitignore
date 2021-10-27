@@ -18,6 +18,8 @@
 x64/
 x86/
 bld/
+build/
+_build/
 [Bb]in/
 [Oo]bj/
 [Ll]og/

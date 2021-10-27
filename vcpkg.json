@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "name": "slang-llvm",
+  "version-semver": "0.2.0",
+  "maintainers": [
+    "deiuch"
+  ],
+  "description": "A LLVM-based backend (code generator) for the SLang programming language compiler.",
+  "homepage": "https://github.com/slang-project/SLang-LLVM",
+  "documentation": "https://github.com/slang-project/SLang-LLVM/wiki",
+  "license": "",
+  "builtin-baseline": "a875d756749fd441305b458523df671e8f2e6cae",
+  "dependencies": [
+    "nlohmann-json",
+    {
+      "name": "llvm",
+      "version>=": "12.0.0"
+    }
+  ],
+  "overrides": [
+    {
+      "name": "llvm",
+      "version": "12.0.0"
+    }
+  ]
+}

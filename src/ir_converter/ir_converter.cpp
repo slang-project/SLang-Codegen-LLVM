@@ -4,8 +4,8 @@ using namespace SLang::CodeGenerator;
 
 using namespace std;
 
-optional<Ir::LlvmIr> Ir::Convert(const SLangIr &program) noexcept
+unique_ptr<const Ir::LlvmIr> Ir::Convert(const SLangIr &program) noexcept
 {
     // TODO: implement converter.
-    return nullopt;
+    return nullptr;
 }

@@ -8,4 +8,5 @@ bool ObjectFileGenerator::ConvertIrToObjectFile(
 {
     // TODO: generate object file with program.
     return false;
+    // return true;
 }

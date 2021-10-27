@@ -22,7 +22,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "cmakeToolchain": "", 
+      "cmakeToolchain": "",
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "variables": []
     }
