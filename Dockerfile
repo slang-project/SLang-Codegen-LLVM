@@ -39,7 +39,6 @@ FROM dependencies AS configure
 
 COPY CMakeLists.txt CMakeLists.txt
 COPY app/ app/
-COPY cmake/ cmake/
 COPY include/ include/
 COPY src/ src/
 RUN cmake -S . -B build
