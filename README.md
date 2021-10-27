@@ -15,7 +15,7 @@ The project is packed into reproducible build environment with Docker.
 You may use [Dockerfile](Dockerfile) provided to build your own image to work with project.
 We are considering publishing the resulting image with dependencies somewhere for quick start on a project.
 
-In order for the project to be trully cross-platform, we use `vcpkg` as package manager.
+In order for the project to be trully cross-platform, we use [`vcpkg`](https://github.com/Microsoft/vcpkg) as package manager.
 It is integrated as submodule, so don't forget to initialise it.
 
 The following example may be helpful in getting started (Ubuntu), but you still need to get [Docker](https://docs.docker.com/engine/install/ubuntu/) yourself:
