@@ -11,8 +11,8 @@ namespace SLang::CodeGenerator::ObjectFileGenerator
      * \brief Parse given program tree and compile an object file out of it.
      * \param module LLVM Module to generate object file from.
      * \param out_path Path to the place where an object file should be stored.
-     * \return `true` - file was generated successfully; `false` - otherwise.
-     * \note If some file exists at `out_path`, it will be overwritten.
+     * \return \c true - file was generated successfully; \c false - otherwise.
+     * \note If some file exists at \p out_path, it will be overwritten.
      */
     [[nodiscard]] bool ConvertIrToObjectFile(
         const llvm::Module &module,

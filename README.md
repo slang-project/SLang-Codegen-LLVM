@@ -9,7 +9,25 @@ You may find an old implementation on the [branch `v0.1.3`](../../tree/v0.1.3).
 
 This project is based on CMake. In order to build it, you need to install dependencies and then build the project.
 
-### Windows
+### Docker
+
+The project is packed into reproducible build environment with Docker.
+You may use [Dockerfile](Dockerfile) provided to build your own image to work with project.
+We are considering publishing the resulting image with dependencies somewhere for quick start on a project.
+
+In order for the project to be trully cross-platform, we use `vcpkg` as package manager.
+It is integrated as submodule, so don't forget to initialise it.
+
+The following example may be helpful in getting started (Ubuntu), but you still need to get [Docker](https://docs.docker.com/engine/install/ubuntu/) yourself:
+
+```bash
+# git clone --recurse-submodules https://github.com/slang-project/SLang-LLVM.git
+git submodule update --init --recursive
+# sudo docker build --network "host" -t slang-project/slang-codegen-llvm:0.2.0 .
+sudo docker build --target dependencies --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.0 .
+```
+
+### Windows (OUTDATED)
 
 _Note_: Visual Studio 2019 is recommended. Older versions require some additional CMake environment setup.
 
@@ -38,7 +56,7 @@ _Note_: Visual Studio 2019 is recommended. Older versions require some additiona
             * Right-click on top `CMakeLists.txt`
             * "Debug and Launch Settings"
 
-### MacOS
+### MacOS (OUTDATED)
 
 _Note_: this instructions assume presence of [Homebrew](https://brew.sh).
 
@@ -55,4 +73,4 @@ _Note_: this instructions assume presence of [Homebrew](https://brew.sh).
 
 ## How to run project
 
-`code_generator path/to/in.slangir`
+`SLangCompilerLlvmCodegenDriver path/to/in.slangir`

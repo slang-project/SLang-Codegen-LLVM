@@ -1,4 +1,4 @@
-﻿#include "code_generator_driver.hpp"
+﻿#include "slang_codegen/code_generator_driver/code_generator_driver.hpp"
 
 #include "ir_converter/ir_converter.hpp"
 #include "object_file_generator/object_file_generator.hpp"
@@ -23,7 +23,7 @@ bool Driver::Main(
         return false;
     }
 
-    // TODO: move to `std::wifstream` (`std::istream` is required by `nlohmann::json` as for 3.7.3).
+    // TODO: \c std::basic_ifstream<char8_t> (or \c std::u8ifstream if present).
     ifstream in_file(in_path);
     if (!in_file.is_open())
     {
@@ -31,7 +31,7 @@ bool Driver::Main(
         return false;
     }
 
-    // TODO: move to `noexcept` version when it will be available in the library.
+    // TODO: move to \c noexcept version when it will be available in the library.
     const auto parsed_content = nlohmann::json::parse(in_file, nullptr, false);
     in_file.close();
     if (parsed_content.is_discarded())
