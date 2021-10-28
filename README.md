@@ -20,9 +20,9 @@ In order for the project to be trully cross-platform, we use [`vcpkg`](https://g
 The following example may be helpful in getting started (Ubuntu), but you still need to get [Docker](https://docs.docker.com/engine/install/ubuntu/) by yourself:
 
 ```bash
-sudo docker build --target install-vcpkg --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.0 .
-sudo docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.0 --network "host" -t slang-project/slang-codegen-llvm:0.2.0 .
-sudo docker run --rm slang-project/slang-codegen-llvm:0.2.0 path/to/in.json
+sudo docker build --target install-vcpkg --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
+sudo docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.1 --network "host" -t slang-project/slang-codegen-llvm:0.2.1 .
+sudo docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
 ```
 
 ### Windows (OUTDATED)
