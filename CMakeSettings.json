@@ -11,7 +11,10 @@
       "ctestCommandArgs": "",
       "cmakeToolchain": "",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "variables": [{
+        "name": "CMAKE_TOOLCHAIN_FILE",
+        "value": "[vcpkg root]\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+      }]
     },
     {
       "name": "x64-Release",
@@ -24,7 +27,10 @@
       "ctestCommandArgs": "",
       "cmakeToolchain": "",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "variables": [{
+        "name": "CMAKE_TOOLCHAIN_FILE",
+        "value": "[vcpkg root]\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+      }]
     }
   ]
 }

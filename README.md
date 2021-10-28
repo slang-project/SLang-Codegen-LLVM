@@ -16,17 +16,14 @@ You may use [Dockerfile](Dockerfile) provided to build your own image to work wi
 We are considering publishing the resulting image with dependencies somewhere for quick start on a project.
 
 In order for the project to be trully cross-platform, we use [`vcpkg`](https://github.com/Microsoft/vcpkg) as package manager.
-It is integrated as submodule, so don't forget to initialise it.
 
 The following example may be helpful in getting started (Ubuntu), but you still need to get [Docker](https://docs.docker.com/engine/install/ubuntu/) by yourself:
 
 ```bash
-git submodule update --init --recursive
-sudo docker build --target dependencies --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.0 .
-sudo docker build --target build --cache-from slang-project/slang-codegen-llvm-deps:0.2.0 -t slang-project/slang-codegen-llvm:0.2.0 .
+sudo docker build --target install-vcpkg --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.0 .
+sudo docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.0 --network "host" -t slang-project/slang-codegen-llvm:0.2.0 .
+sudo docker run --rm slang-project/slang-codegen-llvm:0.2.0 path/to/in.json
 ```
-
-> _**NOTE**_: Do not `git clone` this project with flag `--recurse-submodules`! For unknown reason, it breaks an ability to copy submodule folder into Docker container and keep it as git repository.
 
 ### Windows (OUTDATED)
 

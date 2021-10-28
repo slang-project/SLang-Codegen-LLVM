@@ -1,11 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_TOOLCHAIN_FILE
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake
-    CACHE STRING "Vcpkg toolchain file")
-
 project(SLangCompiler-LLVM
-  VERSION 0.2.0
+  VERSION 0.2.1
   DESCRIPTION "SLang compiler backend that uses LLVM to generate target code."
   LANGUAGES C CXX
 )

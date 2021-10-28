@@ -1,23 +1,25 @@
-FROM ubuntu:focal AS dependencies
+FROM ubuntu:focal AS preinstall
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG LLVM_VERSION=13
-
-WORKDIR ~
 
 RUN apt-get update -qq \
     && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
     && apt-get install -y \
-        cmake \
-        curl \
-        git \
-        lsb-release \
-        pkg-config \
-        software-properties-common \
-        wget \
-        zip \
+    cmake \
+    curl \
+    git \
+    lsb-release \
+    pkg-config \
+    software-properties-common \
+    wget \
+    zip \
     && rm -rf /var/lib/apt/lists/*
+
+
+FROM preinstall AS install-clang
+
+ARG LLVM_VERSION=13
 
 RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" "" ${LLVM_VERSION} \
     && rm -rf /var/lib/apt/lists/*
@@ -25,30 +27,34 @@ RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" "" ${LLVM_VERSION} \
 ENV CC=clang-${LLVM_VERSION}
 ENV CXX=clang++-${LLVM_VERSION}
 
-RUN mkdir ~/SLang-LLVM/
-WORKDIR ~/SLang-LLVM
 
-COPY .git/ .git/
-COPY external/ external/
+FROM install-clang AS install-vcpkg
+
+ENV SLANG_VCPKG_PATH=/vcpkg
+
+WORKDIR /SLang-LLVM/
 COPY vcpkg.json vcpkg.json
-RUN external/vcpkg/bootstrap-vcpkg.sh
-RUN external/vcpkg/vcpkg install
+RUN git clone https://github.com/microsoft/vcpkg ${SLANG_VCPKG_PATH} \
+    && ${SLANG_VCPKG_PATH}/bootstrap-vcpkg.sh \
+    && ${SLANG_VCPKG_PATH}/vcpkg install --clean-after-build
 
 
-FROM dependencies AS configure
+FROM install-vcpkg AS configure-cmake
 
+WORKDIR /SLang-LLVM/
 COPY CMakeLists.txt CMakeLists.txt
 COPY app/ app/
 COPY include/ include/
 COPY src/ src/
-RUN cmake -S . -B build
+RUN cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${SLANG_VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake
 
 
-FROM configure AS build
+FROM configure-cmake AS build
 
 RUN cmake --build build --target SLangCompilerLlvmCodegenDriver --config Debug
 
 
-FROM build AS run
+FROM preinstall AS install
 
-RUN build/app/SLangCompilerLlvmCodegenDriver
+COPY --from=build /SLang-LLVM/build/app/SLangCompilerLlvmCodegenDriver /usr/local/bin/SLangCompilerLlvmCodegenDriver
+ENTRYPOINT [ "SLangCompilerLlvmCodegenDriver" ]
