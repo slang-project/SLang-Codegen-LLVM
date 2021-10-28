@@ -32,7 +32,7 @@ FROM install-clang AS install-vcpkg
 
 ENV SLANG_VCPKG_PATH=/vcpkg
 
-WORKDIR /SLang-LLVM/
+WORKDIR /SLang-Codegen-LLVM/
 COPY vcpkg.json vcpkg.json
 RUN git clone https://github.com/microsoft/vcpkg ${SLANG_VCPKG_PATH} \
     && ${SLANG_VCPKG_PATH}/bootstrap-vcpkg.sh \
@@ -41,7 +41,7 @@ RUN git clone https://github.com/microsoft/vcpkg ${SLANG_VCPKG_PATH} \
 
 FROM install-vcpkg AS configure-cmake
 
-WORKDIR /SLang-LLVM/
+WORKDIR /SLang-Codegen-LLVM/
 COPY CMakeLists.txt CMakeLists.txt
 COPY app/ app/
 COPY include/ include/
@@ -56,5 +56,5 @@ RUN cmake --build build --target SLangCompilerLlvmCodegenDriver --config Debug
 
 FROM preinstall AS install
 
-COPY --from=build /SLang-LLVM/build/app/SLangCompilerLlvmCodegenDriver /usr/local/bin/SLangCompilerLlvmCodegenDriver
+COPY --from=build /SLang-Codegen-LLVM/build/app/SLangCompilerLlvmCodegenDriver /usr/local/bin/SLangCompilerLlvmCodegenDriver
 ENTRYPOINT [ "SLangCompilerLlvmCodegenDriver" ]

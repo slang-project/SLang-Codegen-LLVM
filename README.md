@@ -1,4 +1,4 @@
-﻿# SLang-LLVM
+﻿# SLang-Codegen-LLVM
 
 ## Overview
 
