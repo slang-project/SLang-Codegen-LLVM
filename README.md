@@ -23,7 +23,7 @@ The following example may be helpful in getting started (Ubuntu), but you still 
 ```bash
 git submodule update --init --recursive
 sudo docker build --target dependencies --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.0 .
-sudo docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.0 -t slang-project/slang-codegen-llvm:0.2.0 .
+sudo docker build --target build --cache-from slang-project/slang-codegen-llvm-deps:0.2.0 -t slang-project/slang-codegen-llvm:0.2.0 .
 ```
 
 > _**NOTE**_: Do not `git clone` this project with flag `--recurse-submodules`! For unknown reason, it breaks an ability to copy submodule folder into Docker container and keep it as git repository.
