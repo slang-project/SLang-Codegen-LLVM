@@ -1,8 +1,8 @@
-﻿# SLang-Codegen-LLVM
+# SLang-Codegen-LLVM
 
 ## Overview
 
-This project is an implementation of the SLang programming language backend using LLVM.
+This project is an implementation of the SLang programming language compiler backend using LLVM.
 You may find an old implementation on the [branch `v0.1.3`](../../tree/v0.1.3).
 
 ## How to install dependencies and build project
@@ -25,26 +25,22 @@ sudo docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.1 --net
 sudo docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
 ```
 
-### Windows (OUTDATED)
-
-_Note_: Visual Studio 2019 is recommended. Older versions require some additional CMake environment setup.
+### Windows (non-docker)
 
 * [Visual Studio 2019](https://visualstudio.microsoft.com/vs)
     * Install "Individual components" (usually added with workload "Desktop development with C++")
         * MSVC v142
         * C++ CMake tools for Windows
 * [Vcpkg](https://github.com/Microsoft/vcpkg)
-    * `.\vcpkg integrate install`
+    * Setup vcpkg
+        * `cd ..  # put vcpkg out of project scope`
+        * `git clone https://github.com/microsoft/vcpkg`
+        * `.\vcpkg\bootstrap-vcpkg.bat`
+        * `.\vcpkg\vcpkg integrate install`
+        * Replace `[vcpkg root]` in [CMakeSettings.json](CMakeSettings.json) with path to the vcpkg root
     * Install dependencies
-        * `.\vcpkg install nlohmann-json`
-* [LLVM 9.0.1](https://github.com/llvm/llvm-project/releases/tag/llvmorg-9.0.1)
-    * _**TODO**: move to LLVM provided by Vcpkg_
-    * Download "Source code"
-    * [Compile](https://llvm.org/docs/CMake.html#embedding-llvm-in-your-project) with required configuration (`Debug`, `Release`, etc.)
-        * May require [CMake](https://cmake.org/download) to be installed separately
-        * If building with Visual Studio, set `CMAKE_INSTALL_PATH` (if you need it) and build subproject called `INSTALL`
-    * Add LLVM directory into system variable `Path`
-        * It may look like `C:\Program Files (x86)\LLVM\bin`
+        * `cd SLang-Codegen-LLVM  # do this in the project root`
+        * `.\vcpkg install`
 * Open project folder from Visual Studio 2019
     * You may just run it with chosen configuration
     * Don't forget to setup command line arguments for debug
@@ -54,18 +50,16 @@ _Note_: Visual Studio 2019 is recommended. Older versions require some additiona
             * Right-click on top `CMakeLists.txt`
             * "Debug and Launch Settings"
 
-### MacOS (OUTDATED)
-
-_Note_: this instructions assume presence of [Homebrew](https://brew.sh).
+### MacOS (non-docker, non-vcpkg)
 
 * [Homebrew](https://brew.sh/#install)
     * `brew install cmake`
     * `brew tap nlohmann/json`
     * `brew install nlohmann-json`
-    * `brew install llvm@9`
+    * `brew install llvm@12`
 * Build project
     * By hand
-        * `mkdir bld && cd bld && cmake .. && make`
+        * `cmake -S . -B build && cmake --build build`
         * _**TODO**: check if LLVM is recognized properly_
     * Open using CLion or other IDE that supports CMake appropriately
 
