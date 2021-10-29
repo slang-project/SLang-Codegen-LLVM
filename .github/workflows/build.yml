@@ -1,0 +1,14 @@
+name: Build project (Docker image)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image of the project
+      run: docker build --target build --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
