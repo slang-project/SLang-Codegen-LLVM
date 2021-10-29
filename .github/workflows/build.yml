@@ -11,4 +11,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image of the project
-      run: docker build --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
+      run: docker build --target build --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
