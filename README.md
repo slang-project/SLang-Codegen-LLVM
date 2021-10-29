@@ -9,20 +9,20 @@ You may find an old implementation on the [branch `v0.1.3`](../../tree/v0.1.3).
 
 This project is based on CMake. In order to build it, you need to install dependencies and then build the project.
 
+In order for the project to be trully cross-platform, we use [`vcpkg`](https://github.com/Microsoft/vcpkg) as package manager.
+
 ### Docker
 
 The project is packed into reproducible build environment with Docker.
 You may use [Dockerfile](Dockerfile) provided to build your own image to work with project.
 We are considering publishing the resulting image with dependencies somewhere for quick start on a project.
 
-In order for the project to be trully cross-platform, we use [`vcpkg`](https://github.com/Microsoft/vcpkg) as package manager.
-
-The following example may be helpful in getting started (Ubuntu), but you still need to get [Docker](https://docs.docker.com/engine/install/ubuntu/) by yourself:
+The following example may be helpful in getting started, but you still need to get [Docker](https://docs.docker.com/engine/install) by yourself ([Ubuntu instruction](https://docs.docker.com/engine/install/ubuntu)):
 
 ```bash
-sudo docker build --target install-vcpkg --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
-sudo docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.1 --network "host" -t slang-project/slang-codegen-llvm:0.2.1 .
-sudo docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
+docker build --target install-vcpkg --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
+docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.1 --network "host" -t slang-project/slang-codegen-llvm:0.2.1 .
+docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
 ```
 
 ### Windows (non-docker)
