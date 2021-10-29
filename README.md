@@ -40,7 +40,8 @@ sudo docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
         * Replace `[vcpkg root]` in [CMakeSettings.json](CMakeSettings.json) with path to the vcpkg root
     * Install dependencies
         * `cd SLang-Codegen-LLVM  # do this in the project root`
-        * `.\vcpkg install`
+        * `vcpkg install`
+        * This operation might take a while...
 * Open project folder from Visual Studio 2019
     * You may just run it with chosen configuration
     * Don't forget to setup command line arguments for debug
