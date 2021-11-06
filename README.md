@@ -66,4 +66,4 @@ docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
 
 ## How to run project
 
-`SLangCompilerLlvmCodegenDriver path/to/in.slangir`
+`SlangCompilerLlvmCodegenDriver path/to/in.slangir`
