@@ -6,14 +6,14 @@ RUN apt-get update -qq \
     && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
     && apt-get install -y \
-    cmake \
-    curl \
-    git \
-    lsb-release \
-    pkg-config \
-    software-properties-common \
-    wget \
-    zip \
+        cmake \
+        curl \
+        git \
+        lsb-release \
+        pkg-config \
+        software-properties-common \
+        wget \
+        zip \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -51,10 +51,10 @@ RUN cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${SLANG_VCPKG_PATH}/scripts/build
 
 FROM configure-cmake AS build
 
-RUN cmake --build build --target SLangCompilerLlvmCodegenDriver --config Debug
+RUN cmake --build build --target SlangCompilerLlvmCodegenDriver --config Debug
 
 
 FROM preinstall AS install
 
-COPY --from=build /SLang-Codegen-LLVM/build/app/SLangCompilerLlvmCodegenDriver /usr/local/bin/SLangCompilerLlvmCodegenDriver
-ENTRYPOINT [ "SLangCompilerLlvmCodegenDriver" ]
+COPY --from=build /SLang-Codegen-LLVM/build/app/SlangCompilerLlvmCodegenDriver /usr/local/bin/SlangCompilerLlvmCodegenDriver
+ENTRYPOINT [ "SlangCompilerLlvmCodegenDriver" ]

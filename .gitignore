@@ -264,3 +264,6 @@ __pycache__/
 
 # Custom rules
 *.debug.slangir
+
+# VS Code clangd cache
+.cache/
