@@ -10,16 +10,16 @@ namespace SLang::CodeGenerator::Driver
     /**
      * \brief Execute code generator.
      * \param args Command line arguments.
-     * \param outs Stream where program's wide character output will go.
-     * \param errs Stream where program's wide character error will go.
-     * \param logs Stream where program's wide character log will go.
+     * \param outs Stream where program's output will go.
+     * \param errs Stream where program's error will go.
+     * \param logs Stream where program's log will go.
      * \return \c true - program has finished successfully; \c false - otherwise.
      */
     [[nodiscard]] bool Main(
         const CommandLineArgs &args,
-        std::wostream &outs = std::wcout,
-        std::wostream &errs = std::wcerr,
-        std::wostream &logs = std::wclog) noexcept;
+        std::ostream &outs = std::cout,
+        std::ostream &errs = std::cerr,
+        std::ostream &logs = std::clog) noexcept;
 }
 
 #endif

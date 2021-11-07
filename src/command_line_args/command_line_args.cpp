@@ -6,9 +6,9 @@ using namespace std;
 
 optional<const CommandLineArgs> CommandLineArgs::Parse(
     const vector<string_view> &args,
-    wostream &outs,
-    wostream &errs,
-    wostream &logs) noexcept
+    ostream &outs,
+    ostream &errs,
+    ostream &logs) noexcept
 {
     CommandLineArgs result;
 

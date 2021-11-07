@@ -12,9 +12,9 @@ using namespace std;
 
 bool Driver::Main(
     const CommandLineArgs &args,
-    wostream &outs,
-    wostream &errs,
-    wostream &logs) noexcept
+    ostream &outs,
+    ostream &errs,
+    ostream &logs) noexcept
 {
     const auto &in_path = args.InputPath();
     if (error_code ec; !filesystem::exists(in_path, ec) || ec)
