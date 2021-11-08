@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.12)
 
-project(SLangCompiler-LLVM
+project(SLang-Codegen-LLVM
   VERSION 0.2.1
   DESCRIPTION "SLang compiler backend that uses LLVM to generate target code."
   LANGUAGES C CXX

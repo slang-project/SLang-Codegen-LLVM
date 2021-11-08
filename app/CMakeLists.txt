@@ -1,4 +1,4 @@
-add_executable(SlangCompilerLlvmCodegenDriver code_generator.cpp)
+add_executable(SlangCompilerLlvmCodegenDriver code_generator.cc)
 
 set_target_properties(SlangCompilerLlvmCodegenDriver PROPERTIES
                       CXX_STANDARD_REQUIRED ON
