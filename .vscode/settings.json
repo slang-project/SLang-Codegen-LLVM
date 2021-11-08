@@ -4,6 +4,7 @@
         "CMAKE_TOOLCHAIN_FILE": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     },
     "editor.defaultFormatter": "xaver.clang-format",
+    "clang-format.style": "file",
     "cmake.debugConfig": {
         "name": "(gdb) Launch",
         "type": "cppdbg",
@@ -22,5 +23,8 @@
                 "ignoreFailures": true
             }
         ]
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
     }
 }

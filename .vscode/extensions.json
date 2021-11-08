@@ -3,6 +3,8 @@
         "ms-vscode.cpptools",
         "ms-vscode.cmake-tools",
         "github.vscode-pull-request-github",
-        "xaver.clang-format"
+        "xaver.clang-format",
+        "notskm.clang-tidy",
+        "llvm-vs-code-extensions.vscode-clangd"
     ]
 }
