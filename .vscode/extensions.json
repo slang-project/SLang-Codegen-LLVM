@@ -2,6 +2,7 @@
     "recommendations": [
         "ms-vscode.cpptools",
         "ms-vscode.cmake-tools",
-        "github.vscode-pull-request-github"
+        "github.vscode-pull-request-github",
+        "xaver.clang-format"
     ]
 }
