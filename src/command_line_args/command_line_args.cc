@@ -1,4 +1,4 @@
-﻿#include "slang_codegen/command_line_args/command_line_args.h"
+#include "slang_codegen/command_line_args/command_line_args.h"
 
 std::optional<const slang::llvm_code_generator::CommandLineArgs>
 slang::llvm_code_generator::CommandLineArgs::Parse(

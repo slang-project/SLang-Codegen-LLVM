@@ -1,4 +1,4 @@
-﻿#include "object_file_generator.h"
+#include "object_file_generator.h"
 
 bool slang::llvm_code_generator::object_file_generator::ConvertIrToObjectFile(
     const llvm::Module &module,

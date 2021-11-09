@@ -1,4 +1,4 @@
-﻿#include <cstdlib>
+#include <cstdlib>
 
 #include "slang_codegen/code_generator_driver/code_generator_driver.h"
 

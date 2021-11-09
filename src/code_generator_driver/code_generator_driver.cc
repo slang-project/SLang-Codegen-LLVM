@@ -1,4 +1,4 @@
-﻿#include "slang_codegen/code_generator_driver/code_generator_driver.h"
+#include "slang_codegen/code_generator_driver/code_generator_driver.h"
 
 #include <fstream>
 #include <system_error>

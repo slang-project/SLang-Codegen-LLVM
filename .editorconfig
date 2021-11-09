@@ -1,35 +1,15 @@
+# EditorConfig is awesome: https://EditorConfig.org
 
-[*.proto]
-indent_style=tab
-indent_size=tab
-tab_width=4
+root = true
 
-[*.{asax,ascx,aspx,c,c++,cc,cp,cpp,cs,cshtml,css,cu,cuh,cxx,h,hh,hpp,htm,html,hxx,inc,inl,ino,ipp,js,jsx,master,mpp,razor,skin,tpp,ts,tsx,vb,xaml,xamlx,xoml}]
-indent_style=space
-indent_size=4
-tab_width=4
+[*]
+indent_style = space
+indent_size = tab
+tab_width = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
 
-[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,json,jsproj,lsproj,njsproj,nuspec,proj,props,resjson,resw,resx,StyleCop,targets,tasks,vbproj,xml,xsd}]
-indent_style=space
-indent_size=2
-tab_width=4
-
-[*.{cpp,hpp}]
-
-# ReSharper properties
-resharper_autodetect_indent_settings=true
-resharper_cpp_use_indent_from_vs=false
-resharper_cpp_wrap_after_declaration_lpar=true
-resharper_line_break_after_colon_in_member_initializer_lists=line_break
-resharper_line_break_after_comma_in_member_initializer_lists=true
-resharper_space_after_ptr_in_data_member=false
-resharper_space_after_ptr_in_method=false
-resharper_space_after_ref_in_data_member=false
-resharper_space_after_ref_in_method=false
-resharper_space_before_ptr_in_data_member=true
-resharper_space_before_ptr_in_method=true
-resharper_space_before_ref_in_data_member=true
-resharper_space_before_ref_in_method=true
-
-# ReSharper inspection severities
-resharper_cpp_wrong_includes_order_highlighting=hint
+[*.{c,cc,h,inc,json}]
+indent_size = 2
