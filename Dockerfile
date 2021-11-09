@@ -30,13 +30,13 @@ ENV CXX=clang++-${LLVM_VERSION}
 
 FROM install-clang AS install-vcpkg
 
-ENV SLANG_VCPKG_PATH=/vcpkg
+ENV VCPKG_ROOT=/vcpkg
 
 WORKDIR /SLang-Codegen-LLVM/
 COPY vcpkg.json vcpkg.json
-RUN git clone https://github.com/microsoft/vcpkg ${SLANG_VCPKG_PATH} \
-    && ${SLANG_VCPKG_PATH}/bootstrap-vcpkg.sh \
-    && ${SLANG_VCPKG_PATH}/vcpkg install --clean-after-build
+RUN git clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT} \
+    && ${VCPKG_ROOT}/bootstrap-vcpkg.sh \
+    && ${VCPKG_ROOT}/vcpkg install --clean-after-build
 
 
 FROM install-vcpkg AS configure-cmake
@@ -46,7 +46,7 @@ COPY CMakeLists.txt CMakeLists.txt
 COPY app/ app/
 COPY include/ include/
 COPY src/ src/
-RUN cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${SLANG_VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake
+RUN cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
 
 
 FROM configure-cmake AS build
