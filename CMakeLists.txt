@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12)
 
 project(SLang-Codegen-LLVM
   VERSION 0.2.1
