@@ -1,35 +1,35 @@
 {
-    "cmake.configureOnOpen": true,
-    "cmake.configureSettings": {
-        "CMAKE_TOOLCHAIN_FILE": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+  "cmake.configureOnOpen": true,
+  "cmake.configureSettings": {
+    "CMAKE_TOOLCHAIN_FILE": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+  },
+  "editor.defaultFormatter": "xaver.clang-format",
+  "clang-format.style": "file",
+  "cmake.debugConfig": {
+    "name": "Launch debug",
+    "type": "cppdbg",
+    "request": "launch",
+    "program": "${workspaceFolder}/build/app/SlangCompilerLlvmCodegenDriver",
+    "args": [],
+    "stopAtEntry": false,
+    "cwd": "${workspaceFolder}",
+    "environment": [],
+    "externalConsole": false,
+    "osx": {
+      "MIMode": "lldb",
     },
-    "editor.defaultFormatter": "xaver.clang-format",
-    "clang-format.style": "file",
-    "cmake.debugConfig": {
-        "name": "Launch debug",
-        "type": "cppdbg",
-        "request": "launch",
-        "program": "${workspaceFolder}/build/app/SlangCompilerLlvmCodegenDriver",
-        "args": [],
-        "stopAtEntry": false,
-        "cwd": "${workspaceFolder}",
-        "environment": [],
-        "externalConsole": false,
-        "osx": {
-            "MIMode": "lldb",
-        },
-        "linux": {
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+    "linux": {
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
         }
-    },
-    "[jsonc]": {
-        "editor.defaultFormatter": "vscode.json-language-features"
+      ]
     }
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }
