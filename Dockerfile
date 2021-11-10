@@ -34,8 +34,8 @@ ENV VCPKG_ROOT=/vcpkg
 
 WORKDIR /SLang-Codegen-LLVM/
 COPY vcpkg.json vcpkg.json
-RUN git clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT} \
-    && ${VCPKG_ROOT}/bootstrap-vcpkg.sh \
+COPY tools/install_vcpkg.sh tools/install_vcpkg.sh
+RUN tools/install_vcpkg.sh ${VCPKG_ROOT} \
     && ${VCPKG_ROOT}/vcpkg install --clean-after-build
 
 
