@@ -55,5 +55,8 @@
   "[markdown]": {
     "editor.quickSuggestions": false,
     "editor.wordWrap": "on"
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
   }
 }
