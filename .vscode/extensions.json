@@ -5,6 +5,7 @@
     "github.vscode-pull-request-github",
     "xaver.clang-format",
     "notskm.clang-tidy",
-    "llvm-vs-code-extensions.vscode-clangd"
+    "llvm-vs-code-extensions.vscode-clangd",
+    "cschlosser.doxdocgen"
   ]
 }
