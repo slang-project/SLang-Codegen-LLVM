@@ -267,3 +267,6 @@ __pycache__/
 
 # VS Code clangd cache
 .cache/
+
+# CMake user-wide preset
+CMakeUserPresets.json
