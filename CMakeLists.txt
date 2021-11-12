@@ -33,11 +33,30 @@ set(SLANG_CODEGEN_ALL_SOURCE_FILES)
 add_subdirectory(src)
 add_subdirectory(app)
 
-add_custom_target(
-    clang-format
-    COMMAND clang-format
-    --style=file
-    --verbose
-    -i
-    ${SLANG_CODEGEN_ALL_SOURCE_FILES}
-)
+find_program(CLANG_FORMAT clang-format)
+if(NOT CLANG_FORMAT)
+    message(STATUS "Did not find clang-format, target Format is disabled.")
+else()
+    add_custom_target(
+        Format COMMAND
+        ${CLANG_FORMAT}
+        --dry-run
+        --style=file
+        --verbose
+        --Werror
+        -i
+        ${SLANG_CODEGEN_ALL_SOURCE_FILES}
+    )
+endif()
+
+find_program(CLANG_TIDY clang-tidy)
+if(NOT CLANG_TIDY)
+    message(STATUS "Did not find clang-tidy, target Tidy is disabled.")
+else()
+    add_custom_target(
+        Tidy COMMAND
+        ${CLANG_TIDY}
+        -p ${CMAKE_BINARY_DIR}/compile_commands.json
+        ${SLANG_CODEGEN_ALL_SOURCE_FILES}
+    )
+endif()
