@@ -2,15 +2,17 @@
 
 std::optional<const slang::llvm_code_generator::CommandLineArgs>
 slang::llvm_code_generator::CommandLineArgs::Parse(
-    const std::vector<std::string_view> &args, std::ostream &outs,
-    std::ostream &errs, std::ostream &logs) noexcept {
+    const std::vector<std::string_view> &args,
+    std::ostream & /*outs*/,
+    std::ostream & /*errs*/,
+    std::ostream & /*logs*/) noexcept {
   CommandLineArgs result;
 
   if (args.size() < 2) {
     return std::nullopt;
   }
 
-  // TODO: add support for help info flag.
+  /// TODO(deiuch): add support for help info flag.
 
   result.in_path_ = std::filesystem::path(args[1]).lexically_normal();
 

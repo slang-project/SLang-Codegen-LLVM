@@ -1,6 +1,10 @@
 {
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/merged_compile_commands.json",
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "C_Cpp.intelliSenseEngine": "Default",
   "clang-format.style": "file",
+  "clang-tidy.lintOnSave": true,
+  "clang-tidy.buildPath": "build",
   "cmake.buildDirectory": "${workspaceFolder}/build",
   "cmake.configureOnOpen": true,
   "cmake.configureSettings": {
@@ -29,10 +33,12 @@
       ]
     }
   },
+  "cmake.exportCompileCommandsFile": true,
+  "cmake.mergedCompileCommands": "${workspaceFolder}/build/merged_compile_commands.json",
   "editor.comments.insertSpace": true,
   "editor.insertSpaces": true,
   "editor.formatOnPaste": false,
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "editor.formatOnType": true,
   "editor.tabSize": 4,
