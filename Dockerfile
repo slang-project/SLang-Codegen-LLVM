@@ -54,6 +54,16 @@ FROM configure-cmake AS build
 RUN cmake --build build --target SlangCompilerLlvmCodegenDriver --config Debug
 
 
+FROM configure-cmake AS run-format
+
+RUN cmake --build build --target Format --config Debug
+
+
+FROM configure-cmake AS run-tidy
+
+RUN cmake --build build --target Tidy --config Debug
+
+
 FROM preinstall AS install
 
 COPY --from=build /SLang-Codegen-LLVM/build/app/SlangCompilerLlvmCodegenDriver /usr/local/bin/SlangCompilerLlvmCodegenDriver
