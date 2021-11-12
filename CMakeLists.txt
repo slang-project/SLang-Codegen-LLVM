@@ -28,5 +28,16 @@ list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(HandleLLVMOptions)
 add_definitions(${LLVM_DEFINITIONS})
 
+set(SLANG_CODEGEN_ALL_SOURCE_FILES)
+
 add_subdirectory(src)
 add_subdirectory(app)
+
+add_custom_target(
+    clang-format
+    COMMAND clang-format
+    --style=file
+    --verbose
+    -i
+    ${SLANG_CODEGEN_ALL_SOURCE_FILES}
+)

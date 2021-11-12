@@ -7,6 +7,15 @@ add_subdirectory(object_file_generator)
 add_subdirectory(command_line_args)
 add_subdirectory(code_generator_driver)
 
+set(
+    SLANG_CODEGEN_ALL_SOURCE_FILES
+    ${SLANG_CODEGEN_ALL_SOURCE_FILES}
+    ${SLANG_CODEGEN_SOURCE_LIST}
+    ${SLANG_CODEGEN_PUBLIC_HEADER_LIST}
+    ${SLANG_CODEGEN_PRIVATE_HEADER_LIST}
+    PARENT_SCOPE
+)
+
 add_library(
     SlangCompilerLlvmCodegen STATIC
     ${SLANG_CODEGEN_SOURCE_LIST}
