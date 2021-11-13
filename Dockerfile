@@ -19,13 +19,18 @@ RUN apt-get update -qq \
 
 FROM preinstall AS install-clang
 
-ARG LLVM_VERSION=13
+ARG LLVM_PROJECT_VERSION=13
 
-RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" "" ${LLVM_VERSION} \
-    && rm -rf /var/lib/apt/lists/*
+RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" "" ${LLVM_PROJECT_VERSION} \
+    && apt-get install -y \
+        "clang-format-${LLVM_PROJECT_VERSION}" \
+        "clang-tidy-${LLVM_PROJECT_VERSION}" \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s "/usr/bin/clang-format-${LLVM_PROJECT_VERSION}" /usr/local/bin/clang-format \
+    && ln -s "/usr/bin/clang-tidy-${LLVM_PROJECT_VERSION}" /usr/local/bin/clang-tidy
 
-ENV CC=clang-${LLVM_VERSION}
-ENV CXX=clang++-${LLVM_VERSION}
+ENV CC=clang-${LLVM_PROJECT_VERSION}
+ENV CXX=clang++-${LLVM_PROJECT_VERSION}
 
 
 FROM install-clang AS install-vcpkg
@@ -52,6 +57,18 @@ RUN cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystem
 FROM configure-cmake AS build
 
 RUN cmake --build build --target SlangCompilerLlvmCodegenDriver --config Debug
+
+
+FROM configure-cmake AS run-format
+
+COPY .clang-format .clang-format
+RUN cmake --build build --target Format --config Debug
+
+
+FROM configure-cmake AS run-tidy
+
+COPY .clang-tidy .clang-tidy
+RUN cmake --build build --target Tidy --config Debug
 
 
 FROM preinstall AS install

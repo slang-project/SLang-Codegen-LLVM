@@ -1,4 +1,16 @@
-add_executable(SlangCompilerLlvmCodegenDriver code_generator.cc)
+set(
+    SLANG_CODEGEN_APP_SOURCE_LIST
+    "${CMAKE_CURRENT_SOURCE_DIR}/code_generator.cc"
+)
+
+set(
+    SLANG_CODEGEN_ALL_SOURCE_FILES
+    ${SLANG_CODEGEN_ALL_SOURCE_FILES}
+    ${SLANG_CODEGEN_APP_SOURCE_LIST}
+    PARENT_SCOPE
+)
+
+add_executable(SlangCompilerLlvmCodegenDriver ${SLANG_CODEGEN_APP_SOURCE_LIST})
 
 set_target_properties(
     SlangCompilerLlvmCodegenDriver PROPERTIES

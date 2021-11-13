@@ -1,0 +1,19 @@
+name: Build and lint project (Docker image)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build_and_lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+    - name: Build the Docker image of the project
+      run: docker build --target build --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
+    - name: Run clang-format checker
+      run: docker build --target run-format .
+    - name: Run clang-tidy checker
+      run: docker build --target run-tidy .
