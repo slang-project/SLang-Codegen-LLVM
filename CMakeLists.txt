@@ -9,7 +9,6 @@ project(
 
 set(SLANG_CODEGEN_SRC_PATH "${PROJECT_SOURCE_DIR}/src")
 set(SLANG_CODEGEN_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
-set(SLANG_CODEGEN_BUILD_TESTS OFF)
 
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
 if(EXISTS "${LOC_PATH}")
@@ -18,6 +17,7 @@ endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
