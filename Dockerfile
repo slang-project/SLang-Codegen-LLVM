@@ -61,11 +61,13 @@ RUN cmake --build build --target SlangCompilerLlvmCodegenDriver --config Debug
 
 FROM configure-cmake AS run-format
 
+COPY .clang-format .clang-format
 RUN cmake --build build --target Format --config Debug
 
 
 FROM configure-cmake AS run-tidy
 
+COPY .clang-tidy .clang-tidy
 RUN cmake --build build --target Tidy --config Debug
 
 
