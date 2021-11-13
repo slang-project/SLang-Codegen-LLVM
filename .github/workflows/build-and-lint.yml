@@ -14,6 +14,6 @@ jobs:
     - name: Build the Docker image of the project
       run: docker build --target build --network "host" -t slang-project/slang-codegen-llvm-deps:0.2.1 .
     - name: Run clang-format checker
-      run: docker build --target run-format
+      run: docker build --target run-format .
     - name: Run clang-tidy checker
-      run: docker build --target run-tidy
+      run: docker build --target run-tidy .
