@@ -6,15 +6,11 @@
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "cmakeToolchain": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": [{
-        "name": "CMAKE_TOOLCHAIN_FILE",
-        "value": "[vcpkg root]\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
-      }]
+      "cmakeToolchain": "${env.VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ]
     },
     {
       "name": "x64-Release",
@@ -22,15 +18,11 @@
       "configurationType": "Release",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "cmakeToolchain": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": [{
-        "name": "CMAKE_TOOLCHAIN_FILE",
-        "value": "[vcpkg root]\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
-      }]
+      "cmakeToolchain": "${env.VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ]
     }
   ]
 }
