@@ -45,10 +45,11 @@ git config --global core.autocrlf input
 
 You also will need to have [`vcpkg`](https://github.com/Microsoft/vcpkg) package manager installed:
 ```bat
-cd ..  :: put vcpkg out of project scope
+REM Put vcpkg out of project scope
+cd ..
 
+REM If fails, remove `/m` option to setup variable just for user
 SETX VCPKG_ROOT "%cd%\vcpkg" /m
-:: If fails, remove `/m` option to setup variable just for user
 
 git clone https://github.com/microsoft/vcpkg %VCPKG_ROOT%
 %VCPKG_ROOT%\bootstrap-vcpkg.bat
