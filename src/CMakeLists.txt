@@ -36,12 +36,6 @@ target_include_directories(
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# JSON library by nlohmann
-target_link_libraries(
-    SlangCompilerLlvmCodegen
-    PRIVATE nlohmann_json nlohmann_json::nlohmann_json
-)
-
 # LLVM
 llvm_map_components_to_libnames(
     LLVM_LIBS
@@ -55,4 +49,15 @@ target_include_directories(
 target_link_libraries(
     SlangCompilerLlvmCodegen
     PRIVATE ${LLVM_LIBS}
+)
+
+# JSON library by nlohmann
+target_link_libraries(
+    SlangCompilerLlvmCodegen
+    PRIVATE nlohmann_json nlohmann_json::nlohmann_json
+)
+
+# JSON Schema validation library by pboettch
+target_link_libraries(SlangCompilerLlvmCodegen
+    PRIVATE nlohmann_json_schema_validator
 )
