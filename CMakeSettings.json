@@ -2,35 +2,31 @@
   "configurations": [
     {
       "name": "x64-Debug",
+      "description": "Build project with Debug configuration",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "cmakeToolchain": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": [{
-        "name": "CMAKE_TOOLCHAIN_FILE",
-        "value": "[vcpkg root]\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
-      }]
+      "enableClangTidyCodeAnalysis": true,
+      "cmakeToolchain": "${env.VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ]
     },
     {
       "name": "x64-Release",
+      "description": "Build project with Release configuration",
       "generator": "Ninja",
       "configurationType": "Release",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
       "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "cmakeToolchain": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": [{
-        "name": "CMAKE_TOOLCHAIN_FILE",
-        "value": "[vcpkg root]\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
-      }]
+      "enableClangTidyCodeAnalysis": true,
+      "cmakeToolchain": "${env.VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ]
     }
   ]
 }

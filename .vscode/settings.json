@@ -35,6 +35,7 @@
   },
   "cmake.exportCompileCommandsFile": true,
   "cmake.mergedCompileCommands": "${workspaceFolder}/build/merged_compile_commands.json",
+  "cmake.useCMakePresets": "never",
   "editor.comments.insertSpace": true,
   "editor.insertSpaces": true,
   "editor.formatOnPaste": false,
