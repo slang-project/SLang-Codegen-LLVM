@@ -7,13 +7,13 @@
 #ifndef SLANG_CODEGEN_LLVM_IR_CONVERTER_HPP
 #define SLANG_CODEGEN_LLVM_IR_CONVERTER_HPP
 
+#include <memory>
+
 #include "llvm/IR/Module.h"
 
 #define JSON_NOEXCEPTION
 #include "nlohmann/json.hpp"
 #undef JSON_NOEXCEPTION
-
-#include <memory>
 
 namespace slang::llvm_code_generator::ir {
   using SlangIr = nlohmann::json;
