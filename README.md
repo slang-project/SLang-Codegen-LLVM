@@ -20,6 +20,9 @@ Cross-platform universal solution for development for this project is to use the
 
 Please, consider installing all recommended extensions for this workspace and take care of the dependencies based on the instructions below.
 
+If considering `vcpkg`, then you should have properly set `VCPKG_ROOT` environment variable prior opening project folder.
+Otherwise, feel free to ignore `vcpkg` configuration and remove all settings that require the presence of it (for example, `CMAKE_TOOLCHAIN_FILE` in `cmake.configureSettings`)
+
 ### UNIX
 
 After cloning the project, run the tool that installs the `vcpkg` and sets a global environment variable with a path to it:
@@ -33,8 +36,8 @@ You are strongly advised to not install it in any of the project folder or subfo
 tools/install_vcpkg.sh path/to/vcpkg
 ```
 
-As an alternative, you can install all the required dependencies by yourself. Yse `vcpkg.json` and `Dockerfile` for hitns on what you may need to install.
-> This method is not advised since it introduces some inconsistency into project development.
+As an alternative, you can install all the required dependencies by yourself. Use `vcpkg.json` and `Dockerfile` for hints on what you may need to install.
+> This method is not advised since it introduces inconsistency into project development.
 
 ### Windows
 
@@ -43,12 +46,12 @@ You are advised to set this option before cloning this project to not make you e
 git config --global core.autocrlf input
 ```
 
-You also will need to have [`vcpkg`](https://github.com/Microsoft/vcpkg) package manager installed:
+You will also need to have [`vcpkg`](https://github.com/Microsoft/vcpkg) package manager installed:
 ```bat
 REM Put vcpkg out of project scope
 cd ..
 
-REM If fails, remove `/m` option to setup variable just for user
+REM If fails, remove `/m` option to setup variable just for a user
 SETX VCPKG_ROOT "%cd%\vcpkg" /m
 
 git clone https://github.com/microsoft/vcpkg %VCPKG_ROOT%
