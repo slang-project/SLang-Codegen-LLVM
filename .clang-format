@@ -5,7 +5,7 @@ Language: Cpp
 Standard: c++20
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
-AlignArrayOfStructures: Left
+# AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
@@ -54,7 +54,7 @@ ForEachMacros: []
 IncludeBlocks: Regroup
 IncludeIsMainRegex: '(_test)?$'
 IncludeIsMainSourceRegex: ''
-IndentAccessModifiers: false
+# IndentAccessModifiers: false
 IndentCaseBlocks: false
 IndentCaseLabels: false
 IndentExternBlock: Indent
@@ -65,7 +65,7 @@ IndentWidth: 2
 IndentWrappedFunctionNames: false
 InsertTrailingCommas: Wrapped
 KeepEmptyLinesAtTheStartOfBlocks: false
-LambdaBodyIndentation: Signature
+# LambdaBodyIndentation: Signature
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 1
@@ -88,7 +88,7 @@ PointerAlignment: Right
 # ReferenceAlignment: Right
 ReflowComments: false
 # ShortNamespaceLines: 1
-SortIncludes: CaseInsensitive
+# SortIncludes: CaseInsensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
