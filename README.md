@@ -9,7 +9,68 @@ You may find an old implementation on the [branch `v0.1.3`](../../tree/v0.1.3).
 
 This project is based on CMake. In order to build it, you need to install dependencies and then build the project.
 
-In order for the project to be trully cross-platform, we use [`vcpkg`](https://github.com/Microsoft/vcpkg) as package manager.
+Also consider installation of `clang-format` and `clang-tidy` tools to conform to project's coding standard.
+The version used as of the writing of this manual is `13.0.0`.
+
+You can run the corresponding check using CMake targets `Format` and `Tidy`.
+
+### Visual Studio Code
+
+Cross-platform universal solution for development for this project is to use the [Visual Studio Code](https://code.visualstudio.com).
+
+Please, consider installing all recommended extensions for this workspace and take care of the dependencies based on the instructions below.
+
+### UNIX
+
+After cloning the project, run the tool that installs the `vcpkg` and sets a global environment variable with a path to it:
+```bash
+tools/install_vcpkg.sh
+```
+
+By default, it installs `vcpkg` in a folder near project's folder. You may customise this behaviour by providing the install path by your own.
+You are strongly advised to not install it in any of the project folder or subfolders.
+```bash
+tools/install_vcpkg.sh path/to/vcpkg
+```
+
+As an alternative, you can install all the required dependencies by yourself. Yse `vcpkg.json` and `Dockerfile` for hitns on what you may need to install.
+> This method is not advised since it introduces some inconsistency into project development.
+
+### Windows
+
+You are advised to set this option before cloning this project to not make you editor go mad.
+```bat
+git config --global core.autocrlf input
+```
+
+You also will need to have [`vcpkg`](https://github.com/Microsoft/vcpkg) package manager installed:
+```bat
+cd ..  :: put vcpkg out of project scope
+
+SETX VCPKG_ROOT "%cd%\vcpkg" /m
+:: If fails, remove `/m` option to setup variable just for user
+
+git clone https://github.com/microsoft/vcpkg %VCPKG_ROOT%
+%VCPKG_ROOT%\bootstrap-vcpkg.bat
+%VCPKG_ROOT%\vcpkg integrate install
+```
+
+#### Visual Studio
+
+Instead of VS Code you may want to work in [Visual Studio](https://visualstudio.microsoft.com/vs), which is also supported.
+
+You are advised to use 2019 edition and later with the following individual components installed:
+* MSVC v142 (or later)
+* C++ CMake tools for Windows
+
+Open this project's folder as a CMake project.
+
+Don't forget to setup command line arguments for debug:
+* `.vs\launch.vs.json`
+    * `{..."configurations": [...{..."args": "path/to/in.debug.slangir"...}...]...}`
+* Using GUI
+    * Right-click on top `CMakeLists.txt`
+    * "Debug and Launch Settings"
 
 ### Docker
 
@@ -25,45 +86,8 @@ docker build --cache-from slang-project/slang-codegen-llvm-deps:0.2.1 --network 
 docker run --rm slang-project/slang-codegen-llvm:0.2.1 path/to/in.json
 ```
 
-### Windows (non-docker)
-
-* [Visual Studio 2019](https://visualstudio.microsoft.com/vs)
-    * Install "Individual components" (usually added with workload "Desktop development with C++")
-        * MSVC v142
-        * C++ CMake tools for Windows
-* [Vcpkg](https://github.com/Microsoft/vcpkg)
-    * Setup vcpkg
-        * `cd ..  # put vcpkg out of project scope`
-        * `git clone https://github.com/microsoft/vcpkg`
-        * `.\vcpkg\bootstrap-vcpkg.bat`
-        * `.\vcpkg\vcpkg integrate install`
-        * Replace `[vcpkg root]` in [CMakeSettings.json](CMakeSettings.json) with path to the vcpkg root
-    * Install dependencies
-        * `cd SLang-Codegen-LLVM  # do this in the project root`
-        * `vcpkg install`
-        * This operation might take a while...
-* Open project folder from Visual Studio 2019
-    * You may just run it with chosen configuration
-    * Don't forget to setup command line arguments for debug
-        * `.vs\launch.vs.json`
-            * `{..."configurations": [...{..."args": "path/to/in.debug.slangir"...}...]...}`
-        * Using GUI
-            * Right-click on top `CMakeLists.txt`
-            * "Debug and Launch Settings"
-
-### MacOS (non-docker, non-vcpkg)
-
-* [Homebrew](https://brew.sh/#install)
-    * `brew install cmake`
-    * `brew tap nlohmann/json`
-    * `brew install nlohmann-json`
-    * `brew install llvm@12`
-* Build project
-    * By hand
-        * `cmake -S . -B build && cmake --build build`
-        * _**TODO**: check if LLVM is recognized properly_
-    * Open using CLion or other IDE that supports CMake appropriately
-
 ## How to run project
 
-`SlangCompilerLlvmCodegenDriver path/to/in.slangir`
+```bash
+build/app/SlangCompilerLlvmCodegenDriver path/to/in.slangir
+```
