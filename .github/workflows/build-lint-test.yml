@@ -1,4 +1,4 @@
-name: Build and lint project (Docker image)
+name: Build, lint and test project (Docker image)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  build_and_lint:
+  build_lint_test:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository
