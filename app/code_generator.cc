@@ -19,7 +19,6 @@ static auto ArgsToVector(const char *const *const argv,
 
   // TODO(deiuch): use range-based for loop
   for (auto i = static_cast<decltype(argc)>(0); i < argc; ++i) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     result.emplace_back(argv[i]);
   }
 

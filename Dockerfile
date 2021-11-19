@@ -71,6 +71,12 @@ COPY .clang-tidy .clang-tidy
 RUN cmake --build build --target Tidy --config Debug
 
 
+FROM configure-cmake AS run-unit-tests
+
+RUN cmake --build build --target SlangCompilerLlvmCodegenUnitTests
+RUN ctest --test-dir build
+
+
 FROM preinstall AS install
 
 COPY --from=build /SLang-Codegen-LLVM/build/app/SlangCompilerLlvmCodegenDriver /usr/local/bin/SlangCompilerLlvmCodegenDriver

@@ -6,13 +6,11 @@
 #include "ir_converter/ir_converter.h"
 #include "object_file_generator/object_file_generator.h"
 
-// FIXME(deiuch): get rid of this linter guard
-// NOLINTNEXTLINE(bugprone-exception-escape)
 bool slang::llvm_code_generator::driver::Main(
     const CommandLineArgs &args,
     std::ostream & /*outs*/,
     std::ostream & /*errs*/,
-    std::ostream & /*logs*/) noexcept {
+    std::ostream & /*logs*/) noexcept try {
   const auto &in_path = args.InputPath();
   if (std::error_code ec; !std::filesystem::exists(in_path, ec) || ec) {
     /// TODO(deiuch): message on file not found.
@@ -36,17 +34,23 @@ bool slang::llvm_code_generator::driver::Main(
     return false;
   }
 
-  const auto program_module = ir::Convert(parsed_content);
+  const auto llvm_context = std::make_unique<llvm::LLVMContext>();
+  const auto program_module = ir::Convert(parsed_content, *llvm_context);
   if (!program_module) {
     /// TODO(deiuch): message on code conversion failure.
     return false;
   }
 
-  if (!object_file_generator::ConvertIrToObjectFile(*program_module,
-                                                    args.OutputPath())) {
+  if (!object_file_generator::ConvertIrToObjectFile(*program_module, args.OutputPath())) {
     /// TODO(deiuch): message on object file generation failure.
     return false;
   }
 
   return true;
+} catch (const std::exception &e) {
+  // TODO(deiuch): Log uncaught std::exception
+  return false;
+} catch (...) {
+  // TODO(deiuch): Log unknown uncaught exception
+  return false;
 }

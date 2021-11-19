@@ -17,3 +17,5 @@ jobs:
       run: docker build --target run-format .
     - name: Run clang-tidy checker
       run: docker build --target run-tidy .
+    - name: Run unit tests
+      run: docker build --target run-unit-tests .

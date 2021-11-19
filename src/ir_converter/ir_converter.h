@@ -22,10 +22,10 @@ namespace slang::llvm_code_generator::ir {
   /**
    * \brief Convert program represented by SLang IR into LLVM IR Module.
    * \param[in] program SLang IR object with program to convert.
+   * \param[in,out] llvm_context LLVM Context object of the code generator.
    * \return \c nullptr - conversion failed; LLVM IR Module with program - otherwise.
    */
-  [[nodiscard]] std::unique_ptr<const LlvmIr> Convert(
-      const SlangIr &program) noexcept;
+  [[nodiscard]] std::unique_ptr<const LlvmIr> Convert(const SlangIr &program, llvm::LLVMContext &llvm_context);
 } // namespace slang::llvm_code_generator::ir
 
 #endif

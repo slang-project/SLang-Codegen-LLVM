@@ -11,6 +11,7 @@
   "license": "",
   "builtin-baseline": "a875d756749fd441305b458523df671e8f2e6cae",
   "dependencies": [
+    "gtest",
     "json-schema-validator",
     {
       "name": "llvm",

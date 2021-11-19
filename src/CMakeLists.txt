@@ -1,6 +1,7 @@
 set(SLANG_CODEGEN_SOURCE_LIST)
 set(SLANG_CODEGEN_PUBLIC_HEADER_LIST)
 set(SLANG_CODEGEN_PRIVATE_HEADER_LIST)
+set(SLANG_CODEGEN_TEST_SOURCE_LIST)
 
 add_subdirectory(ir_converter)
 add_subdirectory(object_file_generator)
@@ -13,6 +14,7 @@ set(
     ${SLANG_CODEGEN_SOURCE_LIST}
     ${SLANG_CODEGEN_PUBLIC_HEADER_LIST}
     ${SLANG_CODEGEN_PRIVATE_HEADER_LIST}
+    ${SLANG_CODEGEN_TEST_SOURCE_LIST}
     PARENT_SCOPE
 )
 
@@ -61,3 +63,31 @@ target_link_libraries(
 target_link_libraries(SlangCompilerLlvmCodegen
     PRIVATE nlohmann_json_schema_validator
 )
+
+# Unit testing
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    add_executable(
+        SlangCompilerLlvmCodegenUnitTests
+        ${SLANG_CODEGEN_TEST_SOURCE_LIST}
+    )
+    set_target_properties(
+        SlangCompilerLlvmCodegenUnitTests PROPERTIES
+        CXX_STANDARD_REQUIRED ON
+        CXX_STANDARD 20
+        CXX_EXTENSIONS OFF
+    )
+    target_link_libraries(
+        SlangCompilerLlvmCodegenUnitTests
+        PRIVATE SlangCompilerLlvmCodegen
+        PRIVATE GTest::gtest_main
+    )
+    target_include_directories(
+        SlangCompilerLlvmCodegenUnitTests
+        PRIVATE ${SLANG_CODEGEN_INCLUDE_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    gtest_discover_tests(
+        SlangCompilerLlvmCodegenUnitTests
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+endif()

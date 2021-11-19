@@ -19,6 +19,10 @@ endif()
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+    find_package(GTest CONFIG REQUIRED)
+    enable_testing()
+    include(GoogleTest)
 endif()
 
 find_package(LLVM CONFIG REQUIRED)
