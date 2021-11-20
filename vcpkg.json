@@ -11,7 +11,8 @@
   "license": "",
   "builtin-baseline": "a875d756749fd441305b458523df671e8f2e6cae",
   "dependencies": [
-    "nlohmann-json",
+    "gtest",
+    "json-schema-validator",
     {
       "name": "llvm",
       "default-features": false,
@@ -21,7 +22,8 @@
         "lld"
       ],
       "version>=": "12.0.0"
-    }
+    },
+    "nlohmann-json"
   ],
   "overrides": [
     {

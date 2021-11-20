@@ -19,14 +19,19 @@ endif()
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
 
-find_package(nlohmann_json CONFIG REQUIRED)
+    find_package(GTest CONFIG REQUIRED)
+    enable_testing()
+    include(GoogleTest)
+endif()
 
 find_package(LLVM CONFIG REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(HandleLLVMOptions)
 add_definitions(${LLVM_DEFINITIONS})
+
+find_package(nlohmann_json_schema_validator REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 set(SLANG_CODEGEN_ALL_SOURCE_FILES)
 

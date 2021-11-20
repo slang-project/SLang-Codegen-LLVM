@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/slang-project/SLang-Codegen-LLVM/blob/main/data/slangir.schema.json",
+  "title": "SLang IR",
+  "$comment": "The SLang programming language Intermediate Representation format used by LLVM code generator",
+  "description": "SLang Intermediate Representation",
+  "type": "null"
+}

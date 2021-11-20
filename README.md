@@ -14,6 +14,8 @@ The version used as of the writing of this manual is `13.0.0`.
 
 You can run the corresponding check using CMake targets `Format` and `Tidy`.
 
+To run all the unit tests you can use target `test`, building target `SlangCompilerLlvmCodegenUnitTests` beforehand.
+
 ### Visual Studio Code
 
 Cross-platform universal solution for development for this project is to use the [Visual Studio Code](https://code.visualstudio.com).

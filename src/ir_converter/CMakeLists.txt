@@ -11,3 +11,10 @@ set(
     "${CMAKE_CURRENT_SOURCE_DIR}/ir_converter.h"
     PARENT_SCOPE
 )
+
+set(
+    SLANG_CODEGEN_TEST_SOURCE_LIST
+    ${SLANG_CODEGEN_TEST_SOURCE_LIST}
+    "${CMAKE_CURRENT_SOURCE_DIR}/ir_converter.test.cc"
+    PARENT_SCOPE
+)

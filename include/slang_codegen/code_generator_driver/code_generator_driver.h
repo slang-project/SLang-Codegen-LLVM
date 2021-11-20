@@ -20,8 +20,6 @@ namespace slang::llvm_code_generator::driver {
    * \param[out] logs Stream where program's log will go.
    * \return \c true - program has finished successfully; \c false - otherwise.
    */
-  // FIXME(deiuch): get rid of this linter guard
-  // NOLINTNEXTLINE(bugprone-exception-escape)
   [[nodiscard]] bool Main(const CommandLineArgs &args,
                           std::ostream &outs = std::cout,
                           std::ostream &errs = std::cerr,
