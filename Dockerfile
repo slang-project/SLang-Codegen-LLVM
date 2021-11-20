@@ -49,6 +49,7 @@ FROM install-vcpkg AS configure-cmake
 WORKDIR /SLang-Codegen-LLVM/
 COPY CMakeLists.txt CMakeLists.txt
 COPY app/ app/
+COPY data/ data/
 COPY include/ include/
 COPY src/ src/
 
