@@ -51,30 +51,32 @@ COPY CMakeLists.txt CMakeLists.txt
 COPY app/ app/
 COPY include/ include/
 COPY src/ src/
-RUN cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
+
+ENV SLANG_CODEGEN_BUILD_DIR=build
+RUN cmake -S . -B ${SLANG_CODEGEN_BUILD_DIR} -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
 
 
 FROM configure-cmake AS build
 
-RUN cmake --build build --target SlangCompilerLlvmCodegenDriver --config Debug
+RUN cmake --build ${SLANG_CODEGEN_BUILD_DIR} --target SlangCompilerLlvmCodegenDriver --config Debug
 
 
 FROM configure-cmake AS run-format
 
 COPY .clang-format .clang-format
-RUN cmake --build build --target Format --config Debug
+RUN cmake --build ${SLANG_CODEGEN_BUILD_DIR} --target Format --config Debug
 
 
 FROM configure-cmake AS run-tidy
 
 COPY .clang-tidy .clang-tidy
-RUN cmake --build build --target Tidy --config Debug
+RUN cmake --build ${SLANG_CODEGEN_BUILD_DIR} --target Tidy --config Debug
 
 
 FROM configure-cmake AS run-unit-tests
 
-RUN cmake --build build --target SlangCompilerLlvmCodegenUnitTests
-RUN ctest --test-dir build
+RUN cmake --build ${SLANG_CODEGEN_BUILD_DIR} --target SlangCompilerLlvmCodegenUnitTests
+RUN cmake --build ${SLANG_CODEGEN_BUILD_DIR} --target test
 
 
 FROM preinstall AS install
