@@ -5,6 +5,7 @@
     "github.vscode-pull-request-github",
     "xaver.clang-format",
     "notskm.clang-tidy",
-    "cschlosser.doxdocgen"
+    "cschlosser.doxdocgen",
+    "rioj7.vscode-file-templates"
   ]
 }
