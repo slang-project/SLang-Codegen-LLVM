@@ -4,12 +4,12 @@
  * \author Denis Chernikov (@deiuch)
  * \date 2021
  */
-#ifndef SLANG_CODEGEN_LLVM_CODE_GENERATOR_DRIVER_HPP
-#define SLANG_CODEGEN_LLVM_CODE_GENERATOR_DRIVER_HPP
+#ifndef SLANG_CODEGEN_LLVM_CODE_GENERATOR_DRIVER_H
+#define SLANG_CODEGEN_LLVM_CODE_GENERATOR_DRIVER_H
 
 #include <iostream>
 
-#include "slang_codegen/command_line_args/command_line_args.h"
+#include "slang_codegen_llvm/command_line_args/command_line_args.h"
 
 namespace slang::llvm_code_generator::driver {
   /**

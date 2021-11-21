@@ -4,8 +4,8 @@
  * \author Denis Chernikov (@deiuch)
  * \date 2021
  */
-#ifndef SLANG_CODEGEN_LLVM_COMMAND_LINE_ARGS_HPP
-#define SLANG_CODEGEN_LLVM_COMMAND_LINE_ARGS_HPP
+#ifndef SLANG_CODEGEN_LLVM_COMMAND_LINE_ARGS_H
+#define SLANG_CODEGEN_LLVM_COMMAND_LINE_ARGS_H
 
 #include <filesystem>
 #include <iostream>

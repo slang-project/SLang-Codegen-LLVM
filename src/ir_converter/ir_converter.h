@@ -4,8 +4,8 @@
  * \author Denis Chernikov (@deiuch)
  * \date 2021
  */
-#ifndef SLANG_CODEGEN_LLVM_IR_CONVERTER_HPP
-#define SLANG_CODEGEN_LLVM_IR_CONVERTER_HPP
+#ifndef SLANG_CODEGEN_LLVM_IR_CONVERTER_H
+#define SLANG_CODEGEN_LLVM_IR_CONVERTER_H
 
 #include <memory>
 

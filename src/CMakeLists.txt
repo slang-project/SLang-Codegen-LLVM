@@ -3,10 +3,10 @@ set(SLANG_CODEGEN_PUBLIC_HEADER_LIST)
 set(SLANG_CODEGEN_PRIVATE_HEADER_LIST)
 set(SLANG_CODEGEN_TEST_SOURCE_LIST)
 
+add_subdirectory(command_line_args)
+add_subdirectory(driver)
 add_subdirectory(ir_converter)
 add_subdirectory(object_file_generator)
-add_subdirectory(command_line_args)
-add_subdirectory(code_generator_driver)
 
 set(
     SLANG_CODEGEN_ALL_SOURCE_FILES
@@ -66,6 +66,27 @@ target_link_libraries(SlangCompilerLlvmCodegen
 
 # Unit testing
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    source_group(
+        TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+        PREFIX "Source files"
+        FILES ${SLANG_CODEGEN_SOURCE_LIST}
+    )
+    source_group(
+        TREE "${SLANG_CODEGEN_INCLUDE_DIR}"
+        PREFIX "Public header files"
+        FILES ${SLANG_CODEGEN_PUBLIC_HEADER_LIST}
+    )
+    source_group(
+        TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+        PREFIX "Private header files"
+        FILES ${SLANG_CODEGEN_PRIVATE_HEADER_LIST}
+    )
+    source_group(
+        TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+        PREFIX "Test files"
+        FILES ${SLANG_CODEGEN_TEST_SOURCE_LIST}
+    )
+
     add_executable(
         SlangCompilerLlvmCodegenUnitTests
         ${SLANG_CODEGEN_TEST_SOURCE_LIST}

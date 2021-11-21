@@ -48,6 +48,11 @@
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
+  "templates.dateTimeFormat": {
+    "year-only": {
+      "template": "${year}"
+    }
+  },
   "[cpp]": {
     "editor.defaultFormatter": "xaver.clang-format",
     "editor.tabSize": 2,
