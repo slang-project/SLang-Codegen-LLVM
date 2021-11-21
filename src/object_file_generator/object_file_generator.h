@@ -3,8 +3,8 @@
  * \author Denis Chernikov (@deiuch)
  * \date 2021
  */
-#ifndef SLANG_CODEGEN_LLVM_TREE_TRAVERSE_HPP
-#define SLANG_CODEGEN_LLVM_TREE_TRAVERSE_HPP
+#ifndef SLANG_CODEGEN_LLVM_OBJECT_FILE_GENERATOR_H
+#define SLANG_CODEGEN_LLVM_OBJECT_FILE_GENERATOR_H
 
 #include <filesystem>
 
