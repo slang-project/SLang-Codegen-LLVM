@@ -26,7 +26,7 @@ static auto ArgsToVector(const char *const *const argv,
 }
 
 int main(const int argc, const char *const *const argv) noexcept {
-  /// Turn off synchronization with C standard streams.
+  // Turn off synchronization with C standard streams
   std::ios_base::sync_with_stdio(false);
 
   if (const auto args = slang::llvm_code_generator::CommandLineArgs::Parse(
