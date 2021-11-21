@@ -1,6 +1,6 @@
 #include <cstdlib>
 
-#include "slang_codegen/code_generator_driver/code_generator_driver.h"
+#include "slang_codegen_llvm/driver/driver.h"
 
 /**
  * \brief Convert c-style arguments of \c main into modern C++ structures.

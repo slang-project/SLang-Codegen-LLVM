@@ -8,6 +8,6 @@ set(
 set(
     SLANG_CODEGEN_PUBLIC_HEADER_LIST
     ${SLANG_CODEGEN_PUBLIC_HEADER_LIST}
-    "${SLANG_CODEGEN_INCLUDE_DIR}/slang_codegen/command_line_args/command_line_args.h"
+    "${SLANG_CODEGEN_INCLUDE_DIR}/slang_codegen_llvm/command_line_args/command_line_args.h"
     PARENT_SCOPE
 )

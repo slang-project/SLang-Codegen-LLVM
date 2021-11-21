@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "slang_codegen/command_line_args/command_line_args.h"
+#include "slang_codegen_llvm/command_line_args/command_line_args.h"
 
 namespace slang::llvm_code_generator::driver {
   /**
